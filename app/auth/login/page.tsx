@@ -3,11 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+<<<<<<< HEAD
 import { signIn } from "@/services/auth";
+=======
+>>>>>>> fdf56822e42bb147ca4f81e974eafedbc3ab1ab1
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+<<<<<<< HEAD
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +35,13 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+=======
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    localStorage.setItem("token", "user-active-token");
+    router.push("/");
+>>>>>>> fdf56822e42bb147ca4f81e974eafedbc3ab1ab1
   };
 
   return (
@@ -68,11 +79,14 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
+<<<<<<< HEAD
             {error && (
               <p className="bg-red-100 text-red-600 p-3 rounded-lg text-sm">
                 {error}
               </p>
             )}
+=======
+>>>>>>> fdf56822e42bb147ca4f81e974eafedbc3ab1ab1
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 ml-1">
                 Email Address
@@ -80,9 +94,13 @@ export default function LoginPage() {
               <input
                 type="email"
                 required
+<<<<<<< HEAD
                 value={email}
                 placeholder="user@example.com"
                 onChange={(e) => setEmail(e.target.value)}
+=======
+                placeholder="name@company.com"
+>>>>>>> fdf56822e42bb147ca4f81e974eafedbc3ab1ab1
                 className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-500 outline-none transition-all shadow-sm"
               />
             </div>
@@ -92,16 +110,29 @@ export default function LoginPage() {
                 <label className="text-sm font-bold text-slate-700">
                   Password
                 </label>
+<<<<<<< HEAD
+=======
+                <button
+                  type="button"
+                  className="text-xs font-bold text-blue-600 hover:underline"
+                >
+                  Forgot Password?
+                </button>
+>>>>>>> fdf56822e42bb147ca4f81e974eafedbc3ab1ab1
               </div>
               <input
                 type="password"
                 required
+<<<<<<< HEAD
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+=======
+>>>>>>> fdf56822e42bb147ca4f81e974eafedbc3ab1ab1
                 placeholder="••••••••"
                 className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-500 outline-none transition-all shadow-sm"
               />
             </div>
+<<<<<<< HEAD
             <button
               type="button"
               className="text-xs font-bold text-blue-600 hover:underline"
@@ -114,6 +145,11 @@ export default function LoginPage() {
               className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-200"
             >
               {loading ? "Logging in..." : "Log In"}
+=======
+
+            <button className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-200">
+              Log In
+>>>>>>> fdf56822e42bb147ca4f81e974eafedbc3ab1ab1
             </button>
           </form>
 

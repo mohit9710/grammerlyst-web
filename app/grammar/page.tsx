@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import "../../styles/grammar.css";
 import Navbar from "@/components/Navbar";
@@ -16,6 +17,16 @@ export default function GrammarWorkshop() {
     if (!token) router.replace("/auth/login");
   }, []);
 
+=======
+import { useState } from "react";
+import "../../styles/grammar.css";
+import Navbar from "@/components/Navbar";
+
+export default function GrammarWorkshop() {
+  // Track the active topic with state
+  const [activeTopic, setActiveTopic] = useState("tenses");
+
+>>>>>>> fdf56822e42bb147ca4f81e974eafedbc3ab1ab1
   const topics = [
     {
       id: "tenses",
