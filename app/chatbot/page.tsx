@@ -2,16 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-<<<<<<< HEAD
 import { useRouter } from "next/navigation";
 
 export default function AIChatTutor() {
   const router = useRouter();
 
-=======
-
-export default function AIChatTutor() {
->>>>>>> fdf56822e42bb147ca4f81e974eafedbc3ab1ab1
   const [messages, setMessages] = useState([
     {
       role: "bot",
@@ -25,12 +20,9 @@ export default function AIChatTutor() {
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
-<<<<<<< HEAD
     const token = localStorage.getItem("access_token");
     if (!token) router.replace("/auth/login");
 
-=======
->>>>>>> fdf56822e42bb147ca4f81e974eafedbc3ab1ab1
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
