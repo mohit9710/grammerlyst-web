@@ -138,7 +138,7 @@ export default function Dashboard() {
       </main>
 
       <footer className="py-12 text-center text-slate-400 text-sm">
-        &copy; 2026 EduPlatform Learning Inc. • All Rights Reserved.
+        &copy; 2026 Grammrlyst Learning Inc. • All Rights Reserved.
       </footer>
     </>
   );
