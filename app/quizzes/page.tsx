@@ -3,61 +3,45 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
-
-const QUESTIONS = [
-  {
-    category: "Verbs",
-    question: "Which sentence uses the Present Perfect tense correctly?",
-    options: [
-      "I have saw that movie.",
-      "I have seen that movie.",
-      "I seen that movie.",
-      "I had see that movie.",
-    ],
-    correct: 1, // Index of the correct answer
-  },
-  {
-    category: "Grammar",
-    question: "Identify the passive voice sentence:",
-    options: [
-      "The chef cooked dinner.",
-      "The dinner was cooked by the chef.",
-      "The chef is cooking dinner.",
-      "The chef had cooked dinner.",
-    ],
-    correct: 1,
-  },
-  {
-    category: "Conditionals",
-    question: "If it rains, the ground ____ wet.",
-    options: ["gets", "got", "will getting", "had gotten"],
-    correct: 0,
-  },
-];
+import { fetchQuizData, QuizQuestion } from "@/services/quiz"; // Ensure QuizQuestion interface is exported
 
 export default function Quizzes() {
   const router = useRouter();
 
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const progressPercentage = (currentStep / QUESTIONS.length) * 100;
+  const progressPercentage = questions.length > 0 ? (currentStep / questions.length) * 100 : 0;
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    if (!token) router.replace("/auth/login");
-  }, []);
-
-  const handleAnswer = (selectedIndex) => {
-    // Check if correct
-    if (selectedIndex === QUESTIONS[currentStep].correct) {
-      setScore(score + 1);
+    if (!token) {
+      router.replace("/auth/login");
+      return;
     }
 
-    // Move to next or finish
+    // Fetching real data from your FastAPI /quiz/{lesson_id} endpoint
+    fetchQuizData(1, token)
+      .then((data) => {
+        setQuestions(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [router]);
+
+  const handleAnswer = (isCorrect: boolean) => {
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+    }
+
     const nextStep = currentStep + 1;
-    if (nextStep < QUESTIONS.length) {
+    if (nextStep < questions.length) {
       setCurrentStep(nextStep);
     } else {
       setIsFinished(true);
@@ -69,6 +53,24 @@ export default function Quizzes() {
     setScore(0);
     setIsFinished(false);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (questions.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-slate-500">No questions found for this lesson.</p>
+      </div>
+    );
+  }
+
+  const currentQuestion = questions[currentStep];
 
   return (
     <>
@@ -86,21 +88,20 @@ export default function Quizzes() {
           {!isFinished ? (
             <div className="animate-in fade-in slide-in-from-right-4 duration-500">
               <span className="text-blue-600 font-bold uppercase tracking-widest text-sm">
-                {QUESTIONS[currentStep].category} — Question {currentStep + 1}{" "}
-                of {QUESTIONS.length}
+                Question {currentStep + 1} of {questions.length}
               </span>
               <h2 className="text-2xl md:text-3xl font-bold text-slate-800 mt-4 mb-8">
-                {QUESTIONS[currentStep].question}
+                {currentQuestion.question_text}
               </h2>
 
               <div className="grid gap-4">
-                {QUESTIONS[currentStep].options.map((option, index) => (
+                {currentQuestion.options.map((option) => (
                   <button
-                    key={index}
-                    onClick={() => handleAnswer(index)}
+                    key={option.id}
+                    onClick={() => handleAnswer(option.is_correct)}
                     className="w-full text-left p-5 rounded-2xl border-2 border-slate-100 hover:border-blue-500 hover:bg-blue-50 transition-all font-medium text-slate-700 flex justify-between items-center group"
                   >
-                    {option}
+                    {option.option_text}
                     <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity text-blue-500"></i>
                   </button>
                 ))}
@@ -112,13 +113,11 @@ export default function Quizzes() {
               <div className="w-24 h-24 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <i className="fas fa-trophy text-4xl"></i>
               </div>
-              <h2 className="text-4xl font-black text-slate-800 mb-2">
-                Quiz Complete!
-              </h2>
+              <h2 className="text-4xl font-black text-slate-800 mb-2">Quiz Complete!</h2>
               <p className="text-xl text-slate-500 mb-8">
                 You scored{" "}
                 <span className="font-bold text-blue-600">{score}</span> out of{" "}
-                <span className="font-bold">{QUESTIONS.length}</span>
+                <span className="font-bold">{questions.length}</span>
               </p>
 
               <button
