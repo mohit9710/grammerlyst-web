@@ -5,14 +5,27 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import LogoImg from "../resources/grammrlyst_logo.png";
+import { fetchUserProfile } from "@/services/userService";
 
 export default function Navbar() {
   const router = useRouter();
   const [isAuth, setIsAuth] = useState(false);
-
+  const [user, setUser]=useState(false);
+  
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    setIsAuth(!!token);
+    if(token){
+      fetchUserProfile(token)
+      .then((data) => {
+        setUser(data);
+      })
+      .catch();
+    }
+
+    if(!user){
+        setIsAuth(!!token);
+      }
+    
   }, []);
 
   const logoutHandler = () => {

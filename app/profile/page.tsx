@@ -8,6 +8,8 @@ import { fetchUserProfile, updateUserProfile } from "@/services/userService";
 export default function ProfilePage() {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   const [user, setUser] = useState({ 
     name: "User Name", 
     email: "user@example.com",

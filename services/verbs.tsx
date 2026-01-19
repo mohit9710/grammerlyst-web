@@ -6,6 +6,7 @@ export interface Verb {
   past: string;
   past_participle: string;
   meaning?: string;
+  type?: string;
 }
 
 export async function fetchVerbs(

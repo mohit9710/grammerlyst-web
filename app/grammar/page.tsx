@@ -5,6 +5,7 @@ import "../../styles/grammar.css";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { fetchGrammarTopics, fetchLessonsByTopic, GrammarTopic, GrammarLesson } from "@/services/grammar";
+import { fetchUserProfile } from "@/services/userService";
 
 export default function GrammarWorkshop() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function GrammarWorkshop() {
   const [activeTopic, setActiveTopic] = useState<GrammarTopic | null>(null);
   const [lessons, setLessons] = useState<GrammarLesson[]>([]);
   const [loading, setLoading] = useState(true);
+  const[user, setUser]=useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -36,12 +38,18 @@ export default function GrammarWorkshop() {
 
   // Effect to load lessons whenever the active topic changes
   useEffect(() => {
+    const token = localStorage.getItem("access_token") || "";
     if (activeTopic) {
-      const token = localStorage.getItem("access_token") || "";
       fetchLessonsByTopic(activeTopic.id, token)
         .then(setLessons)
         .catch(() => setLessons([])); // Clear if no lessons found
     }
+    fetchUserProfile(token)
+          .then((data) => {
+            setUser(data);
+            setLoading(false);
+          })
+          .catch(() => router.push("/auth/login"));
   }, [activeTopic]);
 
   if (loading) return <div className="text-center py-20">Loading Grammar Workshop...</div>;

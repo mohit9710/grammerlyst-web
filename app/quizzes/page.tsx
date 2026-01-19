@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { fetchQuizData, QuizQuestion } from "@/services/quiz"; // Ensure QuizQuestion interface is exported
+import { fetchUserProfile } from "@/services/userService";
 
 export default function Quizzes() {
   const router = useRouter();
@@ -13,7 +14,8 @@ export default function Quizzes() {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  const [user, setUser]=useState(false);
+  
   const progressPercentage = questions.length > 0 ? (currentStep / questions.length) * 100 : 0;
 
   useEffect(() => {
@@ -33,6 +35,13 @@ export default function Quizzes() {
         console.error(err);
         setLoading(false);
       });
+
+      fetchUserProfile(token)
+            .then((data) => {
+              setUser(data);
+              setLoading(false);
+            })
+            .catch(() => router.push("/auth/login"));
   }, [router]);
 
   const handleAnswer = (isCorrect: boolean) => {
