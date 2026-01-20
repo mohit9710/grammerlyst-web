@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 export default function SignupPage() {
   const router = useRouter();
 
-  const handleSignup = (e) => {
+  const handleSignup = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     localStorage.setItem("token", "new-user-token");
     router.push("/");

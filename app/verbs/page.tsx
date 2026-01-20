@@ -28,22 +28,27 @@ export default function VerbsCarousel() {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
-        router.replace("/auth/login");
-        return;
+      router.replace("/auth/login");
+      return;
     }
 
-    // Fetch both Verbs and Profile
+    setLoading(true);
     Promise.all([
       fetchVerbs(1, 30),
       fetchUserProfile(token)
     ])
     .then(([verbsData, userData]) => {
       setVerbs(verbsData);
-      setUser(userData); // Assuming backend returns isPro status
+      // Ensure isPro exists, fallback to false if undefined
+      setUser({
+        ...userData,
+        isPro: userData.isPro ?? false 
+      });
     })
     .catch((err) => {
-      console.error(err);
-      router.push("/auth/login");
+      console.error("Fetch error:", err);
+      // Only redirect if it's a 401/403 unauthorized error
+      // router.push("/auth/login"); 
     })
     .finally(() => setLoading(false));
   }, [router]);
@@ -198,7 +203,7 @@ export default function VerbsCarousel() {
                   <div className="bg-slate-50 p-6 rounded-2xl border-l-4 border-indigo-500 relative">
                     <i className="fas fa-quote-left absolute top-4 left-4 text-slate-200 text-4xl -z-0"></i>
                     <p className="text-slate-800 text-xl italic font-semibold relative z-10">
-                      "{selectedVerb.example || `The word ${selectedVerb.base} is used to describe an action.`}"
+                      "{selectedVerb.example  || `The word ${selectedVerb.base} is used to describe an action.`}"
                     </p>
                   </div>
                 </div>

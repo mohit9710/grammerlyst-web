@@ -6,6 +6,7 @@ export interface Verb {
   past: string;
   past_participle: string;
   meaning?: string;
+  example?: string;
   type?: string;
 }
 

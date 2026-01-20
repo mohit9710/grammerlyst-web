@@ -27,7 +27,7 @@ export default function ProfilePage() {
   const weekDays = ["M", "T", "W", "T", "F", "S", "S"];
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token") || "";
     if (!token) router.replace("/auth/login");
     
     fetchUserProfile(token)
