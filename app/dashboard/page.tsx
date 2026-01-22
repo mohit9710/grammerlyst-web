@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import "../../styles/index.css";
 import Navbar from "@/components/Navbar";
-import Link from "next/link"; // Use Link for faster navigation
+import Link from "next/link"; 
 
 export default function Dashboard() {
   const router = useRouter();
@@ -76,21 +76,22 @@ export default function Dashboard() {
             </span>
           </Link>
 
+          {/* NEW GAMES SECTION REPLACING QUIZZES */}
           <Link
-            href="/quizzes"
+            href="/games"
             className="group bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all border border-slate-100 flex flex-col items-center text-center"
           >
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
-              <i className="fas fa-tasks"></i>
+            <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+              <i className="fas fa-gamepad"></i>
             </div>
             <h3 className="text-xl font-bold text-slate-800 mb-2">
-              Practice Quizzes
+              Language Games
             </h3>
             <p className="text-slate-500 text-sm mb-6">
-              Test your knowledge with real-time feedback challenges.
+              Practice English through fun, fast-paced arcade challenges.
             </p>
-            <span className="text-emerald-600 font-bold text-sm">
-              Start Quiz →
+            <span className="text-rose-600 font-bold text-sm">
+              Play Now →
             </span>
           </Link>
 
@@ -117,7 +118,7 @@ export default function Dashboard() {
           <div className="mb-8 md:mb-0">
             <h3 className="text-3xl font-bold mb-2">Track Your Progress</h3>
             <p className="text-slate-400">
-              Sign up to save your quiz scores and vocabulary lists.
+              Sign up to save your game high scores and vocabulary lists.
             </p>
           </div>
           <div className="flex gap-10">
@@ -128,9 +129,9 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-black text-purple-400">85%</div>
+              <div className="text-4xl font-black text-rose-400">2.4k</div>
               <div className="text-slate-500 text-sm uppercase font-bold">
-                Quiz Avg
+                High Score
               </div>
             </div>
           </div>
