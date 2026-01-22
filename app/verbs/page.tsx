@@ -39,7 +39,6 @@ export default function VerbsCarousel() {
     ])
     .then(([verbsData, userData]) => {
       setVerbs(verbsData);
-      // Ensure isPro exists, fallback to false if undefined
       setUser({
         ...userData,
         isPro: userData.isPro ?? false 
@@ -47,8 +46,6 @@ export default function VerbsCarousel() {
     })
     .catch((err) => {
       console.error("Fetch error:", err);
-      // Only redirect if it's a 401/403 unauthorized error
-      // router.push("/auth/login"); 
     })
     .finally(() => setLoading(false));
   }, [router]);
@@ -125,7 +122,8 @@ export default function VerbsCarousel() {
                       key={index}
                       onClick={() => {
                         if (isLocked) {
-                          alert("Premium Content: Please upgrade to Pro to view this verb!");
+                          {router.replace("/pricing")}
+                          // alert("Premium Content: Please upgrade to Pro to view this verb!");
                         } else {
                           setSelectedVerb(verb);
                         }
