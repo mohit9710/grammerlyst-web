@@ -2,50 +2,93 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-
-const WORDS = [
-  { original: "CONJUNCTION", scrambled: "JUNCTIONCON", hint: "A word used to connect clauses." },
-  { original: "ADJECTIVE", scrambled: "IVEADJECT", hint: "Describes a noun." },
-  { original: "PARTICIPLE", scrambled: "CIPLETIPAR", hint: "A word formed from a verb." },
-  { original: "PREPOSITION", scrambled: "POSITIONPRE", hint: "Shows relationship in space or time." }
-];
+import { gameService, ScrambleWord } from "@/services/gameService";
 
 export default function WordScramble() {
+  const [words, setWords] = useState<ScrambleWord[]>([]);
   const [index, setIndex] = useState(0);
   const [guess, setGuess] = useState("");
   const [score, setScore] = useState(0);
   const [shake, setShake] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isFinished, setIsFinished] = useState(false);
 
-  const current = WORDS[index];
+  // Fetch data from API using service
+  useEffect(() => {
+    async function initGame() {
+      const data = await gameService.getScrambleChallenges(10);
+      if (data.length > 0) {
+        setWords(data);
+      }
+      setLoading(false);
+    }
+    initGame();
+  }, []);
+
+  const current = words[index];
 
   const checkAnswer = (e: React.FormEvent) => {
     e.preventDefault();
-    if (guess.toUpperCase() === current.original) {
-      setScore(score + 100);
+    if (!current) return;
+
+    if (guess.toUpperCase() === current.original_word.toUpperCase()) {
+      const newScore = score + 100;
+      setScore(newScore);
       setGuess("");
-      if (index < WORDS.length - 1) setIndex(index + 1);
-      else alert("Game Complete! Final Score: " + (score + 100));
+      
+      if (index < words.length - 1) {
+        setIndex(index + 1);
+      } else {
+        setIsFinished(true);
+      }
     } else {
       setShake(true);
       setTimeout(() => setShake(false), 500);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-rose-50 flex items-center justify-center font-black text-rose-400 animate-pulse">
+        PREPARING SCRAMBLE...
+      </div>
+    );
+  }
+
+  if (isFinished) {
+    return (
+      <div className="min-h-screen bg-rose-50 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 text-center">
+          <h2 className="text-3xl font-black text-slate-800 mb-4">Game Complete!</h2>
+          <p className="text-rose-600 text-5xl font-black mb-8">{score}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="w-full bg-rose-600 text-white p-4 rounded-xl font-black"
+          >
+            PLAY AGAIN
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-rose-50 flex items-center justify-center p-6">
-      <div className={`max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 text-center border-b-8 border-rose-200 ${shake ? 'animate-bounce' : ''}`}>
+      <div className={`max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 text-center border-b-8 border-rose-200 ${shake ? 'animate-shake' : ''}`}>
         <div className="flex justify-between mb-8">
           <Link href="/games" className="text-rose-400 hover:text-rose-600 font-bold text-sm">← Back</Link>
           <span className="font-black text-rose-600 tracking-widest">SCORE: {score}</span>
         </div>
 
-        <h2 className="text-xs uppercase tracking-[0.3em] font-black text-slate-400 mb-2">Unscramble This</h2>
-        <div className="text-4xl font-black text-slate-800 mb-8 tracking-tighter">
-          {current.scrambled}
+        <h2 className="text-xs uppercase tracking-[0.3em] font-black text-slate-400 mb-2">
+          Word {index + 1} of {words.length}
+        </h2>
+        <div className="text-4xl font-black text-slate-800 mb-8 tracking-tighter uppercase">
+          {current?.scrambled_word}
         </div>
 
         <div className="bg-amber-50 text-amber-700 p-4 rounded-2xl text-sm mb-8 italic">
-          <strong>Hint:</strong> {current.hint}
+          <strong>Hint:</strong> {current?.hint}
         </div>
 
         <form onSubmit={checkAnswer}>

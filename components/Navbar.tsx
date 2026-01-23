@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import LogoImg from "../resources/grammrlyst_logo.png";
+import LogoImg from "../resources/logo.png";
 import { fetchUserProfile } from "@/services/userService";
 
 export default function Navbar() {
@@ -47,9 +47,9 @@ export default function Navbar() {
             priority 
           />
         </div>
-        <span className="text-2xl font-black tracking-tighter text-slate-800 group-hover:text-blue-600 transition">
+        {/* <span className="text-2xl font-black tracking-tighter text-slate-800 group-hover:text-blue-600 transition">
           Grammrlyst
-        </span>
+        </span> */}
       </Link>
 
       {/* 2. Middle Navigation (Hidden on Mobile) */}
