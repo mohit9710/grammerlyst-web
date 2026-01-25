@@ -4,28 +4,27 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import LogoImg from "../resources/logo.png";
+import LogoImg from "../resources/logo.png"; // Ensure your new PNG is saved here
 import { fetchUserProfile } from "@/services/userService";
 
 export default function Navbar() {
   const router = useRouter();
   const [isAuth, setIsAuth] = useState(false);
-  const [user, setUser]=useState(false);
+  const [user, setUser] = useState(null);
   
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    if(token){
+    if (token) {
       fetchUserProfile(token)
-      .then((data) => {
-        setUser(data);
-      })
-      .catch();
+        .then((data) => {
+          setUser(data);
+          setIsAuth(true);
+        })
+        .catch(() => {
+          localStorage.removeItem("access_token");
+          setIsAuth(false);
+        });
     }
-
-    if(!user){
-        setIsAuth(!!token);
-      }
-    
   }, []);
 
   const logoutHandler = () => {
@@ -36,46 +35,33 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white border-b px-8 py-3 flex justify-between items-center sticky top-0 z-50 shadow-sm">
-      {/* 1. Brand Logo Area */}
-      <Link href="/" className="flex items-center gap-3 group">
-        <div className="relative w-10 h-10">
+      {/* 1. Brand Logo Area - Adjusted for Wide Logo */}
+      <Link href="/" className="flex items-center group">
+        <div className="relative w-40 h-10 md:w-48 md:h-12"> 
+          {/* Increased width (w-40) to accommodate the wide text logo */}
           <Image 
             src={LogoImg} 
             alt="Grammrlyst Logo" 
             fill 
-            className="object-contain" 
+            className="object-contain object-left" 
             priority 
           />
         </div>
-        {/* <span className="text-2xl font-black tracking-tighter text-slate-800 group-hover:text-blue-600 transition">
-          Grammrlyst
-        </span> */}
       </Link>
 
-      {/* 2. Middle Navigation (Hidden on Mobile) */}
-      {/* <div className="hidden md:flex gap-8 items-center">
-        <Link href="/grammar" className="text-slate-600 font-bold hover:text-blue-600 transition text-sm uppercase tracking-wide">
-          Workshop
-        </Link>
-        <Link href="/quizzes" className="text-slate-600 font-bold hover:text-blue-600 transition text-sm uppercase tracking-wide">
-          Quizzes
-        </Link>
-      </div> */}
-
-      {/* 3. User Actions Area */}
+      {/* 2. User Actions Area */}
       <div className="flex items-center gap-3">
         {!isAuth ? (
           <>
-            <Link href="/auth/login" className="text-slate-600 font-bold hover:text-blue-600 px-4 transition">
+            <Link href="/auth/login" className="text-slate-600 font-bold hover:text-blue-600 px-4 transition text-sm md:text-base">
               Sign In
             </Link>
-            <Link href="/auth/signup" className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">
+            <Link href="/auth/signup" className="bg-blue-600 text-white px-5 py-2 md:px-6 md:py-2.5 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100 text-sm md:text-base">
               Get Started
             </Link>
           </>
         ) : (
           <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
-            {/* Profile Button */}
             <Link 
               href="/profile" 
               className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-white hover:shadow-sm transition group"
@@ -88,10 +74,8 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* Divider */}
             <div className="w-px h-6 bg-slate-200 mx-1"></div>
 
-            {/* Logout Button */}
             <button
               onClick={logoutHandler}
               className="p-2 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition"
