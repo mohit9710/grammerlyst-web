@@ -10,6 +10,7 @@ export async function signIn(
   email: string,
   password: string
 ): Promise<SignInResponse> {
+  alert(API_BASE_URL)
   const res = await fetch(`${API_BASE_URL}/auth/signin`, {
     method: "POST",
     headers: {

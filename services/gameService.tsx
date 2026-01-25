@@ -1,3 +1,5 @@
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
 export interface SpellingWord {
   id: number;
   wrong_version: string;
@@ -12,7 +14,6 @@ export interface ScrambleWord {
   hint: string;
 }
 
-const API_BASE_URL = "http://127.0.0.1:8000/games";
 
 export const gameService = {
   /**
@@ -20,7 +21,7 @@ export const gameService = {
    */
   async getSpellingChallenges(limit: number = 1): Promise<SpellingWord[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/spelling`);
+      const response = await fetch(`${API_BASE_URL}/games/spelling`);
       if (!response.ok) {
         throw new Error("Failed to fetch spelling challenges");
       }
@@ -36,7 +37,7 @@ export const gameService = {
    */
   async getSentences(limit: number = 5): Promise<string[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/sentences?limit=${limit}`);
+      const response = await fetch(`${API_BASE_URL}/games/sentences?limit=${limit}`);
       const data = await response.json();
       return data.map((s: any) => s.content);
     } catch (error) {
@@ -48,7 +49,7 @@ export const gameService = {
   // Inside gameService...
     async getScrambleChallenges(limit: number = 5): Promise<ScrambleWord[]> {
     try {
-        const response = await fetch(`${API_BASE_URL}/scramble`);
+        const response = await fetch(`${API_BASE_URL}/games/scramble`);
         return await response.json();
     } catch (error) {
         console.error("Scramble fetch error:", error);
