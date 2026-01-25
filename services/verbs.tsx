@@ -15,7 +15,7 @@ export async function fetchVerbs(
   limit: number = 20,
   token?: string
 ): Promise<Verb[]> {
-  const res = await fetch(`${API_BASE_URL}/verbs`, {
+  const res = await fetch(`${API_BASE_URL}/verbs/`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
