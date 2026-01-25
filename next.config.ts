@@ -3,6 +3,15 @@ const nextConfig = {
   /* config options here */
   reactStrictMode: true,
   devIndicators: false,
+
+  async rewrites() {
+    return [
+      {
+        source: '/api/backend/:path*',
+        destination: 'https://grammrlyst.in/:path*',
+      },
+    ]
+  },
 };
 
 export default nextConfig;
