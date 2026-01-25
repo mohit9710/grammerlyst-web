@@ -8,7 +8,7 @@ const nextConfig = {
     return [
       {
         source: '/api/backend/:path*',
-        destination: 'http://ec2-3-110-219-38.ap-south-1.compute.amazonaws.com:8000/:path*',
+        destination: 'https://grammrlyst.in/:path*',
       },
     ]
   },
