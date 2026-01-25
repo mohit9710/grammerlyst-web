@@ -1,192 +1,168 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 
-export default function CheckoutPage() {
+export default function AIChatTutor() {
   const router = useRouter();
-  const [paymentMethod, setPaymentMethod] = useState("upi");
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  // In a real app, you'd get these from a URL param or state management
-  const orderDetails = {
-    planName: "Lifetime Pass",
-    price: 1,
-    tax: 0,
-    total: 1,
-  };
+  const [messages, setMessages] = useState([
+    {
+      role: "bot",
+      content:
+        "Hello! I am your AI English Tutor. You can chat with me to practice, or type a sentence you want me to correct. Try saying: 'He go to school yesterday.'",
+    },
+  ]);
 
-  const handlePayment = async () => {
-  try {
-    const res = await fetch(
-      `http://127.0.0.1:8000/paytm/create-payment?amount=${orderDetails.total}`,
-      { method: "POST" }
-    );
+  const [input, setInput] = useState("");
+  const [corrections, setCorrections] = useState<
+    { original: string; fixed: string; rule: string }[]
+  >([]);
 
-    if (!res.ok) {
-      throw new Error("Payment init failed");
-    }
+  /* Auth check + auto scroll */
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
 
-    const data = await res.json();
-
-    if (!window.Paytm || !window.Paytm.CheckoutJS) {
-      alert("Paytm SDK not loaded. Refresh page.");
+    if (!token) {
+      router.replace("/auth/login");
       return;
     }
 
-    const config = {
-      root: "",
-      flow: "DEFAULT",
-      data: {
-        orderId: data.orderId,
-        token: data.txnToken,
-        tokenType: "TXN_TOKEN",
-        amount: data.amount,
-      },
-      handler: {
-        notifyMerchant: function (eventName: string, data: any) {
-          console.log("Paytm Event:", eventName, data);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, router]);
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMessage = { role: "user", content: input };
+    setMessages((prev) => [...prev, userMessage]);
+
+    setTimeout(() => {
+      processAIResponse(input);
+    }, 600);
+
+    setInput("");
+  };
+
+  const processAIResponse = (text: string) => {
+    if (text.toLowerCase().includes("he go")) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "bot",
+          content:
+            "That's almost correct! In the past tense, we use 'went' instead of 'go'.",
         },
-      },
-    };
+      ]);
 
-    // @ts-ignore
-    await window.Paytm.CheckoutJS.init(config);
-
-    // @ts-ignore
-    window.Paytm.CheckoutJS.invoke();
-
-  } catch (err) {
-    console.error(err);
-    alert("Payment failed. Try again.");
-  }
-};
+      setCorrections((prev) => [
+        {
+          original: text,
+          fixed: "He went to school yesterday.",
+          rule: "Past Tense Irregular Verbs",
+        },
+        ...prev,
+      ]);
+    } else {
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", content: "Great sentence! Keep practicing." },
+      ]);
+    }
+  };
 
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-white to-slate-100 py-12 px-4">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Left Column: Payment Details */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100">
-              <h2 className="text-3xl font-black text-slate-800 mb-8 tracking-tight">Checkout</h2>
-              
-              {/* Payment Method Selector */}
-              <div className="space-y-4">
-                <label className="text-xs font-black uppercase tracking-widest text-blue-600">Select Payment Method</label>
-                <div className="grid grid-cols-3 gap-4">
-                  {[
-                    { id: "upi", icon: "fa-mobile-alt", label: "UPI" },
-                    { id: "card", icon: "fa-credit-card", label: "Card" },
-                    { id: "net", icon: "fa-university", label: "Bank" },
-                  ].map((method) => (
-                    <button
-                      key={method.id}
-                      onClick={() => setPaymentMethod(method.id)}
-                      className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
-                        paymentMethod === method.id
-                          ? "border-blue-500 bg-blue-50 text-blue-600"
-                          : "border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200"
-                      }`}
-                    >
-                      <i className={`fas ${method.icon} text-xl mb-2`}></i>
-                      <span className="text-xs font-bold uppercase">{method.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
 
-              {/* Form Input */}
-              <div className="mt-10 space-y-6">
-                <div className="relative group">
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  />
-                </div>
-                {paymentMethod === "upi" && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <input
-                      type="text"
-                      placeholder="Enter VPA (e.g., user@upi)"
-                      className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    />
-                  </div>
-                )}
-              </div>
+      <main className="max-w-7xl mx-auto grid lg:grid-cols-12 h-[calc(100vh-80px)] overflow-hidden">
+        {/* Chat Section */}
+        <div className="lg:col-span-8 flex flex-col bg-white border-r">
+          {/* Header */}
+          <div className="p-4 border-b flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white">
+              🤖
             </div>
-
-            <button
-              onClick={handlePayment}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-6 rounded-2xl shadow-xl shadow-blue-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-xl"
-            >
-              Pay ₹{orderDetails.total}
-              <i className="fas fa-arrow-right text-sm"></i>
-            </button>
+            <div>
+              <h2 className="font-bold text-slate-800">EduAI Tutor</h2>
+              <span className="text-xs text-green-500 flex items-center gap-1">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                Online
+              </span>
+            </div>
           </div>
 
-          {/* Right Column: Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="bg-slate-900 rounded-[2rem] p-8 text-white sticky top-8 shadow-2xl overflow-hidden">
-              {/* Decorative Glow */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 blur-[60px] rounded-full"></div>
-              
-              <h3 className="text-xl font-bold mb-8 relative z-10">Order Summary</h3>
-              
-              <div className="space-y-6 relative z-10">
-                <div className="flex justify-between items-center">
-                  <div className="text-slate-400">
-                    <p className="font-bold text-white">{orderDetails.planName}</p>
-                    <p className="text-xs italic">Lifetime Access</p>
-                  </div>
-                  <span className="font-bold text-blue-400">₹{orderDetails.price}</span>
-                </div>
-                
-                <div className="h-px bg-slate-800"></div>
-                
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Subtotal</span>
-                    <span>₹{orderDetails.price}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Tax</span>
-                    <span className="text-green-400">FREE</span>
-                  </div>
-                </div>
-
-                <div className="h-px bg-slate-800"></div>
-
-                <div className="flex justify-between items-center text-xl font-black">
-                  <span>Total</span>
-                  <span className="text-blue-400">₹{orderDetails.total}</span>
+          {/* Messages */}
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30"
+          >
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`flex gap-3 ${
+                  msg.role === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`p-4 rounded-2xl max-w-[80%] shadow-sm ${
+                    msg.role === "user"
+                      ? "bg-blue-600 text-white rounded-tr-none"
+                      : "bg-white text-slate-700 border rounded-tl-none"
+                  }`}
+                >
+                  {msg.content}
                 </div>
               </div>
-
-              {/* Trust Badge */}
-              <div className="mt-12 p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-4">
-                <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400">
-                  <i className="fas fa-lock text-sm"></i>
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Secure Payment</p>
-                  <p className="text-[11px] text-slate-500 leading-tight">SSL Encrypted Transaction</p>
-                </div>
-              </div>
-            </div>
-            
-            <button 
-              onClick={() => router.back()}
-              className="w-full mt-6 text-slate-400 hover:text-slate-600 font-bold transition-colors flex items-center justify-center gap-2"
-            >
-              <i className="fas fa-chevron-left text-xs"></i>
-              Back to Pricing
-            </button>
+            ))}
           </div>
 
+          {/* Input */}
+          <div className="p-6 border-t bg-white">
+            <form onSubmit={handleSendMessage} className="flex gap-4">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type a sentence to check..."
+                className="flex-1 p-4 rounded-xl border focus:ring-2 focus:ring-blue-500"
+              />
+              <button className="bg-blue-600 text-white px-6 rounded-xl font-bold hover:bg-blue-700">
+                Send
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Correction Lab */}
+        <div className="lg:col-span-4 bg-slate-50 p-6 overflow-y-auto">
+          <h3 className="text-lg font-bold mb-6">✨ Correction Lab</h3>
+
+          {corrections.length === 0 ? (
+            <div className="p-5 bg-white rounded-xl opacity-60 italic text-center">
+              Corrections will appear here.
+            </div>
+          ) : (
+            corrections.map((c, i) => (
+              <div
+                key={i}
+                className="p-5 bg-white rounded-xl shadow border-l-4 border-red-400 mb-4"
+              >
+                <p className="text-xs text-slate-400 uppercase mb-2">
+                  {c.rule}
+                </p>
+                <p className="text-red-500 line-through">{c.original}</p>
+                <p className="text-green-600 font-bold">{c.fixed}</p>
+              </div>
+            ))
+          )}
         </div>
       </main>
     </>
