@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://ec2-3-110-219-38.ap-south-1.compute.amazonaws.com:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/backend";
 
 interface SignInResponse {
   access_token: string;
@@ -10,7 +10,6 @@ export async function signIn(
   email: string,
   password: string
 ): Promise<SignInResponse> {
-  alert(API_BASE_URL)
   const res = await fetch(`${API_BASE_URL}/auth/signin`, {
     method: "POST",
     headers: {
