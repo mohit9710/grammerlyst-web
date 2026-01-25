@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"; // Your FastAPI URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://ec2-3-110-219-38.ap-south-1.compute.amazonaws.com:8000";
 
 export async function fetchUserProfile(token: string) {
   const response = await fetch(`${API_URL}/auth/userprofile`, {
