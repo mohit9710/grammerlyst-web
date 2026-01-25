@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-
 export default function SentenceSprinter() {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/backend";
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userInput, setUserInput] = useState("");
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -19,7 +20,7 @@ export default function SentenceSprinter() {
   useEffect(() => {
     async function loadSentences() {
       try {
-        const res = await fetch("http://localhost:8000/games/sentences?limit=15");
+        const res = await fetch(`${API_BASE_URL}/games/sentences?limit=15`);
         const data = await res.json();
         const sentenceList = data.map((s: any) => s.content);
         setSentences(sentenceList);
