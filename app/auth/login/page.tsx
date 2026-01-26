@@ -11,8 +11,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const searchParams = useSearchParams();
-  const success = searchParams.get("success");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,13 +67,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-      {success === "registered" && (
-              <div className="mb-6 rounded-xl bg-green-100 p-4 text-green-700 font-medium">
-                🎉 Registered successfully!  
-                <br />
-                Please verify your email before logging in.
-              </div>
-            )}
           <form onSubmit={handleLogin} className="space-y-6">
             {error && (
               <p className="bg-red-100 text-red-600 p-3 rounded-lg text-sm">
