@@ -1,9 +1,16 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/backend";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 interface SignInResponse {
   access_token: string;
   refresh_token: string;
   token_type: string;
+}
+
+interface SignupPayload {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
 }
 
 export async function signIn(
@@ -24,4 +31,23 @@ export async function signIn(
   }
 
   return res.json();
+}
+
+export async function signupUser(payload: SignupPayload) {
+  const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Signup failed");
+  }
+
+  return data; // { token, user }
 }

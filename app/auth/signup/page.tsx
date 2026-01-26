@@ -2,14 +2,43 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { signupUser } from "@/services/auth";
 
 export default function SignupPage() {
   const router = useRouter();
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+  });
 
-  const handleSignup = (e: { preventDefault: () => void; }) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem("token", "new-user-token");
-    router.push("/");
+    setError("");
+    setLoading(true);
+
+    try {
+      const data = await signupUser(form);
+
+      // router.push(
+      //   "/auth/signin?success=registered"
+      // );
+      // Save token
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("refresh_token", data.refresh_token);
+
+      // ✅ Redirect after login
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,6 +65,9 @@ export default function SignupPage() {
                   type="text"
                   placeholder="Jane"
                   className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-500 outline-none transition-all"
+                  onChange={(e) =>
+                  setForm({ ...form, first_name: e.target.value })
+                }
                 />
               </div>
               <div className="space-y-2">
@@ -46,6 +78,9 @@ export default function SignupPage() {
                   type="text"
                   placeholder="Doe"
                   className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-500 outline-none transition-all"
+                  onChange={(e) =>
+                  setForm({ ...form, last_name: e.target.value })
+                }
                 />
               </div>
             </div>
@@ -59,6 +94,9 @@ export default function SignupPage() {
                 required
                 placeholder="jane@example.com"
                 className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-500 outline-none transition-all"
+                onChange={(e) =>
+                setForm({ ...form, email: e.target.value })
+              }
               />
             </div>
 
@@ -71,6 +109,9 @@ export default function SignupPage() {
                 required
                 placeholder="••••••••"
                 className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-500 outline-none transition-all"
+                onChange={(e) =>
+                setForm({ ...form, password: e.target.value })
+              }
               />
             </div>
 
@@ -95,7 +136,7 @@ export default function SignupPage() {
             </div>
 
             <button className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-200">
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
