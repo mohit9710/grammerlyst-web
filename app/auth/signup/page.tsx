@@ -23,19 +23,11 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const data = await signupUser(form);
+      await signupUser(form);
 
-      // router.push(
-      //   "/auth/signin?success=registered"
-      // );
-      // Save token
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
-
-      // ✅ Redirect after login
-      router.push("/dashboard");
+      router.push("/auth/verify-email-info");
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Signup failed");
     } finally {
       setLoading(false);
     }
