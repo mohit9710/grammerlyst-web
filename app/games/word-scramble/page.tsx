@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { gameService, ScrambleWord } from "@/services/gameService";
 
 export default function WordScramble() {
+  const router = useRouter();
+
   const [words, setWords] = useState<ScrambleWord[]>([]);
   const [index, setIndex] = useState(0);
   const [guess, setGuess] = useState("");
@@ -15,6 +18,12 @@ export default function WordScramble() {
 
   // Fetch data from API using service
   useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      router.replace("/auth/login");
+      return;
+    }
+    
     async function initGame() {
       const data = await gameService.getScrambleChallenges(10);
       if (data.length > 0) {

@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { gameService, SpellingWord } from "@/services/gameService";
 
 export default function SyntaxDefender() {
+  const router = useRouter();
+
   const [words, setWords] = useState<SpellingWord[]>([]);
   const [activeWord, setActiveWord] = useState<SpellingWord | null>(null);
   const [index, setIndex] = useState(0);
@@ -18,6 +21,12 @@ export default function SyntaxDefender() {
 
   // Load data from API on start
   useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      router.replace("/auth/login");
+      return;
+    }
+
     async function init() {
       const data = await gameService.getSpellingChallenges(10);
       if (data.length > 0) {
