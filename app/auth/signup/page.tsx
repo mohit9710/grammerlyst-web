@@ -21,6 +21,12 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
+    console.log(form.password.length)
+    if (form.password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      setLoading(false);
+      return; // ⬅️ THIS WAS MISSING 
+    }
 
     try {
       await signupUser(form);
@@ -31,6 +37,7 @@ export default function SignupPage() {
     } finally {
       setLoading(false);
     }
+
   };
 
   return (
@@ -43,11 +50,16 @@ export default function SignupPage() {
               Join the Workshop
             </h2>
             <p className="text-slate-500 font-medium">
-              Start your 7-day free trial of EduPlatform.
+              Start your journey with Grammrlyst.
             </p>
           </div>
-
+        
           <form onSubmit={handleSignup} className="space-y-5">
+            {error && (
+              <p className="bg-red-100 text-red-600 p-3 rounded-lg text-sm">
+                {error}
+              </p>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 ml-1">

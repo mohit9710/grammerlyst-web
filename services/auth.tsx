@@ -46,7 +46,13 @@ export async function signupUser(payload: SignupPayload) {
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.message || "Signup failed");
+    const errorMessage =
+      data?.detail?.[0]?.msg ||
+      data?.detail ||
+      data?.message ||
+      "Signup failed";
+
+    throw new Error(errorMessage);
   }
 
   return data; // { token, user }
