@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import "../../styles/index.css";
 import Navbar from "@/components/Navbar";
 import Link from "next/link"; 
+import TipOfTheDay from "@/components/TipOfTheDay";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -33,8 +34,10 @@ export default function Dashboard() {
           </p>
         </div>
       </header>
-
+      
       <main className="max-w-7xl mx-auto px-6 py-16">
+        {/* Tip of the Day */}
+        <TipOfTheDay /> 
         <h2 className="text-2xl font-bold text-slate-800 mb-8">
           Learning Modules
         </h2>
