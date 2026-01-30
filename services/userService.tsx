@@ -8,14 +8,31 @@ export async function fetchUserProfile(token: string) {
   return response.json();
 }
 
-export async function updateUserProfile(token: string, data: any) {
-  const response = await fetch(`${API_URL}/users/me`, {
+/**
+ * Updates user profile using FormData to support file uploads (images)
+ */
+export async function updateUserProfile(
+  token: string,
+  data: { firstName?: string; lastName?: string; imageFile?: File | null }
+) {
+  const formData = new FormData();
+
+  // FastAPI expects these keys based on your Python parameters
+  if (data.firstName) formData.append("first_name", data.firstName);
+  if (data.lastName) formData.append("last_name", data.lastName);
+  if (data.imageFile) formData.append("image", data.imageFile);
+
+  const res = await fetch(`${API_URL}/auth/users/me`, {
     method: "PATCH",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      // Reminder: No 'Content-Type' header here; let the browser set it!
     },
-    body: JSON.stringify(data),
+    body: formData,
   });
-  return response.json();
+
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.detail || "Update failed");
+
+  return result.user; // Returning the nested user object from your backend JSON
 }
