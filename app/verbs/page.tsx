@@ -3,9 +3,9 @@
 import { useRef, useState, useMemo, useEffect } from "react";
 import "../../styles/verbs.css";
 import Navbar from "@/components/Navbar";
-import { fetchVerbs, Verb } from "@/services/verbs";
 import { useRouter } from "next/navigation";
 import { fetchUserProfile } from "@/services/userService";
+import { fetchVerbs, Verb, markVerbViewed } from "@/services/verbs";
 
 export default function VerbsCarousel() {
   const router = useRouter();
@@ -54,22 +54,24 @@ export default function VerbsCarousel() {
     }
 
     setLoading(true);
+
     Promise.all([
-      fetchVerbs(1, 30),
+      fetchVerbs(1, 30, token),
       fetchUserProfile(token)
     ])
-    .then(([verbsData, userData]) => {
-      setVerbs(verbsData);
-      setUser({
-        ...userData,
-        isPro: userData.isPro ?? false 
-      });
-    })
-    .catch((err) => {
-      console.error("Fetch error:", err);
-    })
-    .finally(() => setLoading(false));
+      .then(([verbsData, userData]) => {
+        setVerbs(verbsData);
+        setUser({
+          ...userData,
+          isPro: userData.isPro ?? false
+        });
+      })
+      .catch((err) => {
+        console.error("Fetch error:", err);
+      })
+      .finally(() => setLoading(false));
   }, [router]);
+
 
   const filteredVerbs = useMemo(() => {
     return verbs.filter((v) =>
@@ -86,7 +88,7 @@ export default function VerbsCarousel() {
       });
     }
   };
-
+  
   const speakText = (text: string) => {
     if (!text) return;
     window.speechSynthesis.cancel();
@@ -159,14 +161,24 @@ export default function VerbsCarousel() {
                   return (
                     <div
                       key={index}
-                      onClick={() => {
+                      onClick={async () => {
                         if (isLocked) {
-                          {router.replace("/pricing")}
-                          // alert("Premium Content: Please upgrade to Pro to view this verb!");
-                        } else {
-                          setSelectedVerb(verb);
+                          router.replace("/pricing");
+                          return;
                         }
+
+                        const token = localStorage.getItem("access_token");
+                        if (token) {
+                          try {
+                            await markVerbViewed(verb.id, token);
+                          } catch (err) {
+                            console.error("View mark failed", err);
+                          }
+                        }
+
+                        setSelectedVerb(verb);
                       }}
+
                       className={`verb-card snap-center cursor-pointer transition-all duration-300 relative ${
                         selectedVerb?.base === verb.base ? "ring-4 ring-blue-500 ring-offset-8 scale-105" : "hover:scale-102"
                       }`}
@@ -180,6 +192,13 @@ export default function VerbsCarousel() {
                       )}
 
                       <div className="card-inner">
+                        {verb.progress && (
+  <span className="absolute top-3 right-3 text-xs px-3 py-1 rounded-full font-bold
+    bg-green-100 text-green-700">
+    {verb.progress.stage === 3 ? "Mastered" :
+     verb.progress.stage === 2 ? "Learning" : "Started"}
+  </span>
+)}
                         <div className="card-front flex items-center justify-center bg-white shadow-lg rounded-3xl border border-slate-100">
                           <h3 className="text-3xl font-bold text-slate-800 tracking-tight">
                             {verb.base}
