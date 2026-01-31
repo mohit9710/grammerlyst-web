@@ -1,19 +1,33 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "../../styles/index.css";
 import Navbar from "@/components/Navbar";
 import Link from "next/link"; 
 import TipOfTheDay from "@/components/TipOfTheDay";
+import { fetchUserProfile } from "@/services/userService";
 
 export default function Dashboard() {
   const router = useRouter();
+  const [userToken,setToken] = useState(null);
+  const [isAuth, setIsAuth] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // const token = localStorage.getItem("token");
-    // if (!token) router.replace("/auth/login");
-  }, []);
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        fetchUserProfile(token)
+          .then((data) => {
+            setUser(data);
+            setIsAuth(true);
+          })
+          .catch(() => {
+            localStorage.removeItem("access_token");
+            setIsAuth(false);
+          });
+      }
+    }, []);
 
   const logout = () => {
     localStorage.removeItem("access_token");
@@ -37,7 +51,11 @@ export default function Dashboard() {
       
       <main className="max-w-7xl mx-auto px-6 py-16">
         {/* Tip of the Day */}
-        <TipOfTheDay /> 
+        {isAuth ? (<>
+          <TipOfTheDay /> 
+          </>
+
+        ) : (<></>)}
         <h2 className="text-2xl font-bold text-slate-800 mb-8">
           Learning Modules
         </h2>
@@ -147,3 +165,11 @@ export default function Dashboard() {
     </>
   );
 }
+
+function setUser(data: any) {
+  throw new Error("Function not implemented.");
+}
+function setIsAuth(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}
+
