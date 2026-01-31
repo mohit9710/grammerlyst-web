@@ -16,6 +16,27 @@ export default function WordScramble() {
   const [loading, setLoading] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
 
+  // --- SEO & META SIDE EFFECTS ---
+  useEffect(() => {
+    // 1. Target Keywords: Vocabulary, Anagrams, Spelling
+    document.title = "Word Scramble | English Vocabulary & Spelling Game | Grammrlyst";
+
+    // 2. Meta Description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', 'Challenge your English spelling skills with Word Scramble. Unscramble mixed-up letters to find hidden vocabulary words. A fun, interactive way to learn English.');
+
+    // 3. Open Graph for Social Sharing
+    const ogTitle = document.querySelector('meta[property="og:title"]') || document.createElement('meta');
+    ogTitle.setAttribute('property', 'og:title');
+    ogTitle.setAttribute('content', 'Can you unscramble these English words? | Grammrlyst Games');
+    document.head.appendChild(ogTitle);
+  }, []);
+  
   // Fetch data from API using service
   useEffect(() => {
     const token = localStorage.getItem("access_token");
