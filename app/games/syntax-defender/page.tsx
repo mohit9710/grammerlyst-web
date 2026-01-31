@@ -19,6 +19,30 @@ export default function SyntaxDefender() {
   const [loading, setLoading] = useState(true);
   const requestRef = useRef<number>(0);
 
+
+  // --- SEO & META SIDE EFFECTS ---
+  useEffect(() => {
+    // 1. Dynamic Title focusing on Syntax and Sentence Structure
+    document.title = "Syntax Defender | Master English Sentence Structure | Grammrlyst";
+
+    // 2. Meta Description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', 'Defend your grammar! Practice English syntax by arranging words in the correct order. Learn Subject-Verb-Object patterns and advanced sentence structures through interactive gameplay.');
+
+    // 3. Update Theme Color for Mobile Browsers
+    let themeColor = document.querySelector('meta[name="theme-color"]');
+    if (!themeColor) {
+      themeColor = document.createElement('meta');
+      themeColor.setAttribute('name', 'theme-color');
+      document.head.appendChild(themeColor);
+    }
+    themeColor.setAttribute('content', '#1e293b'); // Slate-800
+  }, []);
   // Load data from API on start
   useEffect(() => {
     const token = localStorage.getItem("access_token");

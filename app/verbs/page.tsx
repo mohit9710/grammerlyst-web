@@ -26,6 +26,27 @@ export default function VerbsCarousel() {
   });
 
   useEffect(() => {
+    // 1. Update Document Title
+    document.title = "Verb Workshop | Master English Verbs | Grammrlyst";
+
+    // 2. Update Meta Description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', 'Master English verbs with interactive flashcards, audio pronunciations, and real-world examples. Perfect for students and teachers.');
+
+    // 3. Update OpenGraph Tags (for Social Media)
+    const ogTitle = document.querySelector('meta[property="og:title"]') || document.createElement('meta');
+    ogTitle.setAttribute('property', 'og:title');
+    ogTitle.setAttribute('content', 'Verb Workshop | Grammrlyst');
+    document.head.appendChild(ogTitle);
+
+  }, []);
+  
+  useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
       router.replace("/auth/login");
@@ -78,6 +99,24 @@ export default function VerbsCarousel() {
 
   return (
     <>
+    {/* SEO Structured Data (JSON-LD) */}
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "EducationalOccupationalCredential", // Or 'Course'
+          "name": "English Verb Workshop",
+          "description": "Interactive flashcards and exercises to master English verbs.",
+          "provider": {
+            "@type": "Organization",
+            "name": "Grammrlyst",
+            "url": "https://www.grammrlyst.com"
+          },
+          "educationalLevel": "Beginner to Intermediate"
+        })
+      }}
+    />
       <Navbar />
       <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-white to-slate-100 py-12 px-4">
         

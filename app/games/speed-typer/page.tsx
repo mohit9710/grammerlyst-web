@@ -17,6 +17,30 @@ export default function SentenceSprinter() {
   // Safety check: ensure we have a sentence to display
   const targetSentence = sentences[currentIndex] || "";
 
+  // --- SEO & META SIDE EFFECTS ---
+  useEffect(() => {
+    // 1. Dynamic Title with Keywords
+    document.title = "Speed Typer | English Vocabulary & Typing Test | Grammrlyst";
+
+    // 2. Meta Description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', 'Improve your English typing speed and vocabulary. Practice with high-frequency English words, track your WPM, and master spelling in this interactive game.');
+
+    // 3. Canonical URL (Prevents duplicate content issues)
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', 'https://www.grammrlyst.in/games/speed-typer');
+  }, []);
+  
   useEffect(() => {
     async function loadSentences() {
       try {

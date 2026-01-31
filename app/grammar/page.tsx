@@ -18,6 +18,14 @@ export default function GrammarWorkshop() {
   const[user, setUser]=useState(false);
 
   useEffect(() => {
+    document.title = "English Grammar Guide | Learn Rules & Usage | Grammrlyst";
+    const metaDesc = document.querySelector('meta[name="description"]') || document.createElement('meta');
+    metaDesc.setAttribute('name', 'description');
+    metaDesc.setAttribute('content', 'Master English grammar with our comprehensive guide. From tenses to punctuation, learn the rules that make your writing perfect.');
+    document.head.appendChild(metaDesc);
+  }, []);
+  
+  useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
       router.replace("/auth/login");
