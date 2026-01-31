@@ -154,9 +154,8 @@ export default function VerbsCarousel() {
 
               <div ref={sliderRef} className="flex gap-8 overflow-x-auto scroll-smooth no-scrollbar snap-x snap-mandatory py-10 px-4">
                 {filteredVerbs.map((verb, index) => {
-                  
-                  // 2. LOGIC: Is this card locked for THIS user?
                   const isLocked = verb.type === "paid" && !user.isPro;
+                  const stage = verb.progress?.stage || 0;
 
                   return (
                     <div
@@ -166,47 +165,57 @@ export default function VerbsCarousel() {
                           router.replace("/pricing");
                           return;
                         }
-
                         const token = localStorage.getItem("access_token");
                         if (token) {
                           try {
                             await markVerbViewed(verb.id, token);
+                            // Optional: Re-fetch or update local state here to see instant progress change
                           } catch (err) {
                             console.error("View mark failed", err);
                           }
                         }
-
                         setSelectedVerb(verb);
                       }}
-
-                      className={`verb-card snap-center cursor-pointer transition-all duration-300 relative ${
-                        selectedVerb?.base === verb.base ? "ring-4 ring-blue-500 ring-offset-8 scale-105" : "hover:scale-102"
-                      }`}
+                      className={`verb-card snap-center cursor-pointer transition-all duration-300 relative 
+                        ${selectedVerb?.id === verb.id ? "ring-4 ring-blue-500 ring-offset-4 scale-105" : "hover:scale-102"}
+                        ${stage === 3 ? "mastered-glow" : ""} 
+                      `}
                     >
-                      {/* 3. Improved Lock UI */}
+                      {/* 1. Progress Badge */}
+                      <span className={`absolute top-3 right-3 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider z-10
+                        ${!verb.progress ? "bg-slate-100 text-slate-400" : 
+                          stage === 3 ? "bg-emerald-500 text-white" :
+                          stage === 2 ? "bg-blue-500 text-white" : "bg-amber-400 text-white"}
+                      `}>
+                        {!verb.progress ? "New" : stage === 3 ? "Mastered" : stage === 2 ? "Learnt" : "Started"}
+                      </span>
+
+                      {/* 2. Lock UI */}
                       {isLocked && (
-                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm rounded-3xl transition-all">
+                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm rounded-3xl">
                           <i className="fas fa-lock text-white text-3xl mb-2"></i>
-                          <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-blue-600 px-3 py-1 rounded-full">Pro</span>
+                          <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-blue-600 px-3 py-1 rounded-full">Pro Only</span>
                         </div>
                       )}
 
                       <div className="card-inner">
-                        {verb.progress && (
-  <span className="absolute top-3 right-3 text-xs px-3 py-1 rounded-full font-bold
-    bg-green-100 text-green-700">
-    {verb.progress.stage === 3 ? "Mastered" :
-     verb.progress.stage === 2 ? "Learning" : "Started"}
-  </span>
-)}
-                        <div className="card-front flex items-center justify-center bg-white shadow-lg rounded-3xl border border-slate-100">
+                        <div className="card-front flex flex-col items-center justify-center bg-white shadow-lg rounded-3xl border border-slate-100">
                           <h3 className="text-3xl font-bold text-slate-800 tracking-tight">
                             {verb.base}
                           </h3>
+                          {/* Visual indicator of view count */}
+                          {/* {verb.progress && (
+                            <div className="mt-4 flex gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <div key={i} className={`h-1 w-4 rounded-full ${i < verb.progress!.views ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                              ))}
+                            </div>
+                          )} */}
                         </div>
+                        
                         <div className="card-back flex items-center justify-center p-8 bg-blue-600 rounded-3xl text-white">
                           <p className="text-center font-medium leading-relaxed">
-                            {isLocked ? "Content Locked" : verb.meaning}
+                            {isLocked ? "Upgrade to Pro to see meaning" : verb.meaning}
                           </p>
                         </div>
                       </div>
