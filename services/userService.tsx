@@ -1,11 +1,26 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api/backend";
 
-export async function fetchUserProfile(token: string) {
+export interface UserProfile {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  profile_image: string;
+  streak: number;
+  points: number;
+  total_xp: number; // Aapka naya field
+  bonus: number;    // Aapka naya field
+}
+
+export async function fetchUserProfile(token: string): Promise<UserProfile> {
   const response = await fetch(`${API_URL}/auth/userprofile`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+  
   if (!response.ok) throw new Error("Failed to fetch profile");
-  return response.json();
+  
+  // Direct return kyuki aapka JSON data direct object hai
+  return response.json(); 
 }
 
 /**
