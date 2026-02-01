@@ -10,7 +10,7 @@ import { fetchUserProfile } from "@/services/userService";
 export default function Navbar() {
   const router = useRouter();
   const [isAuth, setIsAuth] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   
   useEffect(() => {
     const token = localStorage.getItem("access_token");

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
-import { fetchQuizData, QuizQuestion } from "@/services/quiz"; // Ensure QuizQuestion interface is exported
+import { fetchQuizData, QuizQuestion } from "@/services/quiz";
 import { fetchUserProfile } from "@/services/userService";
 
 export default function Quizzes() {
@@ -14,34 +14,34 @@ export default function Quizzes() {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [user, setUser]=useState(false);
-  
-  const progressPercentage = questions.length > 0 ? (currentStep / questions.length) * 100 : 0;
+  const [user, setUser] = useState<any | null>(null);
+
+  const progressPercentage =
+    questions.length > 0
+      ? (currentStep / questions.length) * 100
+      : 0;
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
+
     if (!token) {
       router.replace("/auth/login");
       return;
     }
 
-    // Fetching real data from your FastAPI /quiz/{lesson_id} endpoint
-    fetchQuizData(1, token)
-      .then((data) => {
-        setQuestions(data);
-        setLoading(false);
+    Promise.all([
+      fetchUserProfile(token),
+      fetchQuizData(1, token),
+    ])
+      .then(([userData, quizData]) => {
+        setUser(userData);
+        setQuestions(quizData);
       })
       .catch((err) => {
         console.error(err);
-        setLoading(false);
-      });
-
-      fetchUserProfile(token)
-            .then((data) => {
-              setUser(data);
-              setLoading(false);
-            })
-            .catch(() => router.push("/auth/login"));
+        router.replace("/auth/login");
+      })
+      .finally(() => setLoading(false));
   }, [router]);
 
   const handleAnswer = (isCorrect: boolean) => {
@@ -74,7 +74,9 @@ export default function Quizzes() {
   if (questions.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-slate-500">No questions found for this lesson.</p>
+        <p className="text-slate-500">
+          No questions found for this lesson.
+        </p>
       </div>
     );
   }
@@ -88,18 +90,19 @@ export default function Quizzes() {
         {/* Progress Bar */}
         <div className="w-full bg-slate-200 h-3 rounded-full mb-8 overflow-hidden">
           <div
-            className="bg-blue-600 h-full transition-all duration-500 ease-out"
+            className="bg-blue-600 h-full transition-all duration-500"
             style={{ width: `${isFinished ? 100 : progressPercentage}%` }}
-          ></div>
+          />
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-slate-100 min-h-[400px] flex flex-col justify-center">
+        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border min-h-[400px] flex flex-col justify-center">
           {!isFinished ? (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-              <span className="text-blue-600 font-bold uppercase tracking-widest text-sm">
+            <>
+              <span className="text-blue-600 font-bold uppercase text-sm">
                 Question {currentStep + 1} of {questions.length}
               </span>
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-800 mt-4 mb-8">
+
+              <h2 className="text-2xl md:text-3xl font-bold mt-4 mb-8">
                 {currentQuestion.question_text}
               </h2>
 
@@ -108,32 +111,31 @@ export default function Quizzes() {
                   <button
                     key={option.id}
                     onClick={() => handleAnswer(option.is_correct)}
-                    className="w-full text-left p-5 rounded-2xl border-2 border-slate-100 hover:border-blue-500 hover:bg-blue-50 transition-all font-medium text-slate-700 flex justify-between items-center group"
+                    className="p-5 rounded-2xl border hover:border-blue-500 hover:bg-blue-50 transition"
                   >
                     {option.option_text}
-                    <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity text-blue-500"></i>
                   </button>
                 ))}
               </div>
-            </div>
+            </>
           ) : (
-            /* Result Screen */
-            <div className="text-center py-10 animate-in zoom-in-95 duration-500">
-              <div className="w-24 h-24 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i className="fas fa-trophy text-4xl"></i>
-              </div>
-              <h2 className="text-4xl font-black text-slate-800 mb-2">Quiz Complete!</h2>
-              <p className="text-xl text-slate-500 mb-8">
-                You scored{" "}
-                <span className="font-bold text-blue-600">{score}</span> out of{" "}
-                <span className="font-bold">{questions.length}</span>
+            <div className="text-center">
+              <h2 className="text-4xl font-black mb-4">
+                Quiz Complete 🎉
+              </h2>
+              <p className="text-xl mb-8">
+                Score:{" "}
+                <span className="font-bold text-blue-600">
+                  {score}
+                </span>{" "}
+                / {questions.length}
               </p>
 
               <button
                 onClick={restartQuiz}
-                className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 transition shadow-lg flex items-center gap-2 mx-auto"
+                className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 transition"
               >
-                <i className="fas fa-redo"></i> Try Again
+                Try Again
               </button>
             </div>
           )}
