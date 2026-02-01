@@ -1,4 +1,6 @@
+"use client";
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import FloatingFixButton from "@/components/FloatingFixButton";
 
 export default function RootLayout({
@@ -6,6 +8,21 @@ export default function RootLayout({
 }: {
   children: ReactNode;
 }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [hasUser, setHasUser] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      setIsLoggedIn(true);
+      // Login hote hi streak sync karein
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/update-activity`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    }
+  }, []);
+
   return (
     <html lang="en">
       <head>
@@ -28,14 +45,15 @@ export default function RootLayout({
 
         {/* External CSS */}
         <script src="https://cdn.tailwindcss.com"></script>
-        <link
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-          rel="stylesheet"
+        
+        <link 
+          rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
         />
       </head>
 
       <body>{children}
-        <FloatingFixButton />
+        {isLoggedIn && <FloatingFixButton />}
       </body>
     </html>
   );

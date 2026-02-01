@@ -6,9 +6,9 @@ import "../../styles/index.css";
 import Navbar from "@/components/Navbar";
 import Link from "next/link"; 
 import TipOfTheDay from "@/components/TipOfTheDay";
-import { fetchUserProfile } from "@/services/userService";
+import RecentActivity from "@/components/ActivityFeed"; // Naya component
+import { fetchUserProfile, syncStreak } from "@/services/userService";
 
-// 1. Interface define karein taaki user.first_name par error na aaye
 interface UserProfile {
   id: number;
   first_name: string;
@@ -24,7 +24,6 @@ interface UserProfile {
 export default function Dashboard() {
   const router = useRouter();
   const [isAuth, setIsAuth] = useState(false);
-  // 2. State ko interface assign karein
   const [user, setUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
@@ -37,11 +36,16 @@ export default function Dashboard() {
         })
         .catch(() => {
           localStorage.removeItem("access_token");
-          setIsAuth(false);
           router.push("/auth/login");
         });
+
+      syncStreak(token)
+        .then((res) => {
+          setUser(prev => prev ? { ...prev, streak: res.streak } : null);
+        })
+        .catch(err => console.error("Streak Error:", err));
     } else {
-      router.push("/auth/login");
+      // router.push("/auth/login");
     }
   }, [router]);
 
@@ -53,8 +57,8 @@ export default function Dashboard() {
           <h1 className="text-5xl font-black text-slate-900 mb-4 tracking-tight">
             Welcome back, {user?.first_name || "Scholar"}!
           </h1>
-          <p className="text-slate-500 text-xl max-w-2xl mx-auto leading-relaxed">
-            Your journey to English mastery continues here.
+          <p className="text-slate-500 text-xl max-w-2xl mx-auto leading-relaxed italic">
+            "Every correct syntax is a step toward mastery."
           </p>
         </div>
       </header>
@@ -62,35 +66,46 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto px-6 py-16">
         {isAuth && <TipOfTheDay />}
 
-        <h2 className="text-2xl font-bold text-slate-800 mb-8">
-          Learning Modules
+        <h2 className="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-3">
+          <i className="fas fa-th-large text-blue-500"></i> Learning Modules
         </h2>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Module Links */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           <ModuleLink href="/verbs" color="blue" icon="fa-font" title="Verb Workshop" desc="Master visual vocabulary." />
           <ModuleLink href="/grammar" color="purple" icon="fa-project-diagram" title="Grammar Rules" desc="Deep dive into tenses." />
           <ModuleLink href="/games" color="rose" icon="fa-gamepad" title="Language Games" desc="Fun arcade challenges." />
           <ModuleLink href="/chatbot" color="orange" icon="fa-robot" title="AI Chat Tutor" desc="Instant corrections." />
         </div>
 
-        {/* Updated Progress Section */}
-        <div className="mt-16 bg-slate-900 rounded-[3rem] p-10 text-white flex flex-col md:flex-row items-center justify-between shadow-2xl">
-          <div className="mb-8 md:mb-0">
-            <h3 className="text-3xl font-bold mb-2">Track Your Progress</h3>
-            <div className="flex items-center gap-3">
-              <span className="bg-amber-500 text-black px-3 py-1 rounded-full text-xs font-black uppercase">
-                Level {Math.floor((user?.total_xp || 0) / 1000) + 1}
-              </span>
-              <p className="text-slate-400">Streak: 🔥 {user?.streak || 0} Days</p>
+        {/* Stats & Logs Section */}
+        <div className="grid lg:grid-cols-3 gap-10">
+          
+          {/* Left: Stats Card */}
+          <div className="lg:col-span-2 bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl h-full">
+            <h3 className="text-3xl font-bold mb-8">Performance Overview</h3>
+            <div className="flex flex-wrap items-center gap-6 mb-12">
+               <div className="bg-white/10 p-6 rounded-3xl border border-white/10 flex-1 min-w-[150px]">
+                  <p className="text-slate-400 text-xs uppercase font-bold mb-2">Current Level</p>
+                  <p className="text-3xl font-black text-amber-400">{Math.floor((user?.total_xp || 0) / 1000) + 1}</p>
+               </div>
+               <div className="bg-white/10 p-6 rounded-3xl border border-white/10 flex-1 min-w-[150px]">
+                  <p className="text-slate-400 text-xs uppercase font-bold mb-2">Daily Streak</p>
+                  <p className="text-3xl font-black text-rose-400">🔥 {user?.streak || 0}</p>
+               </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-10">
+              <StatCard value={user?.total_xp || 0} label="Total XP" color="text-blue-400" />
+              <StatCard value={user?.bonus || 0} label="Bonus" color="text-emerald-400" />
+              <StatCard value={user?.points || 0} label="Spendable" color="text-purple-400" />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
-            <StatCard value={user?.total_xp || 0} label="Total XP" color="text-blue-400" />
-            <StatCard value={`+${user?.bonus || 0}`} label="Bonus" color="text-emerald-400" />
-            <StatCard value={user?.points || 0} label="Points" color="text-rose-400" />
+          {/* Right: Activity Logs Component */}
+          <div className="lg:col-span-1">
+            {isAuth && <RecentActivity />}
           </div>
+
         </div>
       </main>
 
@@ -100,6 +115,8 @@ export default function Dashboard() {
     </>
   );
 }
+
+// ... ModuleLink and StatCard components remain same
 
 // 3. Helper Components (Taaki code clean rahe)
 function ModuleLink({ href, color, icon, title, desc }: any) {

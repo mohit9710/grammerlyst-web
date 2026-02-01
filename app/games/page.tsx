@@ -1,15 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import "../../styles/index.css";
+import { updateXP, syncStreak } from "@/services/userService";
 
 const GAMES = [
   {
     id: "speed-typer",
     title: "Sentence Sprinter",
-    description:
-      "Type the displayed sentences as fast as you can. Focus on punctuation and speed.",
+    description: "Type the displayed sentences as fast as you can. Focus on punctuation and speed.",
     icon: "fa-keyboard",
     color: "bg-blue-100 text-blue-600",
     path: "/games/speed-typer",
@@ -18,8 +19,7 @@ const GAMES = [
   {
     id: "scramble-solve",
     title: "Word Unscrambler",
-    description:
-      "Keyboard-only! Use your keys to rearrange letters into the correct verb or noun.",
+    description: "Keyboard-only! Use your keys to rearrange letters into the correct verb or noun.",
     icon: "fa-random",
     color: "bg-rose-100 text-rose-600",
     path: "/games/word-scramble",
@@ -28,8 +28,7 @@ const GAMES = [
   {
     id: "grammar-defense",
     title: "Syntax Defender",
-    description:
-      "Enemy words are falling! Type the correct correction to blast them away before they hit the ground.",
+    description: "Enemy words are falling! Type the correct correction to blast them away before they hit the ground.",
     icon: "fa-shield-alt",
     color: "bg-amber-100 text-amber-600",
     path: "/games/syntax-defender",
@@ -38,6 +37,26 @@ const GAMES = [
 ];
 
 export default function GamesHub() {
+  const [bonusStatus, setBonusStatus] = useState<string>("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
+    // Sirf API ko request bhejo, backend khud check karega
+    updateXP(token, 50, true, "Arcade Entry")
+      .then((res) => {
+        // Agar backend ne naya bonus diya hai tabhi state update hogi
+        setBonusStatus("Daily Arcade Bonus: +50 XP Added!");
+      })
+      .catch((err) => {
+        // Backend status 400 dega agar already claimed hai
+        // Yahan humein user ko error dikhane ki zaroorat nahi hai, 
+        // kyunki iska matlab hai wo aaj pehle hi claim kar chuka hai.
+        console.log("No bonus: Backend says already claimed today.");
+      });
+  }, []);
+  
   return (
     <>
       <Navbar />
@@ -52,67 +71,49 @@ export default function GamesHub() {
             Sharpen your English reflexes with keyboard-only challenges.
             No mouse allowed!
           </p>
+          {bonusStatus && (
+            <div className="mt-4 inline-block bg-amber-100 text-amber-700 px-4 py-2 rounded-full text-sm font-bold animate-bounce">
+              <i className="fas fa-gift mr-2"></i>{bonusStatus}
+            </div>
+          )}
         </div>
       </header>
 
-      {/* Games */}
+      {/* Games Grid */}
       <main className="max-w-6xl mx-auto px-6 py-16">
         <div className="grid md:grid-cols-3 gap-8">
           {GAMES.map((game) =>
             game.locked ? (
-              // LOCKED CARD
               <div
                 key={game.id}
                 className="relative group bg-white p-10 rounded-[2.5rem] border border-slate-100 flex flex-col items-center text-center opacity-60 cursor-not-allowed"
               >
                 <div className="absolute top-6 right-6 bg-slate-900 text-white text-xs px-3 py-1 rounded-full flex items-center gap-2">
-                  <i className="fas fa-lock"></i>
-                  Locked
+                  <i className="fas fa-lock"></i> Locked
                 </div>
-
-                <div
-                  className={`w-20 h-20 ${game.color} rounded-3xl flex items-center justify-center text-3xl mb-8`}
-                >
+                <div className={`w-20 h-20 ${game.color} rounded-3xl flex items-center justify-center text-3xl mb-8`}>
                   <i className={`fas ${game.icon}`}></i>
                 </div>
-
-                <h3 className="text-2xl font-bold text-slate-800 mb-4">
-                  {game.title}
-                </h3>
-
-                <p className="text-slate-500 leading-relaxed mb-8">
-                  {game.description}
-                </p>
-
+                <h3 className="text-2xl font-bold text-slate-800 mb-4">{game.title}</h3>
+                <p className="text-slate-500 leading-relaxed mb-8">{game.description}</p>
                 <div className="mt-auto font-bold flex items-center gap-2 text-slate-400">
-                  Coming Soon
-                  <i className="fas fa-hourglass-half text-xs"></i>
+                  Coming Soon <i className="fas fa-hourglass-half text-xs"></i>
                 </div>
               </div>
             ) : (
-              // UNLOCKED CARD
               <Link
                 key={game.id}
                 href={game.path}
                 className="relative group bg-white p-10 rounded-[2.5rem] border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all"
               >
-                <div
-                  className={`w-20 h-20 ${game.color} rounded-3xl flex items-center justify-center text-3xl mb-8 group-hover:rotate-12 transition-transform`}
-                >
+                <div className={`w-20 h-20 ${game.color} rounded-3xl flex items-center justify-center text-3xl mb-8 group-hover:rotate-12 transition-transform`}>
                   <i className={`fas ${game.icon}`}></i>
                 </div>
-
-                <h3 className="text-2xl font-bold text-slate-800 mb-4">
-                  {game.title}
-                </h3>
-
-                <p className="text-slate-500 leading-relaxed mb-8">
-                  {game.description}
-                </p>
-
+                <h3 className="text-2xl font-bold text-slate-800 mb-4">{game.title}</h3>
+                <p className="text-slate-500 leading-relaxed mb-8">{game.description}</p>
                 <div className="mt-auto font-bold flex items-center gap-2 text-slate-600">
                   Start Playing
-                  <span className="bg-slate-100 px-2 py-1 rounded text-xs text-slate-400 group-hover:bg-current group-hover:text-white transition-colors">
+                  <span className="bg-slate-100 px-2 py-1 rounded text-xs text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-colors">
                     ENTER
                   </span>
                 </div>
@@ -127,9 +128,7 @@ export default function GamesHub() {
             <i className="fas fa-lightbulb text-emerald-500 text-2xl"></i>
           </div>
           <div>
-            <h4 className="text-emerald-900 font-bold text-lg mb-1">
-              Keyboard Pro-Tip
-            </h4>
+            <h4 className="text-emerald-900 font-bold text-lg mb-1">Keyboard Pro-Tip</h4>
             <p className="text-emerald-700">
               Keyboard-only games build <strong>muscle memory</strong> faster.
               Keep your eyes on the screen, not your fingers.
@@ -138,7 +137,6 @@ export default function GamesHub() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="py-12 text-center text-slate-400 text-sm">
         &copy; 2026 Grammrlyst Arcade • All Rights Reserved.
       </footer>
