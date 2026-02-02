@@ -34,17 +34,15 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white border-b px-8 py-3 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+    <nav className="bg-white border-b px-8 py-1 flex justify-between items-center sticky top-0 z-50 shadow-sm">
       {/* 1. Brand Logo Area - Adjusted for Wide Logo */}
       <Link href="/" className="flex items-center group">
-        <div className="relative w-40 h-10 md:w-48 md:h-12"> 
-          {/* Increased width (w-40) to accommodate the wide text logo */}
-          <Image 
-            src={LogoImg} 
-            alt="Grammrlyst Logo" 
-            fill 
-            className="object-contain object-left" 
-            priority 
+        <div className="relative h-12 md:h-20">
+          <Image
+            src={LogoImg}
+            alt="Grammrlyst Logo"
+            className="h-full w-auto object-contain"
+            priority
           />
         </div>
       </Link>
