@@ -43,16 +43,11 @@ export default function GamesHub() {
     const token = localStorage.getItem("access_token");
     if (!token) return;
 
-    // Sirf API ko request bhejo, backend khud check karega
     updateXP(token, 50, true, "Arcade Entry")
       .then((res) => {
-        // Agar backend ne naya bonus diya hai tabhi state update hogi
         setBonusStatus("Daily Arcade Bonus: +50 XP Added!");
       })
       .catch((err) => {
-        // Backend status 400 dega agar already claimed hai
-        // Yahan humein user ko error dikhane ki zaroorat nahi hai, 
-        // kyunki iska matlab hai wo aaj pehle hi claim kar chuka hai.
         console.log("No bonus: Backend says already claimed today.");
       });
   }, []);
