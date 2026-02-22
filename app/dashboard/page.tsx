@@ -94,7 +94,7 @@ export default function Dashboard() {
   {/* Sentence Polisher (New) */}
   <ModuleLink 
     href="/sentence-polisher" 
-    color="indigo" 
+    color="rose" 
     title="Sentence Polisher" 
     desc="Instant AI grammar and style refinement." 
     icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>} 
@@ -103,7 +103,7 @@ export default function Dashboard() {
   {/* Role-Based Chat (New) */}
   <ModuleLink 
     href="/role-play" 
-    color="emerald" 
+    color="rose" 
     title="Roleplay Chat" 
     desc="Practice scenarios: Doctor, Interviewer, etc." 
     icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>} 
@@ -112,7 +112,7 @@ export default function Dashboard() {
   {/* Language Games */}
   <ModuleLink 
     href="/games" 
-    color="rose" 
+    color="blue" 
     title="Language Games" 
     desc="Daily challenges to boost your memory." 
     icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="15.5" cy="13" r=".5"/><circle cx="18.5" cy="11" r=".5"/></svg>} 
