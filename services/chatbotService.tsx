@@ -3,7 +3,7 @@
  * Handles communication with the FastAPI Sentence Correction backend.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/backend";
 
 export interface CorrectionResponse {
   original: string;
