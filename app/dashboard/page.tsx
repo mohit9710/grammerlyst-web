@@ -72,12 +72,61 @@ export default function Dashboard() {
         <h2 className="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-3">
           <i className="fas fa-th-large text-blue-500"></i> Learning Modules
         </h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-          <ModuleLink href="/verbs" color="blue" icon="fa-font" title="Verb Workshop" desc="Master visual vocabulary." />
-          <ModuleLink href="/grammar" color="purple" icon="fa-project-diagram" title="Grammar Rules" desc="Deep dive into tenses." />
-          <ModuleLink href="/games" color="rose" icon="fa-gamepad" title="Language Games" desc="Fun arcade challenges." />
-          <ModuleLink href="/chatbot" color="orange" icon="fa-robot" title="AI Chat Tutor" desc="Instant corrections." />
-        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+  {/* Verb Workshop */}
+  <ModuleLink 
+    href="/verbs" 
+    color="blue" 
+    title="Verb Workshop" 
+    desc="Master irregular verbs and visual vocabulary." 
+    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 6 4 14-8-4-8 4 4-14"/><path d="M12 2v2"/><path d="M12 18v2"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m19.07 4.93-.7.7"/><path d="m5.63 18.37-.7.7"/><path d="m18.37 18.37.7.7"/><path d="m4.93 4.93.7.7"/></svg>} 
+  />
+
+  {/* Grammar Rules */}
+  <ModuleLink 
+    href="/grammar" 
+    color="purple" 
+    title="Grammar Rules" 
+    desc="Comprehensive guide to tenses and syntax." 
+    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>} 
+  />
+
+  {/* Sentence Polisher (New) */}
+  <ModuleLink 
+    href="/sentence-polisher" 
+    color="indigo" 
+    title="Sentence Polisher" 
+    desc="Instant AI grammar and style refinement." 
+    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>} 
+  />
+
+  {/* Role-Based Chat (New) */}
+  <ModuleLink 
+    href="/role-play" 
+    color="emerald" 
+    title="Roleplay Chat" 
+    desc="Practice scenarios: Doctor, Interviewer, etc." 
+    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>} 
+  />
+
+  {/* Language Games */}
+  <ModuleLink 
+    href="/games" 
+    color="rose" 
+    title="Language Games" 
+    desc="Daily challenges to boost your memory." 
+    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="15.5" cy="13" r=".5"/><circle cx="18.5" cy="11" r=".5"/></svg>} 
+  />
+
+  {/* AI Chat Tutor */}
+  <ModuleLink 
+    href="/chatbot-page" 
+    color="orange" 
+    title="AI Chat Tutor" 
+    desc="Open conversation and instant help." 
+    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>} 
+  />
+</div>
 
         {/* Stats & Logs Section */}
         <div className="grid lg:grid-cols-3 gap-10">
