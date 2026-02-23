@@ -1,6 +1,6 @@
 /**
  * Chatbot Service
- * Handles communication with the FastAPI Sentence Correction backend.
+ * Handles communication with the FastAPI backend.
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/backend";
@@ -19,54 +19,98 @@ export interface RoleplayMessage {
   } | null;
 }
 
+/**
+ * 🔥 Generate or reuse session id
+ */
+function getRoleplaySessionId(): string {
+  if (typeof window === "undefined") return "";
+
+  let sessionId = localStorage.getItem("roleplay_session_id");
+
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem("roleplay_session_id", sessionId);
+  }
+
+  return sessionId;
+}
+
 export const chatbotService = {
   /**
-   * Sends a sentence to the backend for correction.
-   * Includes the access token from localStorage for authentication.
+   * Sentence correction
    */
   async correctSentence(sentence: string): Promise<CorrectionResponse> {
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
 
     if (!token) {
       throw new Error("Authentication required. Please log in.");
     }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/sentence/correct`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({ sentence }),
-      });
+    const response = await fetch(`${API_BASE_URL}/sentence/correct`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ sentence }),
+    });
 
-      if (!response.ok) {
-        // Handle specific status codes if needed
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to process sentence.");
-      }
+    const data = await response.json();
 
-      const data: CorrectionResponse = await response.json();
-      return data;
-    } catch (error) {
-      console.error("ChatbotService Error:", error);
-      throw error;
+    if (!response.ok) {
+      throw new Error(data.detail || "Failed to process sentence.");
     }
-  }, 
 
-  async sendRoleplay(role_title: string, user_input: string) {
+    return data;
+  },
+
+  /**
+   * 🔥 Roleplay chat (FIXED)
+   */
+  async sendRoleplay(role_title: string, user_input: string): Promise<RoleplayMessage> {
     const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      throw new Error("Authentication required. Please log in.");
+    }
+
+    const session_id = getRoleplaySessionId();
+
     const response = await fetch(`${API_BASE_URL}/sentence/roleplay`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ role_title, user_input }),
+      body: JSON.stringify({
+        role_title,
+        user_input,
+        session_id, // ✅ REQUIRED
+      }),
     });
 
-    if (!response.ok) throw new Error("Failed to get response");
-    return response.json();
-  }
+    const data = await response.json();
+
+    // 🔥 Better error handling
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error(data.detail || "Daily limit reached.");
+      }
+      throw new Error(data.detail || "Failed to get response");
+    }
+
+    return data;
+  },
+
+  /**
+   * 🔥 Reset session (call when chat ends)
+   */
+  resetRoleplaySession() {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("roleplay_session_id");
+    }
+  },
 };
