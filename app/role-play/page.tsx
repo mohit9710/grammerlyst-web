@@ -187,7 +187,7 @@ export default function RoleplayChat() {
       const botMsg: Message = {
         role: "bot",
         content: response.reply,
-        correction: response.correction,
+        correction: response.correction ?? undefined,
         originalInput: userText
       };
       
