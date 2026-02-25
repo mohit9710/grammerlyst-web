@@ -11,12 +11,15 @@ export default function AIChatTutor() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [corrections, setCorrections] = useState<CorrectionResponse[]>([]);
+  const [loading, setLoading] = useState(true);
 
   /* Auth check */
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
     if (!token) {
       router.replace("/auth/login");
+    } else {
+      setLoading(false);
     }
   }, [router]);
 
@@ -42,6 +45,9 @@ export default function AIChatTutor() {
       setIsProcessing(false);
     }
   };
+
+
+  if (loading) return <div className="p-20 text-center font-bold">Loading Sentence-Polisher...</div>;
 
   return (
     <div className="min-h-screen bg-white">

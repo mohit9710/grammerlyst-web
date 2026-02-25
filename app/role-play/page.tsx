@@ -21,6 +21,7 @@ export default function RoleplayChat() {
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [dailyRole, setDailyRole] = useState({
     title: "Job Interviewer",
     scenario: "You are applying for a Senior Designer role at a tech firm.",
@@ -74,7 +75,7 @@ export default function RoleplayChat() {
     
     const initialGreeting = `Hello! I am your ${selectedRole.title}. ${selectedRole.scenario} Shall we begin?`;
     setMessages([{ role: "bot", content: initialGreeting }]);
-    
+    setLoading(false);
     // Speak initial greeting
     setTimeout(() => speakResponse(initialGreeting), 1000);
   }, []);
@@ -208,6 +209,8 @@ export default function RoleplayChat() {
   const replayVoice = (text: string) => {
     speakResponse(text);
   };
+
+  if (loading) return <div className="p-20 text-center font-bold">Loading Roleplay Chat...</div>;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">

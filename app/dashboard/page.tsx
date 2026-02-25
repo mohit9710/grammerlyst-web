@@ -119,13 +119,13 @@ export default function Dashboard() {
   />
 
   {/* AI Chat Tutor */}
-  <ModuleLink 
+  {/* <ModuleLink 
     href="/chatbot-page" 
     color="orange" 
     title="AI Chat Tutor" 
     desc="Open conversation and instant help." 
     icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>} 
-  />
+  /> */}
 </div>
 
         {/* Stats & Logs Section */}
@@ -216,10 +216,11 @@ function ModuleLink({ href, color, icon, title, desc }: any) {
     rose: "bg-rose-100 text-rose-600",
     orange: "bg-orange-100 text-orange-600"
   };
+
   return (
     <Link href={href} className="group bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all border border-slate-100 flex flex-col items-center text-center">
-      <div className={`w-16 h-16 ${colorMap[color]} rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform`}>
-        <i className={`fas ${icon}`}></i>
+      <div className={`w-16 h-16 ${colorMap[color]} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+        {icon} 
       </div>
       <h3 className="text-xl font-bold text-slate-800 mb-2">{title}</h3>
       <p className="text-slate-500 text-sm mb-6">{desc}</p>
