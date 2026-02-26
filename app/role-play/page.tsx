@@ -226,33 +226,58 @@ export default function RoleplayChat() {
 
   const startListening = () => {
     const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert("Browser does not support voice speech.");
       return;
     }
 
+    // ✅ prevent duplicate instances
     if (recognitionRef.current) return;
+
     window.speechSynthesis?.cancel();
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-IN";
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.continuous = false;
 
+    let finalTranscript = "";
+
     recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setInput(transcript);
+      let interimTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript.replace(/\s+/g, " ") + " ";
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+
+      setInput((finalTranscript + interimTranscript).trim());
     };
 
     recognition.onend = () => {
       setIsListening(false);
       recognitionRef.current = null;
-      if (!isSpacePressedRef.current) setTimeout(() => handleSendMessage(), 120);
+
+      setTimeout(() => {
+        setInput((current) => {
+          if (!isSpacePressedRef.current && current.trim()) {
+            handleSendMessage();
+          }
+          return current;
+        });
+      }, 150);
     };
 
-    recognition.onerror = () => {
+    recognition.onerror = (event: any) => {
+      console.error("Speech error:", event?.error);
       setIsListening(false);
       recognitionRef.current = null;
     };
@@ -261,6 +286,7 @@ export default function RoleplayChat() {
     recognition.start();
     setIsListening(true);
   };
+
 
   const stopListening = () => recognitionRef.current?.stop();
 
