@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { logEvent } from "firebase/analytics";
 import { initAnalytics } from "@/services/firebaseService";
 
-// ✅ only track these pages
 const TRACKED_ROUTES = [
   "/role-play",
   "/sentence-polisher",
@@ -19,15 +18,12 @@ const TRACKED_ROUTES = [
 
 export default function usePageTracking() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const lastTrackedPath = useRef<string | null>(null);
 
   useEffect(() => {
-    // ✅ skip if not in whitelist
     if (!TRACKED_ROUTES.includes(pathname)) return;
-
-    // ✅ prevent duplicate firing
     if (lastTrackedPath.current === pathname) return;
+
     lastTrackedPath.current = pathname;
 
     initAnalytics().then((analytics) => {
@@ -39,5 +35,5 @@ export default function usePageTracking() {
         page_title: document.title,
       });
     });
-  }, [pathname, searchParams]);
+  }, [pathname]);
 }
