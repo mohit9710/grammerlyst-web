@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { fetchUserProfile } from "@/services/userService";
 import { fetchVerbs, Verb, markVerbViewed } from "@/services/verbs";
+import Footer from "@/components/Footer";
 
 export default function VerbsCarousel() {
   const router = useRouter();
@@ -274,6 +275,7 @@ export default function VerbsCarousel() {
           )}
         </div>
       </main>
+      <Footer />
     </>
   );
 }

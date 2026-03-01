@@ -3,6 +3,7 @@
 import React from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
+import Footer from "@/components/Footer";
 
 export default function PricingPage() {
   const router = useRouter();
@@ -144,6 +145,7 @@ export default function PricingPage() {
             </p>
         </div>
       </main>
+      <Footer />
     </>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { fetchUserProfile, updateUserProfile } from "@/services/userService";
+import Footer from "@/components/Footer";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -122,6 +123,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

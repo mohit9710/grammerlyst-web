@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import { chatbotService } from "@/services/chatbotService";
 import { useRouter } from "next/navigation";
+import Footer from "@/components/Footer";
 
 interface Message {
   role: "user" | "bot";
@@ -404,6 +405,7 @@ export default function RoleplayChat() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

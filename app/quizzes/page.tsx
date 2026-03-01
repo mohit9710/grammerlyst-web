@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { fetchQuizData, QuizQuestion } from "@/services/quiz";
 import { fetchUserProfile } from "@/services/userService";
+import Footer from "@/components/Footer";
 
 export default function Quizzes() {
   const router = useRouter();
@@ -141,6 +142,7 @@ export default function Quizzes() {
           )}
         </div>
       </main>
+      <Footer />
     </>
   );
 }

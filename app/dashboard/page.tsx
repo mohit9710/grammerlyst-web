@@ -8,6 +8,7 @@ import Link from "next/link";
 import TipOfTheDay from "@/components/TipOfTheDay";
 import RecentActivity from "@/components/ActivityFeed";
 import { fetchUserProfile, syncStreak } from "@/services/userService";
+import Footer from "@/components/Footer";
 
 interface UserProfile {
   id: number;
@@ -202,9 +203,7 @@ export default function Dashboard() {
         </div>
       </main>
       
-      <footer className="py-12 text-center text-slate-400 text-sm">
-        &copy; 2026 Grammrlyst Learning Inc.
-      </footer>
+      <Footer />
     </>
   );
 }

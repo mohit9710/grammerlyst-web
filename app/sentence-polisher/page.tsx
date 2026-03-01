@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { chatbotService, CorrectionResponse } from "@/services/chatbotService";
+import Footer from "@/components/Footer";
 
 export default function AIChatTutor() {
   const router = useRouter();
@@ -148,6 +149,7 @@ export default function AIChatTutor() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

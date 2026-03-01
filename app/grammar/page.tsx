@@ -11,6 +11,7 @@ import {
   GrammarLesson,
 } from "@/services/grammar";
 import { fetchUserProfile } from "@/services/userService";
+import Footer from "@/components/Footer";
 
 export default function GrammarWorkshop() {
   const router = useRouter();
@@ -156,6 +157,7 @@ export default function GrammarWorkshop() {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   );
 }
