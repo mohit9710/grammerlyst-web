@@ -8,6 +8,8 @@ import Link from "next/link";
 import TipOfTheDay from "@/components/TipOfTheDay";
 import RecentActivity from "@/components/ActivityFeed";
 import { fetchUserProfile, syncStreak } from "@/services/userService";
+import { initAnalytics } from "@/services/firebaseService";
+import { logEvent } from "firebase/analytics";
 import Footer from "@/components/Footer";
 
 interface UserProfile {
@@ -26,8 +28,10 @@ export default function Dashboard() {
   const router = useRouter();
   const [isAuth, setIsAuth] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [analyticsInstance, setAnalyticsInstance] = useState<any>(null);
 
   useEffect(() => {
+    initAnalytics().then(setAnalyticsInstance);
     const token = localStorage.getItem("access_token");
     if (token) {
       fetchUserProfile(token)
@@ -76,6 +80,7 @@ export default function Dashboard() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
   {/* Verb Workshop */}
   <ModuleLink 
+    analytics={analyticsInstance}
     href="/verbs" 
     color="blue" 
     title="Verb Workshop" 
@@ -85,6 +90,7 @@ export default function Dashboard() {
 
   {/* Grammar Rules */}
   <ModuleLink 
+    analytics={analyticsInstance}
     href="/grammar" 
     color="purple" 
     title="Grammar Rules" 
@@ -94,6 +100,7 @@ export default function Dashboard() {
 
   {/* Sentence Polisher (New) */}
   <ModuleLink 
+    analytics={analyticsInstance}
     href="/sentence-polisher" 
     color="rose" 
     title="Sentence Polisher" 
@@ -103,6 +110,7 @@ export default function Dashboard() {
 
   {/* Role-Based Chat (New) */}
   <ModuleLink 
+    analytics={analyticsInstance}
     href="/role-play" 
     color="rose" 
     title="Roleplay Chat" 
@@ -112,6 +120,7 @@ export default function Dashboard() {
 
   {/* Language Games */}
   <ModuleLink 
+    analytics={analyticsInstance}
     href="/games" 
     color="blue" 
     title="Language Games" 
@@ -121,6 +130,7 @@ export default function Dashboard() {
 
   {/* AI Chat Tutor */}
   {/* <ModuleLink 
+    analytics={analyticsInstance}
     href="/chatbot-page" 
     color="orange" 
     title="AI Chat Tutor" 
@@ -208,18 +218,33 @@ export default function Dashboard() {
   );
 }
 
-function ModuleLink({ href, color, icon, title, desc }: any) {
+function ModuleLink({ href, color, icon, title, desc, analytics }: any) {
   const colorMap: any = {
     blue: "bg-blue-100 text-blue-600",
     purple: "bg-purple-100 text-purple-600",
     rose: "bg-rose-100 text-rose-600",
-    orange: "bg-orange-100 text-orange-600"
+    orange: "bg-orange-100 text-orange-600",
+  };
+
+  const handleClick = async () => {
+    if (analytics) {
+      await logEvent(analytics, "module_click", {
+        module_name: title,
+        module_path: href,
+      });
+    }
   };
 
   return (
-    <Link href={href} className="group bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all border border-slate-100 flex flex-col items-center text-center">
-      <div className={`w-16 h-16 ${colorMap[color]} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-        {icon} 
+    <Link
+      href={href}
+      onClick={handleClick}
+      className="group bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all border border-slate-100 flex flex-col items-center text-center"
+    >
+      <div
+        className={`w-16 h-16 ${colorMap[color]} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
+      >
+        {icon}
       </div>
       <h3 className="text-xl font-bold text-slate-800 mb-2">{title}</h3>
       <p className="text-slate-500 text-sm mb-6">{desc}</p>

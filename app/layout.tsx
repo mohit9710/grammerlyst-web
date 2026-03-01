@@ -2,6 +2,8 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import FloatingFixButton from "@/components/FloatingFixButton";
+import { usePathname } from "next/navigation";
+import usePageTracking from "@/hooks/usePageTracking";
 
 export default function RootLayout({
   children,
@@ -10,7 +12,9 @@ export default function RootLayout({
 }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [hasUser, setHasUser] = useState(false);
-
+  const pathname = usePathname();
+  usePageTracking();
+  
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
@@ -57,7 +61,7 @@ export default function RootLayout({
       </head>
 
       <body>{children}
-        {isLoggedIn && <FloatingFixButton />}
+        {isLoggedIn && pathname !== "/role-play" && <FloatingFixButton />}
       </body>
     </html>
   );
