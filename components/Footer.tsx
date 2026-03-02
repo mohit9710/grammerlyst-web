@@ -42,11 +42,6 @@ export default function Footer() {
             Improve your English skills with interactive lessons, vocabulary building, and real conversation practice.
           </p>
 
-          {isAuth && user && (
-            <p className="mt-4 text-sm text-blue-400">
-              Logged in as {user.name}
-            </p>
-          )}
         </div>
 
         {/* Company */}
@@ -54,9 +49,9 @@ export default function Footer() {
           <h4 className="text-white font-semibold mb-4">Company</h4>
           <ul className="space-y-2 text-sm">
             <li><Link href="/about" className="hover:text-blue-400 transition">About</Link></li>
-            <li><Link href="/careers" className="hover:text-blue-400 transition">Careers</Link></li>
-            <li><Link href="/blog" className="hover:text-blue-400 transition">Blog</Link></li>
-            <li><Link href="/press" className="hover:text-blue-400 transition">Press</Link></li>
+            <li><Link href="/contact" className="hover:text-blue-400 transition">Contact Us</Link></li>
+            <li><Link href="/privacy-policy" className="hover:text-blue-400 transition">Privacy Policy</Link></li>
+            <li><Link href="/terms" className="hover:text-blue-400 transition">Terms & Conditions</Link></li>
           </ul>
         </div>
 
@@ -83,18 +78,7 @@ export default function Footer() {
           <ul className="space-y-2 text-sm">
             <li><Link href="/help" className="hover:text-blue-400 transition">Help Center</Link></li>
             <li><Link href="/docs" className="hover:text-blue-400 transition">Documentation</Link></li>
-            <li><Link href="/contact" className="hover:text-blue-400 transition">Contact</Link></li>
             <li><Link href="/status" className="hover:text-blue-400 transition">System Status</Link></li>
-            {isAuth && (
-              <li>
-                <button
-                  onClick={logoutHandler}
-                  className="text-red-400 hover:text-red-500 transition"
-                >
-                  Logout
-                </button>
-              </li>
-            )}
           </ul>
         </div>
       </div>

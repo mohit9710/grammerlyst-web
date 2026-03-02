@@ -16,8 +16,6 @@ export interface Verb {
 
 export async function fetchVerbs(page = 1, limit = 20, token?: string): Promise<Verb[]> {
   // DEBUG: Check this in your browser console!
-  console.log("FETCH_VERBS_TOKEN:", token); 
-
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };

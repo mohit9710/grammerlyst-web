@@ -32,8 +32,8 @@ export default function RoleplayChat() {
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [dailyRole, setDailyRole] = useState({
+
+  const [dailyRole, setDailyRole] = useState<Role>({
     title: "Job Interviewer",
     scenario: "You are applying for a Senior Designer role at a tech firm.",
     instruction: "Try to use professional vocabulary and explain your work process.",
@@ -180,8 +180,6 @@ export default function RoleplayChat() {
 
     const initialGreeting = `Hello! I am your ${selectedRole.title}. ${selectedRole.scenario} Shall we begin?`;
     setMessages([{ role: "bot", content: initialGreeting }]);
-    setLoading(false);
-    // Speak initial greeting
     setTimeout(() => speakResponse(initialGreeting), 1000);
   }, []);
 
@@ -227,58 +225,33 @@ export default function RoleplayChat() {
 
   const startListening = () => {
     const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert("Browser does not support voice speech.");
       return;
     }
 
-    // ✅ prevent duplicate instances
     if (recognitionRef.current) return;
-
     window.speechSynthesis?.cancel();
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-IN";
-    recognition.interimResults = true;
+    recognition.interimResults = false;
     recognition.continuous = false;
 
-    let finalTranscript = "";
-
     recognition.onresult = (event: any) => {
-      let interimTranscript = "";
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript.replace(/\s+/g, " ") + " ";
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-
-      setInput((finalTranscript + interimTranscript).trim());
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
     };
 
     recognition.onend = () => {
       setIsListening(false);
       recognitionRef.current = null;
-
-      setTimeout(() => {
-        setInput((current) => {
-          if (!isSpacePressedRef.current && current.trim()) {
-            handleSendMessage();
-          }
-          return current;
-        });
-      }, 150);
+      if (!isSpacePressedRef.current) setTimeout(() => handleSendMessage(), 120);
     };
 
-    recognition.onerror = (event: any) => {
-      console.error("Speech error:", event?.error);
+    recognition.onerror = () => {
       setIsListening(false);
       recognitionRef.current = null;
     };
@@ -288,39 +261,40 @@ export default function RoleplayChat() {
     setIsListening(true);
   };
 
-
   const stopListening = () => recognitionRef.current?.stop();
 
-  const [error, setError] = useState<string | null>(null);
-
-// 2. handleSendMessage function ko update karein
   const handleSendMessage = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim() || isProcessing) return;
 
-    setError(null); // Purana error clear karein
     const userText = input;
-    // ... (rest of your existing logic)
+    const userMsg: Message = { role: "user", content: userText };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsProcessing(true);
 
     try {
       const response = await chatbotService.sendRoleplay(dailyRole.title, userText);
-      // ... (rest of your logic)
-    } catch (err: any) {
-      // Backend error check karein
-      if (err.response?.status === 429 || err.message?.includes("limit reached")) {
-        setError("Free daily limit reached. Upgrade to continue.");
-      } else {
-        const errorText = "I'm having trouble staying in character. Please try again!";
-        setMessages((prev) => [...prev, { role: "bot", content: errorText }]);
-      }
+
+      const botMsg: Message = {
+        role: "bot",
+        content: response.reply,
+        correction: response.correction ?? undefined,
+        originalInput: userText,
+      };
+
+      setMessages((prev) => [...prev, botMsg]);
+      speakResponse(response.reply);
+    } catch {
+      const errorText = "I'm having trouble staying in character. Please try again!";
+      setMessages((prev) => [...prev, { role: "bot", content: errorText }]);
+      speakResponse(errorText);
     } finally {
       setIsProcessing(false);
     }
   };
 
   const replayVoice = (text: string) => speakResponse(text);
-
-  if (loading) return <div className="p-20 text-center font-bold">Loading Roleplay Chat...</div>;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -341,7 +315,6 @@ export default function RoleplayChat() {
             </div>
           </div>
         </div>
-
 
         {/* Chat Area */}
         <div className="lg:col-span-8 flex flex-col bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
@@ -389,21 +362,6 @@ export default function RoleplayChat() {
             {isProcessing && <div className="text-xs text-slate-400 animate-pulse font-medium">Assistant is thinking...</div>}
           </div>
 
-          {/* --- Chat Area ke andar, Input section se pehle add karein --- */}
-          {error && (
-            <div className="mx-4 mb-2 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-between animate-in slide-in-from-bottom-2">
-              <div className="flex items-center gap-3 text-rose-700">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span className="text-sm font-bold">{error}</span>
-              </div>
-              <button 
-                onClick={() => router.push("/")} 
-                className="bg-rose-600 text-white px-4 py-1.5 rounded-lg text-xs font-black hover:bg-rose-700 transition-all shadow-sm shadow-rose-200"
-              >
-                UPGRADE
-              </button>
-            </div>
-          )}
           {/* Input */}
           <div className="p-4 border-t bg-white">
             <form onSubmit={handleSendMessage} className="flex gap-2 bg-slate-100 p-2 rounded-2xl">
