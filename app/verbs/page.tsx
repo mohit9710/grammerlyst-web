@@ -27,25 +27,21 @@ export default function VerbsCarousel() {
   });
 
   useEffect(() => {
-    // 1. Update Document Title
-    document.title = "Verb Workshop | Master English Verbs | Grammrlyst";
+      if (selectedVerb) {
+        // 1. Title Update
+        document.title = `${selectedVerb.base} - Meaning, Examples & Pronunciation | Grammrlyst`;
 
-    // 2. Update Meta Description
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement('meta');
-      metaDesc.setAttribute('name', 'description');
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute('content', 'Master English verbs with interactive flashcards, audio pronunciations, and real-world examples. Perfect for students and teachers.');
+        // 2. Meta Description Update
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+          metaDesc.setAttribute('content', `Learn the verb "${selectedVerb.base}". Meaning: ${selectedVerb.meaning}. Example: ${selectedVerb.example}`);
+        }
 
-    // 3. Update OpenGraph Tags (for Social Media)
-    const ogTitle = document.querySelector('meta[property="og:title"]') || document.createElement('meta');
-    ogTitle.setAttribute('property', 'og:title');
-    ogTitle.setAttribute('content', 'Verb Workshop | Grammrlyst');
-    document.head.appendChild(ogTitle);
-
-  }, []);
+        // 3. Update URL without refreshing (SEO-friendly deep linking)
+        const newPath = `/verbs?word=${selectedVerb.base.toLowerCase()}`;
+        window.history.pushState({ path: newPath }, '', newPath);
+      }
+  }, [selectedVerb]);
   
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -120,6 +116,17 @@ export default function VerbsCarousel() {
       <Navbar />
       <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-white to-slate-100 py-12 px-4">
         
+        {/* SEO List Section - Visually Hidden but readable by Google */}
+                    <div className="sr-only">
+                      {verbs.map(v => (
+                        <article key={v.id}>
+                          <h2>{v.base} meaning</h2>
+                          <p>{v.meaning}</p>
+                          <p>Example: {v.example}</p>
+                        </article>
+                      ))}
+                    </div>
+
         {/* Header Section */}
         <div className="max-w-4xl mx-auto text-center mb-16">
           <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-900 mb-6 tracking-tight">
@@ -275,7 +282,23 @@ export default function VerbsCarousel() {
           )}
         </div>
       </main>
-      <Footer />
+      {selectedVerb && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "DefinedTerm",
+                "name": selectedVerb.base,
+                "description": selectedVerb.meaning,
+                "inDefinedTermSet": "https://www.grammrlyst.com/verbs",
+                "termCode": selectedVerb.base,
+                "usageInfo": selectedVerb.example
+              })
+            }}
+          />
+        )}
+        <Footer />
     </>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import FloatingFixButton from "@/components/FloatingFixButton";
 import { usePathname } from "next/navigation";
 import usePageTracking from "@/hooks/usePageTracking";
+import Script from "next/script";
 
 export default function RootLayout({
   children,
@@ -58,8 +59,10 @@ export default function RootLayout({
           rel="stylesheet" 
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
         /> */}
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5149688839251960"
-     crossOrigin="anonymous"></script>
+        <Script
+          async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5149688839251960"
+          crossOrigin="anonymous"
+        />
       </head>
 
       <body>{children}
