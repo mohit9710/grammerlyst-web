@@ -63,6 +63,7 @@ export default function RootLayout({
           async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5149688839251960"
           crossOrigin="anonymous"
         />
+        <meta name="google-site-verification" content="_w6MUtyAqKpo8QuNX7PBJ3ITrY4F_hntC0FGTU5-Rxs" />
       </head>
 
       <body>{children}
