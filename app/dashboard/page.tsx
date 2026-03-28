@@ -128,6 +128,35 @@ export default function Dashboard() {
     icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="15.5" cy="13" r=".5"/><circle cx="18.5" cy="11" r=".5"/></svg>} 
   />
 
+{/* Pronunciation Lab */}
+<ModuleLink 
+  analytics={analyticsInstance}
+  href="/pronunciation" 
+  color="purple" 
+  title="Pronunciation Lab" 
+  desc="Improve your speaking accuracy with real-time voice feedback." 
+  icon={
+    <svg 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <path d="M12 1v22"/>
+      <path d="M5 8v8"/>
+      <path d="M19 8v8"/>
+      <path d="M2 12h2"/>
+      <path d="M20 12h2"/>
+      <path d="M8 5v14"/>
+      <path d="M16 5v14"/>
+    </svg>
+  } 
+/>
+
   {/* AI Chat Tutor */}
   {/* <ModuleLink 
     analytics={analyticsInstance}
