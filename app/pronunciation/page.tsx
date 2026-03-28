@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-import { fetchPronounciation } from "@/services/pronounciationService";
+import { fetchPronunciation } from "@/services/pronunciationService";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
 
@@ -65,7 +65,7 @@ export default function PronunciationTest() {
     if (!token) return router.replace("/auth/login");
 
     try {
-      const data: unknown = await fetchPronounciation(token);
+      const data: unknown = await fetchPronunciation(token);
 
       if (Array.isArray(data) && data.length > 0) {
         setTextData(data[0] as TextData);

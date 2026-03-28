@@ -49,6 +49,35 @@ export default function Dashboard() {
         })
         .catch(err => console.error("Streak Error:", err));
     }
+
+    // SEO & Meta Effects
+    document.title = "English Learning Dashboard | Improve Grammar, Pronunciation & Vocabulary";
+
+    // Description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute(
+      'content',
+      "Boost your English skills with interactive modules like grammar, pronunciation, roleplay chat, and AI tools. Track your progress, streaks, and XP"
+    );
+
+    // ✅ Keywords
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta');
+      metaKeywords.setAttribute('name', 'keywords');
+      document.head.appendChild(metaKeywords);
+    }
+
+    metaKeywords.setAttribute(
+      'content',
+      "learn english, english grammar, pronunciation practice, english speaking app, vocabulary builder, AI english tutor"
+    );
+    
   }, [router]);
 
   // Logic for Level Progress Bar

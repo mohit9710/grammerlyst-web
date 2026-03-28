@@ -181,6 +181,34 @@ export default function RoleplayChat() {
     const initialGreeting = `Hello! I am your ${selectedRole.title}. ${selectedRole.scenario} Shall we begin?`;
     setMessages([{ role: "bot", content: initialGreeting }]);
     setTimeout(() => speakResponse(initialGreeting), 1000);
+
+    // SEO & Meta Effects
+    document.title = "Roleplay Chat | Practice English Conversations with AI";
+
+    // Description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute(
+      'content',
+      "Practice real-life English conversations with AI roleplay scenarios like interviews, doctor visits, and daily situations. Improve your speaking confidence and fluency."
+    );
+
+    // ✅ Keywords
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta');
+      metaKeywords.setAttribute('name', 'keywords');
+      document.head.appendChild(metaKeywords);
+    }
+
+    metaKeywords.setAttribute(
+      'content',
+      "english speaking practice,roleplay chat,AI conversation practice,learn english speaking,english conversation app,interview practice english,spoken english practice"
+    );
   }, []);
 
   useEffect(() => {

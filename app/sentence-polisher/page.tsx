@@ -22,6 +22,35 @@ export default function AIChatTutor() {
     } else {
       setLoading(false);
     }
+
+    // SEO & Meta Effects
+    document.title = "Sentence Polisher | AI Grammar Correction Tool";
+
+    // Description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute(
+      'content',
+      "Fix grammar mistakes instantly with AI. Improve your English writing, sentence structure, and fluency using our smart sentence polisher tool."
+    );
+
+    // ✅ Keywords
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta');
+      metaKeywords.setAttribute('name', 'keywords');
+      document.head.appendChild(metaKeywords);
+    }
+
+    metaKeywords.setAttribute(
+      'content',
+      "grammar corrector,sentence correction,AI grammar tool,english writing improvement,sentence polisher",
+    );
+
   }, [router]);
 
   const handleFix = async (e: React.FormEvent) => {

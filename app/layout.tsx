@@ -64,6 +64,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <meta name="google-site-verification" content="_w6MUtyAqKpo8QuNX7PBJ3ITrY4F_hntC0FGTU5-Rxs" />
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
       </head>
 
       <body>{children}

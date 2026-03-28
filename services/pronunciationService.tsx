@@ -9,8 +9,8 @@ export interface Pronounciation {
   created_at: string | null;
 }
 
-export async function fetchPronounciation(token?: string): Promise<Pronounciation[]> {
-  const res = await fetch(`${API_BASE_URL}/practice/pronounciation`, {
+export async function fetchPronunciation(token?: string): Promise<Pronounciation[]> {
+  const res = await fetch(`${API_BASE_URL}/practice/pronunciation`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

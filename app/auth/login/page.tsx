@@ -4,8 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/services/auth";
+import { useGoogleLogin } from "@/services/googleAuthService"
 
 export default function LoginPage() {
+  const { loginWithGoogle, loading: googleLoading } = useGoogleLogin();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -117,6 +119,35 @@ export default function LoginPage() {
               {loading ? "Logging in..." : "Log In"}
             </button>
           </form>
+
+          {/* Divider */}
+          <div className="flex items-center my-6">
+            <div className="flex-1 h-px bg-gray-200"></div>
+            <span className="px-3 text-sm text-gray-400">OR</span>
+            <div className="flex-1 h-px bg-gray-200"></div>
+          </div>
+
+          {/* ✅ GOOGLE BUTTON */}
+          <button
+            onClick={loginWithGoogle}
+            disabled={googleLoading}
+            className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl 
+                      border border-gray-300 bg-white 
+                      hover:bg-gray-50 hover:shadow-md 
+                      transition-all duration-200 
+                      active:scale-[0.98]
+                      disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google"
+              className="w-5 h-5"
+            />
+
+            <span className="font-semibold text-gray-700">
+              {googleLoading ? "Signing in..." : "Continue with Google"}
+            </span>
+          </button>
 
           <p className="text-center mt-8 text-slate-500 font-medium">
             Don't have an account?{" "}
