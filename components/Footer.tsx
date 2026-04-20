@@ -79,6 +79,7 @@ export default function Footer() {
             <li><Link href="/help" className="hover:text-blue-400 transition">Help Center</Link></li>
             <li><Link href="/docs" className="hover:text-blue-400 transition">Documentation</Link></li>
             <li><Link href="/status" className="hover:text-blue-400 transition">System Status</Link></li>
+            <li><Link href="/become-a-partner" className="hover:text-blue-400 transition">Become a Partner</Link></li>
           </ul>
         </div>
       </div>
