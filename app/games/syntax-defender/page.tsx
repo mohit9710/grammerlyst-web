@@ -36,7 +36,7 @@ export default function SyntaxDefender() {
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
 
     const token = localStorage.getItem("access_token");
-    if (!token) return;
+    // if (!token) return;
 
     setIsSaving(true);
     try {
@@ -63,7 +63,7 @@ export default function SyntaxDefender() {
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    if (!token) { router.replace("/auth/login"); return; }
+    // if (!token) { router.replace("/auth/login"); return; }
 
     async function init() {
       try {

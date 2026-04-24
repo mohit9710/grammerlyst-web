@@ -33,10 +33,10 @@ export default function WordScramble() {
   // Auth & Init Game
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.replace("/auth/login");
-      return;
-    }
+    // if (!token) {
+    //   router.replace("/auth/login");
+    //   return;
+    // }
 
     async function initGame() {
       try {

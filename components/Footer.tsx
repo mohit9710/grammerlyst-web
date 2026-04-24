@@ -55,38 +55,32 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Product */}
-        <div>
-          <h4 className="text-white font-semibold mb-4">Product</h4>
-          <ul className="space-y-2 text-sm">
-            {isAuth && (
-              <li>
-                <Link href="/dashboard" className="hover:text-blue-400 transition">
-                  Dashboard
-                </Link>
-              </li>
-            )}
-            <li><Link href="/analytics" className="hover:text-blue-400 transition">Analytics</Link></li>
-            <li><Link href="/reports" className="hover:text-blue-400 transition">Reports</Link></li>
-            <li><Link href="/api" className="hover:text-blue-400 transition">API</Link></li>
-          </ul>
-        </div>
-
         {/* Support */}
         <div>
           <h4 className="text-white font-semibold mb-4">Support</h4>
           <ul className="space-y-2 text-sm">
             <li><Link href="/help" className="hover:text-blue-400 transition">Help Center</Link></li>
-            <li><Link href="/docs" className="hover:text-blue-400 transition">Documentation</Link></li>
-            <li><Link href="/status" className="hover:text-blue-400 transition">System Status</Link></li>
             <li><Link href="/become-a-partner" className="hover:text-blue-400 transition">Become a Partner</Link></li>
           </ul>
         </div>
+
+        {/* Product */}
+        <div>
+          <h4 className="text-white font-semibold mb-4">Follow Us</h4>
+          <ul className="space-y-2 text-sm">
+            <li><Link href="/" className="hover:text-blue-400 transition">Youtube</Link></li>
+            <li><Link href="https://www.instagram.com/grammrlyst/" target="_blank" className="hover:text-blue-400 transition">Instragram</Link></li>
+            <li><Link href="/reports" className="hover:text-blue-400 transition">Facebook</Link></li>
+          </ul>
+        </div>
+
       </div>
+
+      
 
       {/* Bottom */}
       <div className="border-t border-slate-800 py-6 text-center text-sm text-slate-500">
-        © {new Date().getFullYear()} MyDashboard. All rights reserved.
+        © {new Date().getFullYear()} Grammrlyst. All rights reserved.
       </div>
     </footer>
   );

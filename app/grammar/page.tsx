@@ -3,28 +3,23 @@
 import { useEffect, useState } from "react";
 import "../../styles/grammar.css";
 import Navbar from "@/components/Navbar";
-import { useRouter } from "next/navigation";
+import Footer from "@/components/Footer";
 import {
   fetchGrammarTopics,
   fetchLessonsByTopic,
   GrammarTopic,
   GrammarLesson,
 } from "@/services/grammar";
-import { fetchUserProfile } from "@/services/userService";
-import Footer from "@/components/Footer";
 
 export default function GrammarWorkshop() {
-  const router = useRouter();
-
   const [topics, setTopics] = useState<GrammarTopic[]>([]);
   const [activeTopic, setActiveTopic] = useState<GrammarTopic | null>(null);
   const [lessons, setLessons] = useState<GrammarLesson[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any | null>(null);
 
   // SEO
   useEffect(() => {
-    document.title = "English Grammar Guide | Learn Rules & Usage | Grammrlyst";
+    document.title = "English Grammar Guide | Learn Rules | Grammrlyst";
 
     let metaDesc = document.querySelector('meta[name="description"]');
     if (!metaDesc) {
@@ -35,40 +30,28 @@ export default function GrammarWorkshop() {
 
     metaDesc.setAttribute(
       "content",
-      "Master English grammar with our comprehensive guide. From tenses to punctuation, learn the rules that make your writing perfect."
+      "Master English grammar with easy lessons and examples."
     );
   }, []);
 
-  // Auth + Topics
+  // Fetch Topics (NO TOKEN)
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-
-    if (!token) {
-      router.replace("/auth/login");
-      return;
-    }
-
-    Promise.all([
-      fetchUserProfile(token),
-      fetchGrammarTopics(token),
-    ])
-      .then(([userData, topicData]) => {
-        setUser(userData);
-        setTopics(topicData);
-        if (topicData.length > 0) {
-          setActiveTopic(topicData[0]);
+    fetchGrammarTopics()
+      .then((data) => {
+        setTopics(data);
+        if (data.length > 0) {
+          setActiveTopic(data[0]);
         }
       })
-      .catch(() => router.replace("/auth/login"))
+      .catch(() => setTopics([]))
       .finally(() => setLoading(false));
-  }, [router]);
+  }, []);
 
-  // Lessons per topic
+  // Fetch Lessons when topic changes
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token || !activeTopic) return;
+    if (!activeTopic) return;
 
-    fetchLessonsByTopic(activeTopic.id, token)
+    fetchLessonsByTopic(activeTopic.id)
       .then(setLessons)
       .catch(() => setLessons([]));
   }, [activeTopic]);
@@ -82,20 +65,21 @@ export default function GrammarWorkshop() {
       <Navbar />
       <main className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-12 gap-10">
+          
           {/* Sidebar */}
           <div className="lg:col-span-4 space-y-4">
-            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <i className="fas fa-list-ul"></i> Select a Topic
+            <h2 className="text-xl font-bold text-slate-800 mb-6">
+              Select a Topic
             </h2>
 
             {topics.map((topic) => (
               <button
                 key={topic.id}
                 onClick={() => setActiveTopic(topic)}
-                className={`w-full text-left p-5 rounded-2xl border transition-all group flex justify-between items-center ${
+                className={`w-full text-left p-5 rounded-2xl border transition ${
                   activeTopic?.id === topic.id
-                    ? "bg-blue-600 border-blue-600 text-white shadow-lg"
-                    : "bg-white border-slate-200 text-slate-600 hover:border-blue-400"
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-slate-600"
                 }`}
               >
                 <div>
@@ -106,7 +90,6 @@ export default function GrammarWorkshop() {
                     Level: {topic.level}
                   </span>
                 </div>
-                <i className="fas fa-chevron-right"></i>
               </button>
             ))}
           </div>
@@ -123,8 +106,8 @@ export default function GrammarWorkshop() {
                   {activeTopic.description}
                 </p>
 
-                {lessons.length ? (
-                  lessons.map((lesson, index) => (
+                {lessons.length > 0 ? (
+                  lessons.map((lesson) => (
                     <div
                       key={lesson.id}
                       className="p-6 mb-4 rounded-xl bg-slate-50"
@@ -132,14 +115,17 @@ export default function GrammarWorkshop() {
                       <h4 className="font-bold text-xl">
                         {lesson.title}
                       </h4>
+
                       <p className="italic text-slate-700">
                         "{lesson.example_sentence}"
                       </p>
+
                       {lesson.formula && (
                         <p className="text-sm mt-2">
                           <strong>Formula:</strong> {lesson.formula}
                         </p>
                       )}
+
                       {lesson.content_body && (
                         <p className="mt-2 text-sm text-slate-600">
                           {lesson.content_body}
@@ -155,6 +141,7 @@ export default function GrammarWorkshop() {
               </div>
             )}
           </div>
+
         </div>
       </main>
       <Footer />
