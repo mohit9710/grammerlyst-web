@@ -35,7 +35,7 @@ export default function SyntaxDefender() {
     setGameStarted(false);
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
 
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token") || 'test';
     // if (!token) return;
 
     setIsSaving(true);
