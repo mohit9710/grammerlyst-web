@@ -12,7 +12,6 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  // Track the actual File object for the API
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [user, setUser] = useState({

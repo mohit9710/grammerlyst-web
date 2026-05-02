@@ -3,26 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchUserProfile } from "@/services/userService";
 
 export default function Footer() {
   const router = useRouter();
   const [isAuth, setIsAuth] = useState(false);
-  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      fetchUserProfile(token)
-        .then((data) => {
-          setUser(data);
-          setIsAuth(true);
-        })
-        .catch(() => {
-          localStorage.removeItem("access_token");
-          setIsAuth(false);
-        });
-    }
+    //
   }, []);
 
   const logoutHandler = () => {
