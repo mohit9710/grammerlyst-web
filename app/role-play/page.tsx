@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { chatbotService } from "@/services/chatbotService";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
+import useUser from "@/hooks/userProfile";
 
 interface Message {
   role: "user" | "bot";
@@ -32,6 +33,7 @@ export default function RoleplayChat() {
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const { user, loading } = useUser();
 
   const [dailyRole, setDailyRole] = useState<Role>({
     title: "Job Interviewer",
@@ -392,28 +394,50 @@ export default function RoleplayChat() {
 
           {/* Input */}
           <div className="p-4 border-t bg-white">
-            <form onSubmit={handleSendMessage} className="flex gap-2 bg-slate-100 p-2 rounded-2xl">
-              <button
-                type="button"
-                onClick={startListening}
-                className={`p-3 rounded-xl transition-all ${isListening ? 'bg-red-500 text-white animate-pulse shadow-lg' : 'bg-white text-slate-400 hover:text-slate-600 shadow-sm'}`}
+            {!user?.is_paid ? (
+              <div className="text-center">
+                <button
+                  onClick={() => router.push("/pricing")}
+                  className="w-full bg-yellow-500 text-white py-4 rounded-2xl font-bold text-lg hover:bg-yellow-600 transition-all shadow-md"
+                >
+                  🔒 Upgrade to Pro to Chat
+                </button>
+                <p className="text-[11px] text-slate-400 mt-2">
+                  Unlock unlimited AI conversations & voice practice
+                </p>
+              </div>
+            ) : (
+              <form
+                onSubmit={handleSendMessage}
+                className="flex gap-2 bg-slate-100 p-2 rounded-2xl"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-              </button>
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={isListening ? "Listening..." : "Message your tutor..."}
-                className="flex-1 bg-transparent border-none focus:ring-0 text-slate-700 placeholder:text-slate-400 text-sm md:text-base"
-              />
-              <button
-                disabled={!input.trim() || isProcessing}
-                className="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-black transition-all disabled:opacity-20"
-              >
-                Send
-              </button>
-            </form>
-            <p className="text-[10px] text-slate-400 mt-1">🎙️ Hold SPACE to speak</p>
+                <button
+                  type="button"
+                  onClick={startListening}
+                  className={`p-3 rounded-xl transition-all ${
+                    isListening
+                      ? "bg-red-500 text-white animate-pulse shadow-lg"
+                      : "bg-white text-slate-400 hover:text-slate-600 shadow-sm"
+                  }`}
+                >
+                  🎙️
+                </button>
+
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={isListening ? "Listening..." : "Message your tutor..."}
+                  className="flex-1 bg-transparent border-none focus:ring-0 text-slate-700 placeholder:text-slate-400 text-sm md:text-base"
+                />
+
+                <button
+                  disabled={!input.trim() || isProcessing}
+                  className="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-black transition-all disabled:opacity-20"
+                >
+                  Send
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </main>

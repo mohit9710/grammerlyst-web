@@ -12,6 +12,7 @@ export default function SignupPage() {
     last_name: "",
     email: "",
     password: "",
+    referral_code:""
   });
 
   const [loading, setLoading] = useState(false);
@@ -116,6 +117,21 @@ export default function SignupPage() {
                 onChange={(e) =>
                 setForm({ ...form, password: e.target.value })
               }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700 ml-1">
+                Referral Code (Optional)
+              </label>
+              <input
+                type="text"
+                placeholder="Enter referral code"
+                value={form.referral_code}
+                className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-500 outline-none transition-all"
+                onChange={(e) =>
+                  setForm({ ...form, referral_code: e.target.value })
+                }
               />
             </div>
 

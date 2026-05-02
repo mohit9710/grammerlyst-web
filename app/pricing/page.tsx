@@ -4,10 +4,12 @@ import React from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
+import useUser from "@/hooks/userProfile";
 
 export default function PricingPage() {
   const router = useRouter();
-
+  const { user, isAuth } = useUser();
+  
   const plans = [
     {
       name: "Free",
@@ -123,7 +125,17 @@ export default function PricingPage() {
               </div>
 
               <button
-                onClick={() => !plan.buttonText.includes("Current") && router.push("/checkout")}
+                onClick={() => {
+                  if (!plan.buttonText.includes("Current")) {
+                    router.push(
+                      plan.name === "Free"
+                        ? "/checkout?planId=free"
+                        : plan.name === "Lifetime Pass"
+                        ? "/checkout?planId=lifetime"
+                        : "/checkout?planId=pro"
+                    );
+                  }
+                }}
                 className={`w-full py-4 rounded-xl font-bold transition-all active:scale-95 ${
                   plan.featured
                     ? "bg-blue-600 hover:bg-blue-500 text-white"

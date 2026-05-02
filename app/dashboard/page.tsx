@@ -11,6 +11,7 @@ import { fetchUserProfile, syncStreak } from "@/services/userService";
 import { initAnalytics } from "@/services/firebaseService";
 import { logEvent } from "firebase/analytics";
 import Footer from "@/components/Footer";
+import useUser from "@/hooks/userProfile";
 
 interface UserProfile {
   id: number;
@@ -26,59 +27,39 @@ interface UserProfile {
 
 export default function Dashboard() {
   const router = useRouter();
-  const [isAuth, setIsAuth] = useState(false);
-  const [user, setUser] = useState<UserProfile | null>(null);
   const [analyticsInstance, setAnalyticsInstance] = useState<any>(null);
+  const { user, isAuth, setUser} = useUser();
 
   useEffect(() => {
-    initAnalytics().then(setAnalyticsInstance);
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      fetchUserProfile(token)
-        .then((data: UserProfile) => {
-          setUser(data);
-          setIsAuth(true);
-        })
-        .catch(() => {
-          localStorage.removeItem("access_token");
-        });
+  initAnalytics().then(setAnalyticsInstance);
 
-      syncStreak(token)
-        .then((res) => {
-          setUser(prev => prev ? { ...prev, streak: res.streak } : null);
-        })
-        .catch(err => console.error("Streak Error:", err));
-    }
+  const token = localStorage.getItem("access_token");
 
-    // SEO & Meta Effects
-    document.title = "English Learning Dashboard | Improve Grammar, Pronunciation & Vocabulary";
+  if (token) {
+    syncStreak(token)
+      .then((res) => {
+        setUser((prev: any) =>
+          prev ? { ...prev, streak: res.streak } : prev
+        );
+      })
+      .catch((err) => console.error("Streak Error:", err));
+  }
 
-    // Description
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement('meta');
-      metaDesc.setAttribute('name', 'description');
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute(
-      'content',
-      "Boost your English skills with interactive modules like grammar, pronunciation, roleplay chat, and AI tools. Track your progress, streaks, and XP"
-    );
+  // SEO meta same rakho
+  document.title = "English Learning Dashboard | Improve Grammar, Pronunciation & Vocabulary";
 
-    // ✅ Keywords
-    let metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.setAttribute('name', 'keywords');
-      document.head.appendChild(metaKeywords);
-    }
+  let metaDesc = document.querySelector('meta[name="description"]');
+  if (!metaDesc) {
+    metaDesc = document.createElement('meta');
+    metaDesc.setAttribute('name', 'description');
+    document.head.appendChild(metaDesc);
+  }
+  metaDesc.setAttribute(
+    'content',
+    "Boost your English skills with interactive modules like grammar, pronunciation, roleplay chat, and AI tools."
+  );
 
-    metaKeywords.setAttribute(
-      'content',
-      "learn english, english grammar, pronunciation practice, english speaking app, vocabulary builder, AI english tutor"
-    );
-    
-  }, [router]);
+}, []);
 
   // Logic for Level Progress Bar
   const currentXP = user?.total_xp || 0;

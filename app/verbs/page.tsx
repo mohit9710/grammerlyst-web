@@ -4,7 +4,6 @@ import { useRef, useState, useMemo, useEffect } from "react";
 import "../../styles/verbs.css";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
-import { fetchUserProfile } from "@/services/userService";
 import { fetchVerbs, Verb, markVerbViewed } from "@/services/verbs";
 import Footer from "@/components/Footer";
 
@@ -54,9 +53,8 @@ export default function VerbsCarousel() {
 
     Promise.all([
       fetchVerbs(1, 30, token),
-      fetchUserProfile(token)
     ])
-      .then(([verbsData, userData]) => {
+      .then(([verbsData]) => {
         setVerbs(verbsData);
         
       })

@@ -11,6 +11,7 @@ interface SignupPayload {
   last_name: string;
   email: string;
   password: string;
+  referral_code: string;
 }
 
 export async function signIn(
@@ -55,5 +56,5 @@ export async function signupUser(payload: SignupPayload) {
     throw new Error(errorMessage);
   }
 
-  return data; // { token, user }
+  return data;
 }
