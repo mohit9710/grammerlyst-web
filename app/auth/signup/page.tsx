@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import { signupUser } from "@/services/auth";
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -17,6 +18,27 @@ export default function SignupPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+
+    if (ref) {
+      setForm((prev) => ({
+        ...prev,
+        referral_code: ref
+      }));
+
+      localStorage.setItem("referral_code", ref);
+    } else {
+      const savedRef = localStorage.getItem("referral_code");
+      if (savedRef) {
+        setForm((prev) => ({
+          ...prev,
+          referral_code: savedRef
+        }));
+      }
+    }
+  }, [searchParams]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +75,12 @@ export default function SignupPage() {
             <p className="text-slate-500 font-medium">
               Start your journey with Grammrlyst.
             </p>
+            {/* ✅ BONUS: Referral message */}
+            {form.referral_code && (
+              <p className="text-green-600 text-sm mt-2">
+                🎉 You were invited! Referral code applied automatically.
+              </p>
+            )}
           </div>
         
           <form onSubmit={handleSignup} className="space-y-5">
