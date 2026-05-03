@@ -16,6 +16,31 @@ export interface PaymentStatus {
   commission?: number;
 }
 
+// services/purchaseService.ts
+
+export const completePurchase = async (
+  token: string,
+  payload: {
+    amount: number;
+    plan_name: string;
+  }
+) => {
+  const res = await fetch(`${API_BASE_URL}/purchase/transit`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error("Payment failed");
+  }
+
+  return await res.json();
+};
+
 /* ---------------- START PAYMENT ---------------- */
 
 export async function startPurchase(
