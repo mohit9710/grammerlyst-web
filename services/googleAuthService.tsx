@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:9000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/backend";
 
 declare global {
   interface Window {
@@ -31,7 +30,7 @@ export const useGoogleLogin = () => {
       const idToken = response.credential;
 
       // ✅ Send to backend
-      const res = await fetch(`${API_BASE}/auth/google-login`, {
+      const res = await fetch(`${API_BASE_URL}/auth/google-login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
