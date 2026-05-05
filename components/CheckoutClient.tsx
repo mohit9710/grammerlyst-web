@@ -3,9 +3,19 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
-import { completePurchase } from "@/services/purchaseService";
 
-const PLAN_CONFIG = {
+type PlanType = "free" | "basic" | "pro";
+type BillingType = "monthly" | "yearly";
+
+const PLAN_CONFIG: Record<
+  PlanType,
+  {
+    name: string;
+    monthly: number;
+    yearly: number;
+    period: string;
+  }
+> = {
   free: {
     name: "Free",
     monthly: 0,
@@ -26,57 +36,58 @@ const PLAN_CONFIG = {
   },
 };
 
-export default function CheckoutClient({ planId }: any) {
+export default function CheckoutClient({
+  planId,
+}: {
+  planId?: PlanType;
+}) {
   const router = useRouter();
-  const [plan, setPlan] = useState(planId || "pro");
+
+  // ✅ safe initial plan
+  const [plan, setPlan] = useState<PlanType>(
+    planId && PLAN_CONFIG[planId] ? planId : "pro"
+  );
+
+  const [billing, setBilling] = useState<BillingType>("monthly");
   const [loading, setLoading] = useState(false);
   const [qrImage, setQrImage] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const selectedPlan = PLAN_CONFIG[plan];
-  const [billing, setBilling] = useState("monthly");
 
   const price =
-  billing === "yearly"
-    ? selectedPlan?.yearly ?? 0
-    : selectedPlan?.monthly ?? 0;
+    billing === "yearly"
+      ? selectedPlan.yearly
+      : selectedPlan.monthly;
 
-
+  // ✅ SSR safe
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) router.replace("/auth/login");
+    setMounted(true);
+
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("access_token");
+      if (!token) router.replace("/auth/login");
+    }
   }, [router]);
 
-  // ✅ Step 1: Show QR
+  if (!mounted) return null;
+
+  // ✅ Payment
   const handlePayment = () => {
     if (plan === "free") {
       router.push("/dashboard");
       return;
     }
 
-    setQrImage("/QRCODE_AXIS.jpeg"); // 👉 public folder me rakho
+    setQrImage("/QRCODE_AXIS.jpeg");
   };
 
-  // ✅ Step 2: Confirm payment
   const handlePaymentSuccess = async () => {
     try {
       setLoading(true);
 
-      const token = localStorage.getItem("access_token");
-
-      if (!token) {
-        router.push("/auth/login");
-        return;
-      }
-
-      // await completePurchase(token, {
-      //   amount: selectedPlan.price,
-      //   plan_name: selectedPlan.name,
-      // });
-
-      alert("Payment done. Wait for confirmation. Thanks!!");
+      alert("Payment received! We will verify shortly.");
       router.push("/dashboard");
-      // router.push(`/pricing?is_paid=1&plan=${plan}`);
-
     } catch (err) {
       console.error(err);
       alert("Payment failed");
@@ -97,32 +108,32 @@ export default function CheckoutClient({ planId }: any) {
 
           {/* Billing Toggle */}
           <div className="flex gap-3 mb-6">
-            <button
-              onClick={() => setBilling("monthly")}
-              className={`px-4 py-2 rounded-lg font-semibold ${
-                billing === "monthly"
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-100"
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBilling("yearly")}
-              className={`px-4 py-2 rounded-lg font-semibold ${
-                billing === "yearly"
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-100"
-              }`}
-            >
-              Yearly (Save 40%)
-            </button>
+            {(["monthly", "yearly"] as BillingType[]).map((type) => (
+              <button
+                key={type}
+                onClick={() => setBilling(type)}
+                className={`px-4 py-2 rounded-lg font-semibold ${
+                  billing === type
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-100"
+                }`}
+              >
+                {type === "monthly"
+                  ? "Monthly"
+                  : "Yearly (Save 40%)"}
+              </button>
+            ))}
           </div>
 
           <div className="space-y-5">
-            {Object.entries(PLAN_CONFIG).map(([key, value]) => {
+            {(Object.entries(PLAN_CONFIG) as [
+              PlanType,
+              (typeof PLAN_CONFIG)[PlanType]
+            ][]).map(([key, value]) => {
               const planPrice =
-                billing === "yearly" ? value.yearly : value.monthly;
+                billing === "yearly"
+                  ? value.yearly
+                  : value.monthly;
 
               return (
                 <div
@@ -134,16 +145,22 @@ export default function CheckoutClient({ planId }: any) {
                       : "hover:border-blue-400"
                   }`}
                 >
-                  <h2 className="font-bold text-lg">{value.name}</h2>
+                  <h2 className="font-bold text-lg">
+                    {value.name}
+                  </h2>
 
                   <p className="text-slate-500 text-sm capitalize">
-                    {billing === "yearly" ? "per year" : value.period}
+                    {billing === "yearly"
+                      ? "per year"
+                      : value.period}
                   </p>
 
                   <p className="mt-2 text-xl font-bold">
                     ₹{planPrice}
                     {planPrice !== 0 &&
-                      (billing === "monthly" ? " / month" : " / year")}
+                      (billing === "monthly"
+                        ? " / month"
+                        : " / year")}
                   </p>
                 </div>
               );
@@ -155,17 +172,23 @@ export default function CheckoutClient({ planId }: any) {
         <div className="lg:col-span-5 bg-slate-50 p-10 flex flex-col justify-between">
 
           <div>
-            <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+            <h2 className="text-xl font-bold mb-6">
+              Order Summary
+            </h2>
 
             <div className="bg-white p-6 rounded-xl shadow space-y-4">
               <div className="flex justify-between">
                 <span>Plan</span>
-                <span className="font-bold">{selectedPlan.name}</span>
+                <span className="font-bold">
+                  {selectedPlan.name}
+                </span>
               </div>
 
               <div className="flex justify-between">
                 <span>Billing</span>
-                <span className="font-bold capitalize">{billing}</span>
+                <span className="font-bold capitalize">
+                  {billing}
+                </span>
               </div>
 
               <div className="flex justify-between">
@@ -183,11 +206,11 @@ export default function CheckoutClient({ planId }: any) {
             {qrImage && (
               <div
                 className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
-                onClick={() => setQrImage(null)} // 🔥 click outside close
+                onClick={() => setQrImage(null)}
               >
                 <div
                   className="relative bg-white rounded-3xl p-8 text-center shadow-2xl max-w-md w-full mx-4"
-                  onClick={(e) => e.stopPropagation()} // 🔥 prevent close on inside click
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={() => setQrImage(null)}
@@ -196,7 +219,9 @@ export default function CheckoutClient({ planId }: any) {
                     ✕
                   </button>
 
-                  <h2 className="text-2xl font-bold mb-4">Scan & Pay</h2>
+                  <h2 className="text-2xl font-bold mb-4">
+                    Scan & Pay
+                  </h2>
 
                   <img
                     src={qrImage}
