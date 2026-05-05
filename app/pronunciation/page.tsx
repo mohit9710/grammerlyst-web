@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-import { fetchPronunciation } from "@/services/pronunciationService";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
-import useUser from "@/hooks/userProfile";
 import Pronunciation from "@/components/Pronunciation";
+import { fetchMyPlan } from "@/services/purchaseService";
 
 // Define the API Response Type
 interface TextData {
@@ -18,7 +17,36 @@ interface TextData {
 }
 
 export default function PronunciationTest() {
+  const [plan, setPlan] = useState<any>(null);
+  const [planLoading, setPlanLoading] = useState(true);
   const [textData, setTextData] = useState<TextData | null>(null);
+
+  const router = useRouter();
+
+  // ✅ Fetch plan
+  useEffect(() => {
+    const loadPlan = async () => {
+      try {
+        const data = await fetchMyPlan();
+        setPlan(data);
+      } catch (err) {
+        console.error("Plan fetch error:", err);
+        setPlan({ active: false });
+      } finally {
+        setPlanLoading(false);
+      }
+    };
+
+    loadPlan();
+  }, []);
+
+  // ✅ Redirect if not active
+  useEffect(() => {
+    if (!planLoading && !plan?.active) {
+      router.replace("/pricing"); // better than push (no back nav)
+    }
+  }, [plan, planLoading, router]);
+
   // ✅ SEO Dynamic Meta + URL update
   useEffect(() => {
     if (textData) {
@@ -41,6 +69,16 @@ export default function PronunciationTest() {
       window.history.pushState({ path: newPath }, "", newPath);
     }
   }, [textData]);
+
+  // ✅ Loading state
+  if (planLoading) {
+    return <div className="p-10 text-center">Checking access...</div>;
+  }
+
+  // ✅ Safety fallback (no flicker, no unauthorized render)
+  if (!plan?.active) {
+    return null; // OR custom upgrade UI
+  }
 
   return (
     <>
@@ -67,7 +105,8 @@ export default function PronunciationTest() {
       <div className="min-h-screen bg-[#F8FAFC]">
         <Navbar />
 
-         <Pronunciation />
+        {/* ✅ Only render if active */}
+        <Pronunciation />
 
         <Footer />
       </div>

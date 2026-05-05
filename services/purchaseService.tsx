@@ -160,3 +160,24 @@ export async function completePurchaseFlow(
     throw err;
   }
 }
+
+export const fetchMyPlan = async () => {
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("access_token")
+      : null;
+
+  const res = await fetch(`${API_BASE_URL}/purchase/my-plan`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch plan");
+  }
+
+  return res.json();
+};
