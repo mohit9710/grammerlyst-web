@@ -44,10 +44,10 @@ export default function VerbsCarousel() {
   
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.replace("/auth/login");
-      return;
-    }
+    // if (!token) {
+    //   router.replace("/auth/login");
+    //   return;
+    // }
 
     setLoading(true);
 

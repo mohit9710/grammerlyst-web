@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import { chatbotService } from "@/services/chatbotService";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
-import useUser from "@/hooks/userProfile";
+import { useUserPlan } from "@/hooks/usePlan";
 
 interface Message {
   role: "user" | "bot";
@@ -33,7 +33,7 @@ export default function RoleplayChat() {
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const { user, loading } = useUser();
+  const { plan, loading } = useUserPlan();
 
   const [dailyRole, setDailyRole] = useState<Role>({
     title: "Job Interviewer",
@@ -90,90 +90,6 @@ export default function RoleplayChat() {
 
     const roles: Role[] = [
       { title: "Hotel Receptionist", scenario: "You are checking into a luxury hotel in London.", instruction: "Practice polite requests and formal greetings.", avatar: "🛎️", voiceType: "formal" },
-      { title: "Doctor", scenario: "You are explaining a recurring headache to a specialist.", instruction: "Use descriptive words for symptoms.", avatar: "🩺", voiceType: "calm" },
-      { title: "Barista", scenario: "You are ordering a complex drink for a group of friends.", instruction: "Practice modifiers and quantities.", avatar: "☕", voiceType: "neutral" },
-      { title: "Airport Officer", scenario: "You are asking for visa details at the airport.", instruction: "Use polite, professional English.", avatar: "🛫", voiceType: "professional" },
-      { title: "Tour Guide", scenario: "You are giving a guided tour at a museum.", instruction: "Explain facts clearly and engagingly.", avatar: "🎤", voiceType: "neutral" },
-      { title: "Customer Support", scenario: "You are helping a customer with a billing issue.", instruction: "Be patient and clear in instructions.", avatar: "📞", voiceType: "professional" },
-      { title: "Teacher", scenario: "You are explaining basic physics to students.", instruction: "Use simple examples and clear explanations.", avatar: "📚", voiceType: "calm" },
-      { title: "Police Officer", scenario: "You are questioning a witness about a theft.", instruction: "Use formal and precise questions.", avatar: "👮‍♂️", voiceType: "formal" },
-      { title: "Chef", scenario: "You are giving instructions for making a complex dish.", instruction: "Explain step by step clearly.", avatar: "👨‍🍳", voiceType: "neutral" },
-      { title: "Flight Attendant", scenario: "You are welcoming passengers onboard.", instruction: "Be polite, clear, and professional.", avatar: "🛫", voiceType: "professional" },
-      { title: "Bank Teller", scenario: "You are helping a client open a new account.", instruction: "Use formal banking vocabulary.", avatar: "🏦", voiceType: "formal" },
-      { title: "Software Engineer", scenario: "You are explaining your latest project in a team meeting.", instruction: "Use technical terms clearly.", avatar: "💻", voiceType: "neutral" },
-      { title: "Marketing Manager", scenario: "You are pitching a new campaign to stakeholders.", instruction: "Use confident and persuasive language.", avatar: "📊", voiceType: "professional" },
-      { title: "Lawyer", scenario: "You are giving legal advice to a client.", instruction: "Explain complex ideas in simple terms.", avatar: "⚖️", voiceType: "formal" },
-      { title: "Journalist", scenario: "You are interviewing a celebrity.", instruction: "Ask concise and engaging questions.", avatar: "📝", voiceType: "neutral" },
-      { title: "Tourist", scenario: "You are asking for directions in a foreign city.", instruction: "Use polite and clear English.", avatar: "🧳", voiceType: "neutral" },
-      { title: "Fitness Trainer", scenario: "You are coaching a client in the gym.", instruction: "Use motivational and clear instructions.", avatar: "🏋️‍♂️", voiceType: "professional" },
-      { title: "HR Manager", scenario: "You are conducting a job interview.", instruction: "Ask professional questions and give feedback.", avatar: "💼", voiceType: "professional" },
-      { title: "IT Support", scenario: "You are troubleshooting a network issue for an employee.", instruction: "Use clear technical instructions.", avatar: "🖥️", voiceType: "calm" },
-      { title: "Librarian", scenario: "You are helping a visitor find specific books.", instruction: "Use polite and precise instructions.", avatar: "📖", voiceType: "calm" },
-      { title: "Taxi Driver", scenario: "You are asking for the destination of a passenger.", instruction: "Be clear and friendly.", avatar: "🚕", voiceType: "neutral" },
-      { title: "Conference Speaker", scenario: "You are giving a presentation to an international audience.", instruction: "Speak confidently and clearly.", avatar: "🎙️", voiceType: "professional" },
-      { title: "Fashion Designer", scenario: "You are explaining your design inspiration.", instruction: "Use creative vocabulary and style terms.", avatar: "👗", voiceType: "formal" },
-      { title: "Real Estate Agent", scenario: "You are showing a house to a potential buyer.", instruction: "Describe features clearly and persuasively.", avatar: "🏠", voiceType: "professional" },
-      { title: "Photographer", scenario: "You are directing a model for a photoshoot.", instruction: "Give clear, concise guidance.", avatar: "📸", voiceType: "neutral" },
-      { title: "Customer", scenario: "You are returning a defective product.", instruction: "Use polite but firm language.", avatar: "🛍️", voiceType: "neutral" },
-      { title: "Receptionist", scenario: "You are welcoming guests to a spa.", instruction: "Use calm and polite English.", avatar: "💆‍♀️", voiceType: "calm" },
-      { title: "Nurse", scenario: "You are explaining a medical procedure to a patient.", instruction: "Use comforting and clear language.", avatar: "🩺", voiceType: "calm" },
-      { title: "Judge", scenario: "You are giving instructions in a courtroom.", instruction: "Use formal and authoritative language.", avatar: "⚖️", voiceType: "formal" },
-      { title: "Actor", scenario: "You are practicing a dramatic scene.", instruction: "Use expressive and emotional language.", avatar: "🎭", voiceType: "neutral" },
-      { title: "Student", scenario: "You are asking a teacher about an assignment.", instruction: "Be polite and clear in your questions.", avatar: "🎓", voiceType: "neutral" },
-      { title: "Politician", scenario: "You are giving a speech at a public event.", instruction: "Speak confidently and persuasively.", avatar: "🏛️", voiceType: "professional" },
-      { title: "Mechanic", scenario: "You are explaining a car problem to a customer.", instruction: "Use simple, clear language.", avatar: "🔧", voiceType: "neutral" },
-      { title: "Chef", scenario: "You are teaching a cooking class.", instruction: "Give instructions clearly and step-by-step.", avatar: "👨‍🍳", voiceType: "calm" },
-      { title: "Event Planner", scenario: "You are explaining a schedule to staff.", instruction: "Use professional, clear instructions.", avatar: "📅", voiceType: "professional" },
-      { title: "Pilot", scenario: "You are briefing your co-pilot before a flight.", instruction: "Use precise and formal language.", avatar: "✈️", voiceType: "formal" },
-      { title: "Scientist", scenario: "You are presenting research findings to colleagues.", instruction: "Use clear and technical language.", avatar: "🔬", voiceType: "formal" },
-      { title: "Musician", scenario: "You are explaining the meaning of a song to fans.", instruction: "Be expressive and descriptive.", avatar: "🎵", voiceType: "neutral" },
-      { title: "Dentist", scenario: "You are explaining dental care to a patient.", instruction: "Be calm and professional.", avatar: "🦷", voiceType: "calm" },
-      { title: "Yoga Instructor", scenario: "You are guiding a class through poses.", instruction: "Speak slowly and clearly.", avatar: "🧘‍♀️", voiceType: "calm" },
-      { title: "Coach", scenario: "You are motivating a sports team before a match.", instruction: "Use confident and energetic language.", avatar: "🏀", voiceType: "professional" },
-      { title: "Entrepreneur", scenario: "You are pitching a business idea to investors.", instruction: "Use persuasive, professional language.", avatar: "💡", voiceType: "professional" },
-      { title: "Translator", scenario: "You are interpreting a conversation between two people.", instruction: "Be precise and neutral.", avatar: "🈯", voiceType: "neutral" },
-      { title: "Pilot Trainer", scenario: "You are teaching a trainee pilot the flight controls.", instruction: "Explain clearly and systematically.", avatar: "✈️", voiceType: "formal" },
-      { title: "Volunteer Coordinator", scenario: "You are instructing volunteers at an event.", instruction: "Use polite and clear language.", avatar: "🤝", voiceType: "calm" },
-      { title: "Retail Manager", scenario: "You are briefing staff on a sales promotion.", instruction: "Speak clearly and professionally.", avatar: "🏬", voiceType: "professional" },
-      { title: "Receptionist", scenario: "You are greeting visitors at an office.", instruction: "Be polite and formal.", avatar: "💁‍♀️", voiceType: "formal" },
-      { title: "Tech Support", scenario: "You are guiding a user through software installation.", instruction: "Use clear and precise instructions.", avatar: "💻", voiceType: "neutral" },
-      { title: "Journalist", scenario: "You are writing questions for an interview.", instruction: "Use concise and clear language.", avatar: "📝", voiceType: "neutral" },
-      { title: "Photographer Assistant", scenario: "You are helping set up a photoshoot.", instruction: "Follow instructions precisely.", avatar: "📸", voiceType: "calm" },
-      { title: "Actor Coach", scenario: "You are training actors for a stage play.", instruction: "Use expressive and motivating language.", avatar: "🎭", voiceType: "neutral" },
-      { title: "Store Clerk", scenario: "You are assisting customers with purchases.", instruction: "Be polite and clear.", avatar: "🛍️", voiceType: "calm" },
-      { title: "Delivery Driver", scenario: "You are explaining a delivery route.", instruction: "Use clear directions.", avatar: "🚚", voiceType: "neutral" },
-      { title: "Tourist Guide", scenario: "You are describing landmarks to tourists.", instruction: "Be engaging and clear.", avatar: "🗽", voiceType: "neutral" },
-      { title: "Wedding Planner", scenario: "You are coordinating a wedding ceremony.", instruction: "Give clear and professional instructions.", avatar: "💒", voiceType: "professional" },
-      { title: "Public Speaker", scenario: "You are addressing an audience on climate change.", instruction: "Speak confidently and clearly.", avatar: "🎙️", voiceType: "professional" },
-      { title: "Counselor", scenario: "You are helping someone with stress management.", instruction: "Use calm and supportive language.", avatar: "🧑‍⚕️", voiceType: "calm" },
-      { title: "Police Chief", scenario: "You are briefing officers before a mission.", instruction: "Use authoritative and clear language.", avatar: "👮‍♂️", voiceType: "formal" },
-      { title: "Flight Controller", scenario: "You are guiding a plane safely to land.", instruction: "Speak clearly and precisely.", avatar: "🛫", voiceType: "formal" },
-      { title: "Entrepreneur Mentor", scenario: "You are advising a startup founder.", instruction: "Use professional and constructive language.", avatar: "💼", voiceType: "professional" },
-      { title: "Chef Instructor", scenario: "You are teaching a cooking technique.", instruction: "Give step-by-step instructions clearly.", avatar: "👨‍🍳", voiceType: "calm" },
-      { title: "Radio Host", scenario: "You are interviewing a guest live on air.", instruction: "Speak clearly and engagingly.", avatar: "🎧", voiceType: "neutral" },
-      { title: "Museum Curator", scenario: "You are explaining an exhibit to visitors.", instruction: "Use informative and clear language.", avatar: "🏛️", voiceType: "neutral" },
-      { title: "Investor", scenario: "You are asking questions about a business pitch.", instruction: "Be precise and professional.", avatar: "💰", voiceType: "formal" },
-      { title: "Translator", scenario: "You are translating a speech for a diplomat.", instruction: "Use clear and neutral language.", avatar: "🌐", voiceType: "neutral" },
-      { title: "Actor", scenario: "You are performing an emotional monologue.", instruction: "Be expressive and clear.", avatar: "🎭", voiceType: "neutral" },
-      { title: "Teacher", scenario: "You are teaching English grammar to students.", instruction: "Be clear and structured.", avatar: "📚", voiceType: "calm" },
-      { title: "Singer", scenario: "You are explaining the lyrics of a song.", instruction: "Use expressive language.", avatar: "🎤", voiceType: "neutral" },
-      { title: "Politician", scenario: "You are giving an official statement.", instruction: "Speak confidently and formally.", avatar: "🏛️", voiceType: "formal" },
-      { title: "Software Trainer", scenario: "You are teaching a team to use new software.", instruction: "Be patient and clear.", avatar: "💻", voiceType: "calm" },
-      { title: "Fitness Coach", scenario: "You are explaining exercises to a client.", instruction: "Use clear and motivational language.", avatar: "🏋️‍♂️", voiceType: "professional" },
-      { title: "Customer", scenario: "You are complaining about a delayed order.", instruction: "Be polite but firm.", avatar: "🛍️", voiceType: "neutral" },
-      { title: "Tourist", scenario: "You are asking about public transport options.", instruction: "Use polite and clear questions.", avatar: "🧳", voiceType: "neutral" },
-      { title: "Waiter", scenario: "You are taking orders at a busy restaurant.", instruction: "Be polite and concise.", avatar: "🍽️", voiceType: "calm" },
-      { title: "Chef", scenario: "You are explaining a new recipe to kitchen staff.", instruction: "Be clear and organized.", avatar: "👨‍🍳", voiceType: "professional" },
-      { title: "DJ", scenario: "You are announcing the next track to the audience.", instruction: "Speak energetically and clearly.", avatar: "🎧", voiceType: "neutral" },
-      { title: "Nurse", scenario: "You are explaining medication instructions.", instruction: "Be calm and precise.", avatar: "🩺", voiceType: "calm" },
-      { title: "Pilot", scenario: "You are giving a pre-flight briefing.", instruction: "Use professional and clear language.", avatar: "✈️", voiceType: "formal" },
-      { title: "Coach", scenario: "You are giving feedback to athletes after training.", instruction: "Be constructive and clear.", avatar: "🏀", voiceType: "professional" },
-      { title: "Actor Director", scenario: "You are directing actors for a film scene.", instruction: "Use expressive and clear instructions.", avatar: "🎬", voiceType: "neutral" },
-      { title: "Event Host", scenario: "You are welcoming guests to a formal dinner.", instruction: "Speak politely and clearly.", avatar: "🎉", voiceType: "formal" },
-      { title: "Travel Agent", scenario: "You are recommending travel packages to clients.", instruction: "Be clear and persuasive.", avatar: "🌍", voiceType: "professional" },
-      { title: "Medical Specialist", scenario: "You are explaining a diagnosis to a patient.", instruction: "Be precise and reassuring.", avatar: "🩺", voiceType: "calm" },
-      { title: "Reporter", scenario: "You are reporting a breaking news story live.", instruction: "Speak clearly and confidently.", avatar: "📰", voiceType: "professional" },
-      { title: "Librarian", scenario: "You are helping a student find research resources.", instruction: "Be clear and patient.", avatar: "📚", voiceType: "calm" },
     ];
 
     const today = new Date().getDay() % roles.length;
@@ -212,6 +128,14 @@ export default function RoleplayChat() {
       "english speaking practice,roleplay chat,AI conversation practice,learn english speaking,english conversation app,interview practice english,spoken english practice"
     );
   }, []);
+
+  const [usage, setUsage] = useState<{
+    used: number;
+    limit: number | "unlimited";
+    remaining: number | "unlimited";
+  } | null>(null);
+
+  const [limitReached, setLimitReached] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -304,7 +228,19 @@ export default function RoleplayChat() {
     setIsProcessing(true);
 
     try {
-      const response = await chatbotService.sendRoleplay(dailyRole.title, userText);
+      const response = await chatbotService.sendRoleplay(
+        dailyRole.title,
+        userText
+      );
+
+      // ✅ update usage from backend
+      if (response.usage) {
+        setUsage(response.usage);
+
+        if (response.usage.remaining === 0) {
+          setLimitReached(true);
+        }
+      }
 
       const botMsg: Message = {
         role: "bot",
@@ -315,9 +251,19 @@ export default function RoleplayChat() {
 
       setMessages((prev) => [...prev, botMsg]);
       speakResponse(response.reply);
-    } catch {
-      const errorText = "I'm having trouble staying in character. Please try again!";
-      setMessages((prev) => [...prev, { role: "bot", content: errorText }]);
+    } catch (err: any) {
+      let errorText = "Something went wrong. Please try again.";
+
+      if (err.message.includes("daily limit")) {
+        errorText = "You've reached your daily limit.";
+        setLimitReached(true);
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", content: errorText },
+      ]);
+
       speakResponse(errorText);
     } finally {
       setIsProcessing(false);
@@ -393,52 +339,48 @@ export default function RoleplayChat() {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t bg-white">
-            {!user?.is_paid ? (
-              <div className="text-center">
-                <button
-                  onClick={() => router.push("/pricing")}
-                  className="w-full bg-yellow-500 text-white py-4 rounded-2xl font-bold text-lg hover:bg-yellow-600 transition-all shadow-md"
-                >
-                  🔒 Upgrade to Pro to Chat
-                </button>
-                <p className="text-[11px] text-slate-400 mt-2">
-                  Unlock unlimited AI conversations & voice practice
-                </p>
-              </div>
-            ) : (
-              <form
-                onSubmit={handleSendMessage}
-                className="flex gap-2 bg-slate-100 p-2 rounded-2xl"
+          <>
+
+            <form
+              onSubmit={handleSendMessage}
+              className="flex gap-2 bg-slate-100 p-2 rounded-2xl"
+            >
+              <button
+                type="button"
+                onClick={startListening}
+                className={`p-3 rounded-xl transition-all ${
+                  isListening
+                    ? "bg-red-500 text-white animate-pulse shadow-lg"
+                    : "bg-white text-slate-400 hover:text-slate-600 shadow-sm"
+                }`}
               >
-                <button
-                  type="button"
-                  onClick={startListening}
-                  className={`p-3 rounded-xl transition-all ${
-                    isListening
-                      ? "bg-red-500 text-white animate-pulse shadow-lg"
-                      : "bg-white text-slate-400 hover:text-slate-600 shadow-sm"
-                  }`}
-                >
-                  🎙️
-                </button>
+                🎙️
+              </button>
 
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder={isListening ? "Listening..." : "Message your tutor..."}
-                  className="flex-1 bg-transparent border-none focus:ring-0 text-slate-700 placeholder:text-slate-400 text-sm md:text-base"
-                />
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={isListening ? "Listening..." : "Message your tutor..."}
+                className="flex-1 bg-transparent border-none focus:ring-0 text-slate-700"
+              />
 
-                <button
-                  disabled={!input.trim() || isProcessing}
-                  className="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-black transition-all disabled:opacity-20"
-                >
-                  Send
-                </button>
-              </form>
+              <button
+                disabled={!input.trim() || isProcessing}
+                className="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold"
+              >
+                Send
+              </button>
+            </form>
+
+            {limitReached && (
+              <button
+                onClick={() => router.push("/pricing")}
+                className="w-full mt-3 bg-yellow-500 text-white py-3 rounded-xl font-bold"
+              >
+                Upgrade for More Chats
+              </button>
             )}
-          </div>
+          </>
         </div>
       </main>
       <Footer />

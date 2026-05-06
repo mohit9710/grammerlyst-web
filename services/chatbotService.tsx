@@ -18,6 +18,11 @@ export interface RoleplayMessage {
     fixed: string | null;
     explanation: string | null;
   } | null;
+  usage?: {
+    used: number;
+    limit: number | "unlimited";
+    remaining: number | "unlimited";
+  };
 }
 
 /**
@@ -26,28 +31,6 @@ export interface RoleplayMessage {
 function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("access_token");
-}
-
-/**
- * 🔥 Generate or reuse session id (Safari safe)
- */
-function getRoleplaySessionId(): string {
-  if (typeof window === "undefined") return "";
-
-  let sessionId = localStorage.getItem("roleplay_session_id");
-
-  if (!sessionId) {
-    // ✅ crypto fallback for older browsers
-    sessionId =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : Math.random().toString(36).substring(2) +
-          Date.now().toString(36);
-
-    localStorage.setItem("roleplay_session_id", sessionId);
-  }
-
-  return sessionId;
 }
 
 /**
@@ -97,7 +80,7 @@ export const chatbotService = {
   },
 
   /**
-   * 🔥 Roleplay chat
+   * 🔥 Roleplay chat (UPDATED - NO SESSION ID)
    */
   async sendRoleplay(
     role_title: string,
@@ -108,8 +91,6 @@ export const chatbotService = {
     if (!token) {
       throw new Error("Authentication required. Please log in.");
     }
-
-    const session_id = getRoleplaySessionId();
 
     let response: Response;
 
@@ -123,7 +104,6 @@ export const chatbotService = {
         body: JSON.stringify({
           role_title,
           user_input,
-          session_id,
         }),
       });
     } catch {
@@ -132,22 +112,21 @@ export const chatbotService = {
 
     const data = await safeJson(response);
 
-    // ✅ better error handling
+    // ✅ Better error handling
     if (!response.ok) {
       if (response.status === 403) {
-        throw new Error(data?.detail || "Daily limit reached.");
+        if (data?.detail === "DAILY_LIMIT_REACHED") {
+          throw new Error("You’ve reached your daily limit.");
+        }
+        if (data?.detail === "SESSION_LIMIT_REACHED") {
+          throw new Error("Session limit reached.");
+        }
+        throw new Error(data?.detail || "Access denied.");
       }
+
       throw new Error(data?.detail || "Failed to get response");
     }
 
     return data;
-  },
-
-  /**
-   * 🔥 Reset session (call when chat ends)
-   */
-  resetRoleplaySession() {
-    if (typeof window === "undefined") return;
-    localStorage.removeItem("roleplay_session_id");
   },
 };
