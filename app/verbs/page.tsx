@@ -44,15 +44,15 @@ export default function VerbsCarousel() {
   
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    // if (!token) {
-    //   router.replace("/auth/login");
-    //   return;
-    // }
+    if (!token) {
+      // router.replace("/auth/login");
+      // return;
+    }
 
     setLoading(true);
 
     Promise.all([
-      fetchVerbs(1, 30, token),
+      fetchVerbs(1, 30),
     ])
       .then(([verbsData]) => {
         setVerbs(verbsData);

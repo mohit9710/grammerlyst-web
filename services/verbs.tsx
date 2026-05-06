@@ -21,9 +21,9 @@ export async function fetchVerbs(page = 1, limit = 20, token?: string): Promise<
   };
 
   // Only attach if token is a real string
-  if (token && token.length > 10) { 
-    headers["Authorization"] = `Bearer ${token}`;
-  }
+  // if (token && token.length > 10) { 
+  //   headers["Authorization"] = `Bearer ${token}`;
+  // }
 
   const res = await fetch(`${API_BASE_URL}/verbs/getverbs?page=${page}&limit=${limit}`, {
     method: "GET",
