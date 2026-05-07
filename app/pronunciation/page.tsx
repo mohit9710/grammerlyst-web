@@ -43,7 +43,7 @@ export default function PronunciationTest() {
   // ✅ Redirect if not active
   useEffect(() => {
     if (!planLoading && !plan?.active) {
-      router.replace("/pricing"); // better than push (no back nav)
+      // router.replace("/pricing"); // better than push (no back nav)
     }
   }, [plan, planLoading, router]);
 
@@ -77,7 +77,7 @@ export default function PronunciationTest() {
 
   // ✅ Safety fallback (no flicker, no unauthorized render)
   if (!plan?.active) {
-    return null; // OR custom upgrade UI
+    // return null; // OR custom upgrade UI
   }
 
   return (
@@ -106,7 +106,7 @@ export default function PronunciationTest() {
         <Navbar />
 
         {/* ✅ Only render if active */}
-        <Pronunciation />
+        <Pronunciation plan={plan} />
 
         <Footer />
       </div>
