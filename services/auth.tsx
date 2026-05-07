@@ -14,6 +14,11 @@ interface SignupPayload {
   referral_code: string;
 }
 
+interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
+}
+
 export async function signIn(
   email: string,
   password: string
@@ -52,6 +57,36 @@ export async function signupUser(payload: SignupPayload) {
       data?.detail ||
       data?.message ||
       "Signup failed";
+
+    throw new Error(errorMessage);
+  }
+
+  return data;
+}
+
+export async function changePassword(
+  token: string,
+  payload: ChangePasswordPayload
+) {
+  const res = await fetch(
+    `${API_BASE_URL}/auth/change_password`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    const errorMessage =
+      data?.detail ||
+      data?.message ||
+      "Failed to change password";
 
     throw new Error(errorMessage);
   }

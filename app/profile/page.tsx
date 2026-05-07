@@ -164,6 +164,13 @@ export default function ProfilePage() {
             >
               {isEditing ? "Save" : "Edit"}
             </button>
+
+            <button
+              onClick={() => router.push("/auth/change-password")}
+              className="px-6 py-3 rounded-xl border border-slate-300 hover:bg-slate-100"
+            >
+              Change Password
+            </button>
           </div>
         </div>
 

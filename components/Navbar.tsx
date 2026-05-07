@@ -13,7 +13,7 @@ export default function Navbar() {
 
   const logoutHandler = () => {
     localStorage.removeItem("access_token");
-    router.push("/");
+    router.push("/dashboard");
     window.location.reload(); // optional: force UI reset
   };
 
