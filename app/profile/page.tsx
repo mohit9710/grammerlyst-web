@@ -9,6 +9,8 @@ import {
 } from "@/services/userService";
 import { fetchReferralDashboard } from "@/services/referralService";
 import Footer from "@/components/Footer";
+import Referral from "@/components/Referral";
+import ReportAnalysis from "@/components/ReportAnalysis";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -20,7 +22,6 @@ export default function ProfilePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [user, setUser] = useState<any>(null);
-  const [referralData, setReferralData] = useState<any>(null);
 
   // ✅ Load profile + referral stats
   useEffect(() => {
@@ -33,7 +34,6 @@ export default function ProfilePage() {
     ])
       .then(([userRes, referralRes]) => {
         setUser(userRes);
-        setReferralData(referralRes);
         setLoading(false);
       })
       .catch(() => router.push("/auth/login"));
@@ -76,9 +76,6 @@ export default function ProfilePage() {
 
   if (loading || !user)
     return <div className="p-20 text-center font-bold">Loading...</div>;
-
-  // ✅ Referral link
-  const referralLink = `${window.location.origin}/auth/signup?ref=${user.referral_code}`;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -175,43 +172,14 @@ export default function ProfilePage() {
         </div>
 
         {/* 🔥 REFERRAL SECTION */}
-        <div className="bg-white rounded-[2rem] shadow p-8 mb-8">
-          <h2 className="text-2xl font-bold mb-4">
-            Invite & Earn
-          </h2>
+        <Referral />
 
-          <p className="text-slate-500 mb-4">
-            Share your referral link and earn rewards.
-          </p>
-
-          <div className="flex gap-2">
-            <input
-              value={referralLink}
-              readOnly
-              className="flex-1 border px-4 py-3 rounded-xl"
-            />
-            <button
-              onClick={() =>
-                navigator.clipboard.writeText(referralLink)
-              }
-              className="bg-blue-600 text-white px-4 rounded-xl"
-            >
-              Copy
-            </button>
-          </div>
+        {/* 📈 REPORT ANALYSIS */}
+        <div className="mt-10">
+          <ReportAnalysis user={user} />
         </div>
-
-        {/* 📊 REFERRAL STATS */}
-        {referralData && (
-          <div className="grid md:grid-cols-4 gap-4">
-            <Stat title="Total Referrals" value={referralData.total_referrals} />
-            <Stat title="Successful" value={referralData.completed_referrals} />
-            <Stat title="Rewards" value={referralData.total_reward_value+' Days'} />
-            <Stat title="Earnings ₹" value={referralData.total_earning} />
-          </div>
-        )}
       </main>
-
+          
       <Footer />
     </div>
   );

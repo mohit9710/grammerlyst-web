@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { chatbotService, CorrectionResponse } from "@/services/chatbotService";
 import Footer from "@/components/Footer";
+import { saveAttempt } from "@/services/reportAnalysis";
 
 export default function AIChatTutor() {
   const router = useRouter();
@@ -54,27 +55,95 @@ export default function AIChatTutor() {
   }, [router]);
 
   const handleFix = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isProcessing) return;
+  e.preventDefault();
 
-    setIsProcessing(true);
-    setError(null);
+  if (!input.trim() || isProcessing) return;
 
-    try {
-      // Calling the API service
-      const result = await chatbotService.correctSentence(input);
-      
-      // Update the list with the real API response
-      setCorrections((prev) => [result, ...prev]);
-      setInput("");
-    } catch (err: any) {
-      setError(err.message || "Something went wrong. Please try again.");
-      // Auto-hide error after 4 seconds
-      setTimeout(() => setError(null), 4000);
-    } finally {
-      setIsProcessing(false);
+  setIsProcessing(true);
+  setError(null);
+
+  try {
+    const token = localStorage.getItem("access_token");
+
+    // ✅ AI Correction API
+    const result = await chatbotService.correctSentence(input);
+
+    // ✅ Save correction history in UI
+    setCorrections((prev) => [result, ...prev]);
+
+    // =====================================================
+    // ✅ SAVE ATTEMPT API
+    // =====================================================
+
+    // ✅ SAVE ATTEMPT
+    if (token) {
+      try {
+        await saveAttempt(token, {
+          exercise_type: "sentence_polisher",
+
+          question: input,
+
+          user_answer: input,
+
+          corrected_answer: result.fixed,
+
+          ai_feedback: result.explanation,
+
+          accuracy_score: 85,
+
+          grammar_score: 90,
+
+          pronunciation_score: 0,
+
+          fluency_score: 80,
+
+          vocabulary_score: 75,
+
+          listening_score: 0,
+
+          verb_score: 70,
+
+          confidence_score: 78,
+
+          speaking_speed: 0,
+
+          pause_count: 0,
+
+          filler_word_count: 0,
+
+          xp_earned: 15,
+
+          duration_seconds: 30,
+        });
+
+      } catch (saveErr) {
+
+        console.error(
+          "Save attempt failed",
+          saveErr
+        );
+      }
     }
-  };
+
+    // ✅ Clear input
+    setInput("");
+
+  } catch (err: any) {
+
+    setError(
+      err.message ||
+        "Something went wrong. Please try again."
+    );
+
+    setTimeout(
+      () => setError(null),
+      4000
+    );
+
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
 
   if (loading) return <div className="p-20 text-center font-bold">Loading Sentence-Polisher...</div>;

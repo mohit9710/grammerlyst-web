@@ -1,8 +1,3 @@
-/**
- * Chatbot Service
- * Handles communication with the FastAPI backend.
- */
-
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "/api/backend";
 

@@ -16,6 +16,15 @@ export interface PaymentStatus {
   commission?: number;
 }
 
+export interface Plan {
+  id: number;
+  name: string;
+  sub_name: string;
+  billing_type: "monthly" | "yearly";
+  price: number;
+  duration: number;
+}
+
 // services/purchaseService.ts
 
 export const completePurchase = async (
@@ -177,6 +186,18 @@ export const fetchMyPlan = async () => {
 
   if (!res.ok) {
     throw new Error("Failed to fetch plan");
+  }
+
+  return res.json();
+};
+
+/*---------------- Plans ------------------ */
+
+export const fetchPlans = async (): Promise<Plan[]> => {
+  const res = await fetch(`${API_BASE_URL}/api/plans`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch plans");
   }
 
   return res.json();

@@ -5,6 +5,7 @@ import "../../styles/verbs.css";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { fetchVerbs, Verb, markVerbViewed } from "@/services/verbs";
+import { saveAttempt } from "@/services/reportAnalysis";
 import Footer from "@/components/Footer";
 
 export default function VerbsCarousel() {
@@ -172,6 +173,26 @@ export default function VerbsCarousel() {
                         if (token) {
                           try {
                             await markVerbViewed(verb.id, token);
+
+                            await saveAttempt(token, {
+                              question: `Meaning of ${verb.base}`,
+
+                              user_answer: verb.base,
+
+                              corrected_answer: verb.base,
+
+                              accuracy_score: 100,
+
+                              vocabulary_score: 85,
+
+                              verb_score: 95,
+
+                              confidence_score: 80,
+
+                              xp_earned: 5,
+
+                              duration_seconds: 20,
+                            });
                             // Optional: Re-fetch or update local state here to see instant progress change
                           } catch (err) {
                             console.error("View mark failed", err);

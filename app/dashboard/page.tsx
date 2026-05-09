@@ -88,84 +88,116 @@ export default function Dashboard() {
           <i className="fas fa-th-large text-blue-500"></i> Learning Modules
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-  {/* Verb Workshop */}
-  <ModuleLink 
-    analytics={analyticsInstance}
-    href="/verbs" 
-    color="blue" 
-    title="Verb Workshop" 
-    desc="Master irregular verbs and visual vocabulary." 
-    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 6 4 14-8-4-8 4 4-14"/><path d="M12 2v2"/><path d="M12 18v2"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m19.07 4.93-.7.7"/><path d="m5.63 18.37-.7.7"/><path d="m18.37 18.37.7.7"/><path d="m4.93 4.93.7.7"/></svg>} 
-  />
+        {/* Verb Workshop */}
+        <ModuleLink 
+          analytics={analyticsInstance}
+          href="/verbs" 
+          color="blue" 
+          title="Verb Workshop" 
+          desc="Master irregular verbs and visual vocabulary." 
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 6 4 14-8-4-8 4 4-14"/><path d="M12 2v2"/><path d="M12 18v2"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m19.07 4.93-.7.7"/><path d="m5.63 18.37-.7.7"/><path d="m18.37 18.37.7.7"/><path d="m4.93 4.93.7.7"/></svg>} 
+        />
 
-  {/* Grammar Rules */}
-  <ModuleLink 
-    analytics={analyticsInstance}
-    href="/grammar" 
-    color="purple" 
-    title="Grammar Rules" 
-    desc="Comprehensive guide to tenses and syntax." 
-    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>} 
-  />
+        {/* Grammar Rules */}
+        <ModuleLink 
+          analytics={analyticsInstance}
+          href="/grammar" 
+          color="purple" 
+          title="Grammar Rules" 
+          desc="Comprehensive guide to tenses and syntax." 
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>} 
+        />
 
-  {/* Sentence Polisher (New) */}
-  <ModuleLink 
-    analytics={analyticsInstance}
-    href="/sentence-polisher" 
-    color="rose" 
-    title="Sentence Polisher" 
-    desc="Instant AI grammar and style refinement." 
-    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>} 
-  />
+        {/* Sentence Polisher (New) */}
+        <ModuleLink 
+          analytics={analyticsInstance}
+          href="/sentence-polisher" 
+          color="rose" 
+          title="Sentence Polisher" 
+          desc="Instant AI grammar and style refinement." 
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>} 
+        />
 
-  {/* Role-Based Chat (New) */}
-  <ModuleLink 
-    analytics={analyticsInstance}
-    href="/role-play" 
-    color="rose" 
-    title="Roleplay Chat" 
-    desc="Practice scenarios: Doctor, Interviewer, etc." 
-    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>} 
-  />
+        {/* Role-Based Chat (New) */}
+        <ModuleLink 
+          analytics={analyticsInstance}
+          href="/role-play" 
+          color="rose" 
+          title="Roleplay Chat" 
+          desc="Practice scenarios: Doctor, Interviewer, etc." 
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>} 
+        />
 
-  {/* Language Games */}
-  <ModuleLink 
-    analytics={analyticsInstance}
-    href="/games" 
-    color="blue" 
-    title="Language Games" 
-    desc="Daily challenges to boost your memory." 
-    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="15.5" cy="13" r=".5"/><circle cx="18.5" cy="11" r=".5"/></svg>} 
-  />
+        {/* Language Games */}
+        <ModuleLink 
+          analytics={analyticsInstance}
+          href="/games" 
+          color="blue" 
+          title="Language Games" 
+          desc="Daily challenges to boost your memory." 
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="15.5" cy="13" r=".5"/><circle cx="18.5" cy="11" r=".5"/></svg>} 
+        />
 
-{/* Pronunciation Lab */}
-<ModuleLink 
-  analytics={analyticsInstance}
-  href="/pronunciation" 
-  color="purple" 
-  title="Pronunciation Lab" 
-  desc="Improve your speaking accuracy with real-time voice feedback." 
-  icon={
-    <svg 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    >
-      <path d="M12 1v22"/>
-      <path d="M5 8v8"/>
-      <path d="M19 8v8"/>
-      <path d="M2 12h2"/>
-      <path d="M20 12h2"/>
-      <path d="M8 5v14"/>
-      <path d="M16 5v14"/>
-    </svg>
-  } 
-/>
+      {/* Pronunciation Lab */}
+      <ModuleLink 
+        analytics={analyticsInstance}
+        href="/pronunciation" 
+        color="purple" 
+        title="Pronunciation Lab" 
+        desc="Improve your speaking accuracy with real-time voice feedback." 
+        icon={
+          <svg 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <path d="M12 1v22"/>
+            <path d="M5 8v8"/>
+            <path d="M19 8v8"/>
+            <path d="M2 12h2"/>
+            <path d="M20 12h2"/>
+            <path d="M8 5v14"/>
+            <path d="M16 5v14"/>
+          </svg>
+        } 
+      />
+
+      {/* Accent Training */}
+      <ModuleLink
+        analytics={analyticsInstance}
+        href="/accent-training"
+        color="violet"
+        title="Accent Training"
+        desc="Train your American, British, and natural English accent with AI-powered speaking practice."
+        icon={
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            {/* Globe */}
+            <circle cx="12" cy="12" r="10" />
+
+            {/* Accent/Sound waves */}
+            <path d="M8 12a4 4 0 0 1 4-4" />
+            <path d="M8 16a8 8 0 0 1 8-8" />
+
+            {/* Mic */}
+            <path d="M12 9v4" />
+            <path d="M10 11a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+          </svg>
+        }
+      />
 
   {/* AI Chat Tutor */}
   {/* <ModuleLink 
