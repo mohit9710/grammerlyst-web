@@ -148,10 +148,10 @@ export default function GrammarWorkshop() {
           lesson.title,
 
         user_answer:
-          lesson.example_sentence,
+          lesson.example_sentence || "",
 
         corrected_answer:
-          lesson.example_sentence,
+          lesson.example_sentence || "",
 
         ai_feedback:
           `User studied grammar topic: ${lesson.title}`,

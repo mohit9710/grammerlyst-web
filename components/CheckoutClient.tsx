@@ -10,7 +10,13 @@ import {
 
 type BillingType = "monthly" | "yearly";
 
-export default function CheckoutClient() {
+interface CheckoutClientProps {
+  planId: string;
+}
+
+export default function CheckoutClient({
+  planId,
+}: CheckoutClientProps) {
   const router = useRouter();
 
   const [plans, setPlans] = useState<Plan[]>([]);

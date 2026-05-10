@@ -87,7 +87,9 @@ export default function AIChatTutor() {
 
           corrected_answer: result.fixed,
 
-          ai_feedback: result.explanation,
+          ai_feedback:
+            result.rule ||
+            "Sentence corrected by AI",
 
           accuracy_score: 85,
 

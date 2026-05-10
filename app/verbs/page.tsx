@@ -175,19 +175,21 @@ export default function VerbsCarousel() {
                             await markVerbViewed(verb.id, token);
 
                             await saveAttempt(token, {
+                              exercise_type: "verbs",
+
                               question: `Meaning of ${verb.base}`,
 
                               user_answer: verb.base,
 
-                              corrected_answer: verb.base,
+                              corrected_answer: verb.meaning,
 
                               accuracy_score: 100,
 
-                              vocabulary_score: 85,
+                              vocabulary_score: 95,
 
-                              verb_score: 95,
+                              verb_score: 100,
 
-                              confidence_score: 80,
+                              confidence_score: 90,
 
                               xp_earned: 5,
 

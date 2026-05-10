@@ -6,6 +6,7 @@ import { chatbotService } from "@/services/chatbotService";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
 import { useUserPlan } from "@/hooks/usePlan";
+import { saveAttempt } from "@/services/reportAnalysis";
 
 interface Message {
   role: "user" | "bot";
@@ -251,6 +252,75 @@ export default function RoleplayChat() {
 
       setMessages((prev) => [...prev, botMsg]);
       speakResponse(response.reply);
+
+      try {
+      const token =
+        localStorage.getItem(
+          "access_token"
+        );
+
+      if (token) {
+
+        await saveAttempt(
+          token,
+          {
+            exercise_type:
+              "roleplay",
+
+            question:
+              dailyRole.scenario,
+
+            user_answer:
+              userText,
+
+            corrected_answer:
+              response.correction
+                ?.fixed ||
+              response.reply,
+
+            ai_feedback:
+              response.correction
+                ?.explanation ||
+              response.reply,
+
+            accuracy_score:
+              response.correction
+                ?.fixed
+                ? 85
+                : 75,
+
+            grammar_score:
+              response.correction
+                ?.fixed
+                ? 85
+                : 75,
+
+            fluency_score:
+              80,
+
+            vocabulary_score:
+              80,
+
+            confidence_score:
+              80,
+
+            xp_earned:
+              15,
+
+            duration_seconds:
+              60,
+          }
+        );
+      }
+
+    } catch (saveError) {
+
+      console.error(
+        "Save attempt failed:",
+        saveError
+      );
+    }
+
     } catch (err: any) {
       let errorText = "Something went wrong. Please try again.";
 
