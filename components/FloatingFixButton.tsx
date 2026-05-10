@@ -7,7 +7,7 @@ export default function FloatingFixButton() {
 
   return (
     <button
-      onClick={() => router.push("/chatbot")}
+      onClick={() => router.push("/sentence-polisher")}
       className="
         fixed bottom-6 right-6 z-50
         bg-orange-500 hover:bg-orange-600
