@@ -55,7 +55,7 @@ export default function Footer() {
         <div>
           <h4 className="text-white font-semibold mb-4">Follow Us</h4>
           <ul className="space-y-2 text-sm">
-            <li><Link href="/" className="hover:text-blue-400 transition">Youtube</Link></li>
+            <li><Link href="https://www.youtube.com/@grammrlyst" target="_blank" className="hover:text-blue-400 transition">Youtube</Link></li>
             <li><Link href="https://www.instagram.com/grammrlyst/" target="_blank" className="hover:text-blue-400 transition">Instragram</Link></li>
             <li><Link href="/reports" className="hover:text-blue-400 transition">Facebook</Link></li>
           </ul>

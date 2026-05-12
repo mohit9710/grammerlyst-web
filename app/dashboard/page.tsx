@@ -171,7 +171,7 @@ export default function Dashboard() {
       <ModuleLink
         analytics={analyticsInstance}
         href="/accent-training"
-        color="violet"
+        color="blue"
         title="Accent Training"
         desc="Train your American, British, and natural English accent with AI-powered speaking practice."
         icon={
@@ -197,6 +197,35 @@ export default function Dashboard() {
             <path d="M10 11a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
           </svg>
         }
+      />
+
+      {/* Listening Lab */}
+      <ModuleLink 
+        analytics={analyticsInstance}
+        href="/listening" 
+        color="purple" 
+        title="Listening Lab" 
+        desc="Improve your English Listening using this lab." 
+        icon={
+          <svg 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <path d="M12 1v22"/>
+            <path d="M5 8v8"/>
+            <path d="M19 8v8"/>
+            <path d="M2 12h2"/>
+            <path d="M20 12h2"/>
+            <path d="M8 5v14"/>
+            <path d="M16 5v14"/>
+          </svg>
+        } 
       />
 
   {/* AI Chat Tutor */}

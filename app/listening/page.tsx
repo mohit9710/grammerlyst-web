@@ -8,7 +8,6 @@ import Footer from "@/components/Footer";
 import ListeningPractice from "@/components/ListeningPractice";
 
 import { fetchMyPlan } from "@/services/purchaseService";
-
 export default function ListeningPage() {
   
 
