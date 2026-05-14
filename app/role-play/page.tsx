@@ -36,6 +36,8 @@ export default function RoleplayChat() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { plan, loading } = useUserPlan();
 
+  const socketRef = useRef<WebSocket | null>(null);
+
   const [dailyRole, setDailyRole] = useState<Role>({
     title: "Job Interviewer",
     scenario: "You are applying for a Senior Designer role at a tech firm.",
@@ -220,127 +222,151 @@ export default function RoleplayChat() {
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     e?.preventDefault();
+
     if (!input.trim() || isProcessing) return;
 
     const userText = input;
-    const userMsg: Message = { role: "user", content: userText };
-    setMessages((prev) => [...prev, userMsg]);
+
     setInput("");
     setIsProcessing(true);
 
-    try {
-      const response = await chatbotService.sendRoleplay(
-        dailyRole.title,
-        userText
-      );
+    // ADD USER + EMPTY BOT MESSAGE
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        content: userText,
+      },
+      {
+        role: "bot",
+        content: "",
+      },
+    ]);
 
-      // ✅ update usage from backend
-      if (response.usage) {
-        setUsage(response.usage);
+    if (!socketRef.current) return;
 
-        if (response.usage.remaining === 0) {
-          setLimitReached(true);
+    let streamedText = "";
+
+    socketRef.current.send(
+      JSON.stringify({
+        role_title: dailyRole.title,
+        user_input: userText,
+      })
+    );
+
+    socketRef.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      // =========================
+      // STREAMING RESPONSE
+      // =========================
+      if (data.type === "chunk") {
+        // backend se sirf text chunk aaye
+        if (typeof data.content === "string") {
+          streamedText += data.content;
+
+          // JSON visible na ho
+          const cleanText = streamedText
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .replace(/\{[\s\S]*?"reply"\s*:/g, "")
+            .replace(/"correction"[\s\S]*/g, "")
+            .replace(/^\s*"/, "")
+            .replace(/"\s*$/, "");
+
+          setMessages((prev) => {
+            const updated = [...prev];
+
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+              content: cleanText,
+            };
+
+            return updated;
+          });
         }
       }
 
-      const botMsg: Message = {
-        role: "bot",
-        content: response.reply,
-        correction: response.correction ?? undefined,
-        originalInput: userText,
-      };
+      // =========================
+      // FINAL RESPONSE
+      // =========================
+      if (data.type === "done") {
+        setIsProcessing(false);
 
-      setMessages((prev) => [...prev, botMsg]);
-      speakResponse(response.reply);
+        let parsed: any = null;
 
-      try {
-      const token =
-        localStorage.getItem(
-          "access_token"
-        );
+        try {
+          parsed =
+            typeof data.data === "string"
+              ? JSON.parse(data.data)
+              : data.data;
+        } catch (err) {
+          console.log("JSON Parse Error");
+        }
 
-      if (token) {
+        // FINAL CLEAN RESPONSE
+        const finalReply =
+          parsed?.reply ||
+          streamedText ||
+          "Sorry, I didn't understand.";
 
-        await saveAttempt(
-          token,
-          {
-            exercise_type:
-              "roleplay",
+        // GRAMMAR CORRECTION FIX
+        let correctionData = undefined;
 
-            question:
-              dailyRole.scenario,
+        if (
+          parsed?.correction &&
+          (parsed.correction.fixed ||
+            parsed.correction.explanation)
+        ) {
+          correctionData = {
+            fixed: parsed.correction.fixed,
+            explanation: parsed.correction.explanation,
+          };
+        }
 
-            user_answer:
-              userText,
+        setMessages((prev) => {
+          const updated = [...prev];
 
-            corrected_answer:
-              response.correction
-                ?.fixed ||
-              response.reply,
+          updated[updated.length - 1] = {
+            role: "bot",
+            content: finalReply,
+            correction: correctionData,
+            originalInput: userText,
+          };
 
-            ai_feedback:
-              response.correction
-                ?.explanation ||
-              response.reply,
+          return updated;
+        });
 
-            accuracy_score:
-              response.correction
-                ?.fixed
-                ? 85
-                : 75,
-
-            grammar_score:
-              response.correction
-                ?.fixed
-                ? 85
-                : 75,
-
-            fluency_score:
-              80,
-
-            vocabulary_score:
-              80,
-
-            confidence_score:
-              80,
-
-            xp_earned:
-              15,
-
-            duration_seconds:
-              60,
-          }
-        );
+        speakResponse(finalReply);
       }
-
-    } catch (saveError) {
-
-      console.error(
-        "Save attempt failed:",
-        saveError
-      );
-    }
-
-    } catch (err: any) {
-      let errorText = "Something went wrong. Please try again.";
-
-      if (err.message.includes("daily limit")) {
-        errorText = "You've reached your daily limit.";
-        setLimitReached(true);
-      }
-
-      setMessages((prev) => [
-        ...prev,
-        { role: "bot", content: errorText },
-      ]);
-
-      speakResponse(errorText);
-    } finally {
-      setIsProcessing(false);
-    }
+    };
   };
 
   const replayVoice = (text: string) => speakResponse(text);
+
+  useEffect(() => {
+    const socket = new WebSocket(
+      "ws://127.0.0.1:9000/sentence/ws/roleplay"
+    );
+
+    socket.onopen = () => {
+      console.log("WebSocket Connected");
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket Disconnected");
+    };
+
+    socket.onerror = (err) => {
+      console.error("WebSocket Error", err);
+    };
+
+    socketRef.current = socket;
+
+    return () => {
+      socket.close();
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">

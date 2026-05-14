@@ -22,12 +22,11 @@ export default function AccentSwitchPage() {
 
   const [strictMode, setStrictMode] = useState(false);
 
-  // ✅ LOAD VOICES (FIX SSR ISSUE)
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-    // if (!token) {
-    //   router.replace("/auth/login");
-    // }
+    if (!token) {
+      router.replace("/auth/login");
+    }
     
     if (typeof window === "undefined") return;
 
