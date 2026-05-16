@@ -113,53 +113,86 @@ export default function VerbsCarousel() {
       }}
     />
       <Navbar />
-      <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-white to-slate-100 py-12 px-4">
-        
-        {/* SEO List Section - Visually Hidden but readable by Google */}
-                    <div className="sr-only">
-                      {verbs.map(v => (
-                        <article key={v.id}>
-                          <h2>{v.base} meaning</h2>
-                          <p>{v.meaning}</p>
-                          <p>Example: {v.example}</p>
-                        </article>
-                      ))}
-                    </div>
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#eff6ff,_#f8fafc_45%,_#ffffff)] py-10 px-4 sm:px-6 overflow-hidden">
+  
+        {/* BACKGROUND GLOW */}
+        <div className="absolute top-0 left-0 w-80 h-80 bg-blue-300/20 blur-3xl rounded-full"></div>
+        <div className="absolute top-20 right-0 w-96 h-96 bg-indigo-300/20 blur-3xl rounded-full"></div>
 
-        {/* Header Section */}
-        <div className="max-w-4xl mx-auto text-center mb-16">
-          <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-900 mb-6 tracking-tight">
-            Verb Workshop
+        {/* SEO SECTION */}
+        <div className="sr-only">
+          {verbs.map(v => (
+            <article key={v.id}>
+              <h2>{v.base} meaning</h2>
+              <p>{v.meaning}</p>
+              <p>Example: {v.example}</p>
+            </article>
+          ))}
+        </div>
+
+        {/* HERO */}
+        <div className="relative z-10 max-w-5xl mx-auto text-center mb-14">
+          
+          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-5 py-2 rounded-full font-bold text-sm mb-6">
+            ⚡ AI Powered Learning
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+            Verb
+            <span className="bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+              {" "}Workshop
+            </span>
           </h1>
-          <p className="text-slate-500 text-lg mb-10">
-            Master the language with interactive flashcards
+
+          <p className="text-slate-500 text-base sm:text-lg mt-5 max-w-2xl mx-auto leading-relaxed">
+            Master English verbs with interactive flashcards,
+            pronunciation practice and real-world examples.
           </p>
 
-          <div className="relative group max-w-2xl mx-auto">
+          {/* SEARCH */}
+          <div className="relative mt-8 max-w-2xl mx-auto group">
+            
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
-            <i className="fas fa-search absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 text-xl"></i>
+
+            <i className="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 z-10"></i>
+
             <input
               type="text"
               placeholder="Search verbs..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="relative w-full pl-16 pr-6 py-6 rounded-2xl bg-white border border-slate-100 shadow-2xl outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-xl"
+              onChange={(e) =>
+                setSearchTerm(e.target.value)
+              }
+              className="relative w-full bg-white/90 backdrop-blur-xl border border-white/60 shadow-2xl rounded-2xl pl-14 pr-5 py-4 text-base outline-none focus:ring-4 focus:ring-blue-200 transition-all"
             />
           </div>
         </div>
 
-        {/* Carousel Section */}
-        <div className="relative max-w-[95%] lg:max-w-7xl mx-auto mb-16">
+        {/* VERBS SLIDER */}
+        <div className="relative max-w-7xl mx-auto mb-14">
+
           {filteredVerbs.length > 0 ? (
             <>
-              <button onClick={() => scroll("left")} className="absolute -left-4 md:-left-8 top-1/2 -translate-y-1/2 z-30 bg-white/80 backdrop-blur-md p-5 rounded-full shadow-xl hover:bg-blue-600 hover:text-white transition-all text-slate-700 border border-slate-100">
-                <i className="fas fa-chevron-left text-xl"></i>
+              {/* LEFT */}
+              <button
+                onClick={() => scroll("left")}
+                className="hidden lg:flex absolute -left-5 top-1/2 -translate-y-1/2 z-30 bg-white/90 backdrop-blur-xl p-4 rounded-full shadow-2xl hover:bg-blue-600 hover:text-white transition-all text-slate-700 border border-slate-100"
+              >
+                <i className="fas fa-chevron-left"></i>
               </button>
 
-              <div ref={sliderRef} className="flex gap-8 overflow-x-auto scroll-smooth no-scrollbar snap-x snap-mandatory py-10 px-4">
+              {/* CARDS */}
+              <div
+                ref={sliderRef}
+                className="flex gap-5 overflow-x-auto scroll-smooth no-scrollbar snap-x snap-mandatory py-5 px-1"
+              >
                 {filteredVerbs.map((verb, index) => {
-                  const isLocked = verb.type === "paid" && !user.isPro;
-                  const stage = verb.progress?.stage || 0;
+                  const isLocked =
+                    verb.type === "paid" &&
+                    !user.isPro;
+
+                  const stage =
+                    verb.progress?.stage || 0;
 
                   return (
                     <div
@@ -169,80 +202,122 @@ export default function VerbsCarousel() {
                           router.replace("/pricing");
                           return;
                         }
-                        const token = localStorage.getItem("access_token");
+
+                        const token =
+                          localStorage.getItem(
+                            "access_token"
+                          );
+
                         if (token) {
                           try {
-                            await markVerbViewed(verb.id, token);
+                            await markVerbViewed(
+                              verb.id,
+                              token
+                            );
 
-                            await saveAttempt(token, {
-                              exercise_type: "verbs",
+                            await saveAttempt(
+                              token,
+                              {
+                                exercise_type:
+                                  "verbs",
 
-                              question: `Meaning of ${verb.base}`,
+                                question: `Meaning of ${verb.base}`,
 
-                              user_answer: verb.base,
+                                user_answer:
+                                  verb.base,
 
-                              corrected_answer: verb.meaning,
+                                corrected_answer:
+                                  verb.meaning,
 
-                              accuracy_score: 100,
+                                accuracy_score: 100,
 
-                              vocabulary_score: 95,
+                                vocabulary_score: 95,
 
-                              verb_score: 100,
+                                verb_score: 100,
 
-                              confidence_score: 90,
+                                confidence_score: 90,
 
-                              xp_earned: 5,
+                                xp_earned: 5,
 
-                              duration_seconds: 20,
-                            });
-                            // Optional: Re-fetch or update local state here to see instant progress change
+                                duration_seconds: 20,
+                              }
+                            );
                           } catch (err) {
-                            console.error("View mark failed", err);
+                            console.error(err);
                           }
                         }
+
                         setSelectedVerb(verb);
                       }}
-                      className={`verb-card snap-center cursor-pointer transition-all duration-300 relative 
-                        ${selectedVerb?.id === verb.id ? "ring-4 ring-blue-500 ring-offset-4 scale-105" : "hover:scale-102"}
-                        ${stage === 3 ? "mastered-glow" : ""} 
-                      `}
+                      className={`snap-center min-w-[220px] sm:min-w-[240px] lg:min-w-[250px] relative rounded-[2rem] overflow-hidden transition-all duration-300 cursor-pointer
+                      ${
+                        selectedVerb?.id ===
+                        verb.id
+                          ? "scale-[1.03] ring-4 ring-blue-500 shadow-2xl"
+                          : "hover:-translate-y-1 hover:shadow-2xl"
+                      }`}
                     >
-                      {/* 1. Progress Badge */}
-                      <span className={`absolute top-3 right-3 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider z-10
-                        ${!verb.progress ? "bg-slate-100 text-slate-400" : 
-                          stage === 3 ? "bg-emerald-500 text-white" :
-                          stage === 2 ? "bg-blue-500 text-white" : "bg-amber-400 text-white"}
-                      `}>
-                        {!verb.progress ? "New" : stage === 3 ? "Mastered" : stage === 2 ? "Learnt" : "Started"}
+
+                      {/* PROGRESS */}
+                      <span
+                        className={`absolute top-4 right-4 z-20 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider
+                        ${
+                          !verb.progress
+                            ? "bg-slate-100 text-slate-500"
+                            : stage === 3
+                            ? "bg-emerald-500 text-white"
+                            : stage === 2
+                            ? "bg-blue-500 text-white"
+                            : "bg-amber-400 text-white"
+                        }`}
+                      >
+                        {!verb.progress
+                          ? "New"
+                          : stage === 3
+                          ? "Mastered"
+                          : stage === 2
+                          ? "Learnt"
+                          : "Started"}
                       </span>
 
-                      {/* 2. Lock UI */}
+                      {/* LOCK */}
                       {isLocked && (
-                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm rounded-3xl">
-                          <i className="fas fa-lock text-white text-3xl mb-2"></i>
-                          <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-blue-600 px-3 py-1 rounded-full">Pro Only</span>
+                        <div className="absolute inset-0 z-30 bg-slate-900/70 backdrop-blur-md flex flex-col items-center justify-center rounded-[2rem]">
+                          <i className="fas fa-lock text-white text-2xl mb-3"></i>
+
+                          <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-blue-600 px-3 py-1 rounded-full">
+                            Pro Only
+                          </span>
                         </div>
                       )}
 
-                      <div className="card-inner">
-                        <div className="card-front flex flex-col items-center justify-center bg-white shadow-lg rounded-3xl border border-slate-100">
-                          <h3 className="text-3xl font-bold text-slate-800 tracking-tight">
+                      {/* CARD */}
+                      <div className="bg-white border border-white/60 shadow-xl rounded-[2rem] p-7 h-[250px] flex flex-col justify-between">
+                        
+                        <div>
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-lg mb-6">
+                            <i className="fas fa-language text-xl"></i>
+                          </div>
+
+                          <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-3">
                             {verb.base}
                           </h3>
-                          {/* Visual indicator of view count */}
-                          {/* {verb.progress && (
-                            <div className="mt-4 flex gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <div key={i} className={`h-1 w-4 rounded-full ${i < verb.progress!.views ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
-                              ))}
-                            </div>
-                          )} */}
-                        </div>
-                        
-                        <div className="card-back flex items-center justify-center p-8 bg-blue-600 rounded-3xl text-white">
-                          <p className="text-center font-medium leading-relaxed">
-                            {isLocked ? "Upgrade to Pro to see meaning" : verb.meaning}
+
+                          <p className="text-slate-500 text-sm leading-relaxed line-clamp-3">
+                            {isLocked
+                              ? "Upgrade to unlock meaning and examples."
+                              : verb.meaning}
                           </p>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-5 border-t border-slate-100">
+                          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                            Tap to Learn
+                          </span>
+
+                          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                            →
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -250,51 +325,103 @@ export default function VerbsCarousel() {
                 })}
               </div>
 
-              <button onClick={() => scroll("right")} className="absolute -right-4 md:-right-8 top-1/2 -translate-y-1/2 z-30 bg-white/80 backdrop-blur-md p-5 rounded-full shadow-xl hover:bg-blue-600 hover:text-white transition-all text-slate-700 border border-slate-100">
-                <i className="fas fa-chevron-right text-xl"></i>
+              {/* RIGHT */}
+              <button
+                onClick={() => scroll("right")}
+                className="hidden lg:flex absolute -right-5 top-1/2 -translate-y-1/2 z-30 bg-white/90 backdrop-blur-xl p-4 rounded-full shadow-2xl hover:bg-blue-600 hover:text-white transition-all text-slate-700 border border-slate-100"
+              >
+                <i className="fas fa-chevron-right"></i>
               </button>
             </>
           ) : (
-            <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-              <p className="text-slate-400 text-xl font-medium">No verbs found matching "{searchTerm}"</p>
+            <div className="bg-white rounded-3xl border border-dashed border-slate-200 py-20 text-center">
+              <p className="text-slate-400 text-lg font-medium">
+                No verbs found matching "{searchTerm}"
+              </p>
             </div>
           )}
         </div>
 
-        {/* Action/Detail Area */}
+        {/* DETAILS */}
         <div className="max-w-4xl mx-auto">
+
           {!selectedVerb ? (
-            <div className="text-center p-12 rounded-3xl bg-slate-100/50 border border-slate-200 border-dashed">
-              <i className="fas fa-hand-pointer text-slate-300 text-4xl mb-4 block"></i>
-              <p className="text-slate-500 italic text-lg">Click a card above to see detailed usage</p>
+            <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-white shadow-xl p-12 text-center">
+              
+              <div className="w-20 h-20 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-6">
+                <i className="fas fa-hand-pointer text-3xl"></i>
+              </div>
+
+              <h3 className="text-2xl font-black text-slate-800 mb-3">
+                Select Any Verb
+              </h3>
+
+              <p className="text-slate-500 text-lg">
+                Click on any flashcard above to explore
+                its meaning and usage.
+              </p>
             </div>
           ) : (
-            <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-50 overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 flex justify-between items-center">
+            <div className="bg-white rounded-[2.5rem] overflow-hidden border border-white shadow-[0_20px_60px_rgba(0,0,0,0.08)] animate-in slide-in-from-bottom-4 duration-500">
+
+              {/* HEADER */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 flex flex-col sm:flex-row justify-between gap-6">
+
                 <div>
-                  <h2 className="text-white text-4xl font-bold mb-1">{selectedVerb.base}</h2>
-                  <p className="text-blue-100 font-medium">Verb Definition & Usage</p>
+                  <p className="uppercase tracking-[0.25em] text-blue-100 text-xs font-bold mb-3">
+                    Verb Details
+                  </p>
+
+                  <h2 className="text-4xl font-black text-white mb-2">
+                    {selectedVerb.base}
+                  </h2>
+
+                  <p className="text-blue-100">
+                    Meaning & pronunciation
+                  </p>
                 </div>
+
                 <button
-                  onClick={() => speakText(`${selectedVerb.base}. ${selectedVerb.meaning}`)}
-                  className="bg-white/20 hover:bg-white/30 text-white p-6 rounded-2xl backdrop-blur-md transition-all active:scale-95"
+                  onClick={() =>
+                    speakText(
+                      `${selectedVerb.base}. ${selectedVerb.meaning}`
+                    )
+                  }
+                  className="w-20 h-20 rounded-3xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-105 transition-all"
                 >
                   <i className="fas fa-volume-up text-3xl"></i>
                 </button>
               </div>
 
-              <div className="p-10 space-y-8">
+              {/* CONTENT */}
+              <div className="p-8 sm:p-10 space-y-8">
+
                 <div>
-                  <label className="text-xs font-black uppercase tracking-[0.2em] text-blue-600 mb-3 block">The Meaning</label>
-                  <p className="text-slate-700 text-2xl font-medium leading-relaxed">{selectedVerb.meaning}</p>
+                  <label className="text-xs font-black uppercase tracking-[0.2em] text-blue-600 mb-3 block">
+                    Meaning
+                  </label>
+
+                  <p className="text-2xl font-semibold text-slate-800 leading-relaxed">
+                    {selectedVerb.meaning}
+                  </p>
                 </div>
-                <div className="h-px bg-slate-100 w-full"></div>
+
+                <div className="h-px bg-slate-100"></div>
+
                 <div>
-                  <label className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600 mb-3 block">Example Sentence</label>
-                  <div className="bg-slate-50 p-6 rounded-2xl border-l-4 border-indigo-500 relative">
-                    <i className="fas fa-quote-left absolute top-4 left-4 text-slate-200 text-4xl -z-0"></i>
-                    <p className="text-slate-800 text-xl italic font-semibold relative z-10">
-                      "{selectedVerb.example  || `The word ${selectedVerb.base} is used to describe an action.`}"
+                  <label className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600 mb-3 block">
+                    Example Sentence
+                  </label>
+
+                  <div className="bg-slate-50 rounded-3xl border border-slate-100 p-7 relative overflow-hidden">
+                    
+                    <div className="absolute top-3 left-4 text-7xl text-slate-100 font-black">
+                      "
+                    </div>
+
+                    <p className="relative z-10 text-lg sm:text-xl italic font-semibold text-slate-700 leading-relaxed">
+                      {selectedVerb.example ||
+                        `The word ${selectedVerb.base} is used to describe an action.`}
                     </p>
                   </div>
                 </div>

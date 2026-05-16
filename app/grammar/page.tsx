@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "../../styles/grammar.css";
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -15,7 +16,6 @@ import {
 import { saveAttempt } from "@/services/reportAnalysis";
 
 export default function GrammarWorkshop() {
-
   const [topics, setTopics] = useState<
     GrammarTopic[]
   >([]);
@@ -33,12 +33,17 @@ export default function GrammarWorkshop() {
   const [savingLessonId, setSavingLessonId] =
     useState<number | null>(null);
 
+  const [search, setSearch] =
+    useState("");
+
+  const [selectedLevel, setSelectedLevel] =
+    useState("All");
+
   // =====================================================
   // SEO
   // =====================================================
 
   useEffect(() => {
-
     document.title =
       "English Grammar Guide | Learn Rules | Grammrlyst";
 
@@ -47,7 +52,6 @@ export default function GrammarWorkshop() {
     );
 
     if (!metaDesc) {
-
       metaDesc =
         document.createElement("meta");
 
@@ -65,7 +69,6 @@ export default function GrammarWorkshop() {
       "content",
       "Master English grammar with easy lessons and examples."
     );
-
   }, []);
 
   // =====================================================
@@ -73,17 +76,13 @@ export default function GrammarWorkshop() {
   // =====================================================
 
   useEffect(() => {
-
     fetchGrammarTopics()
-
       .then((data) => {
-
         setTopics(data);
 
         if (data.length > 0) {
           setActiveTopic(data[0]);
         }
-
       })
 
       .catch(() => setTopics([]))
@@ -91,7 +90,6 @@ export default function GrammarWorkshop() {
       .finally(() =>
         setLoading(false)
       );
-
   }, []);
 
   // =====================================================
@@ -99,19 +97,16 @@ export default function GrammarWorkshop() {
   // =====================================================
 
   useEffect(() => {
-
     if (!activeTopic) return;
 
     fetchLessonsByTopic(
       activeTopic.id
     )
-
       .then(setLessons)
 
       .catch(() =>
         setLessons([])
       );
-
   }, [activeTopic]);
 
   // =====================================================
@@ -121,7 +116,6 @@ export default function GrammarWorkshop() {
   const handleLessonRead = async (
     lesson: GrammarLesson
   ) => {
-
     const token =
       localStorage.getItem(
         "access_token"
@@ -131,21 +125,19 @@ export default function GrammarWorkshop() {
 
     if (
       savingLessonId === lesson.id
-    ) return;
+    )
+      return;
 
     try {
-
       setSavingLessonId(
         lesson.id
       );
 
       await saveAttempt(token, {
-
         exercise_type:
           "grammar",
 
-        question:
-          lesson.title,
+        question: lesson.title,
 
         user_answer:
           lesson.example_sentence || "",
@@ -153,8 +145,7 @@ export default function GrammarWorkshop() {
         corrected_answer:
           lesson.example_sentence || "",
 
-        ai_feedback:
-          `User studied grammar topic: ${lesson.title}`,
+        ai_feedback: `User studied grammar topic: ${lesson.title}`,
 
         accuracy_score: 85,
 
@@ -168,29 +159,63 @@ export default function GrammarWorkshop() {
 
         duration_seconds: 60,
       });
-
     } catch (err) {
-
       console.error(
         "Save attempt failed",
         err
       );
-
     } finally {
-
       setSavingLessonId(null);
-
     }
   };
+
+  // =====================================================
+  // FILTERS
+  // =====================================================
+
+  const levels = useMemo(() => {
+    const unique = [
+      ...new Set(
+        topics.map((t) => t.level)
+      ),
+    ];
+
+    return ["All", ...unique];
+  }, [topics]);
+
+  const filteredTopics = useMemo(() => {
+    return topics.filter((topic) => {
+      const matchesSearch =
+        topic.title
+          .toLowerCase()
+          .includes(
+            search.toLowerCase()
+          );
+
+      const matchesLevel =
+        selectedLevel === "All"
+          ? true
+          : topic.level ===
+            selectedLevel;
+
+      return (
+        matchesSearch &&
+        matchesLevel
+      );
+    });
+  }, [
+    topics,
+    search,
+    selectedLevel,
+  ]);
 
   // =====================================================
   // LOADING
   // =====================================================
 
   if (loading) {
-
     return (
-      <div className="text-center py-20">
+      <div className="min-h-screen bg-[#050816] flex items-center justify-center text-white text-xl font-bold">
         Loading Grammar Workshop...
       </div>
     );
@@ -204,160 +229,293 @@ export default function GrammarWorkshop() {
     <>
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
+      <main className="min-h-screen bg-[#050816] text-white overflow-x-hidden relative">
+        {/* BACKGROUND GLOWS */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-500/20 blur-3xl rounded-full"></div>
 
-        <div className="grid lg:grid-cols-12 gap-10">
+        <div className="absolute top-20 right-0 w-[30rem] h-[30rem] bg-violet-500/20 blur-3xl rounded-full"></div>
 
-          {/* SIDEBAR */}
+        <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-16 py-10 lg:py-14">
+          {/* HERO */}
+          <div className="mb-16 lg:mb-20">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl mb-6">
+              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
 
-          <div className="lg:col-span-4 space-y-4">
+              <span className="text-sm text-slate-300">
+                AI Grammar Learning
+              </span>
+            </div>
 
-            <h2 className="text-xl font-bold text-slate-800 mb-6">
-              Select a Topic
-            </h2>
+            <h1 className="text-5xl md:text-6xl font-black leading-tight mb-5">
+              Master English
+              <br />
 
-            {topics.map((topic) => (
+              <span className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">
+                Grammar Rules
+              </span>
+            </h1>
 
-              <button
-                key={topic.id}
+            <p className="text-slate-400 text-lg max-w-3xl leading-relaxed">
+              Learn English grammar with structured lessons, formulas,
+              examples, and AI-powered progress tracking.
+            </p>
+          </div>
 
-                onClick={() =>
-                  setActiveTopic(topic)
-                }
+          {/* MAIN GRID */}
+          <div className="grid lg:grid-cols-12 gap-6 xl:gap-10">
+            {/* SIDEBAR */}
+            <aside className="lg:col-span-3">
+              <div className="sticky top-24 rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-2xl p-5 xl:p-6 shadow-2xl">
+                {/* FILTERS */}
+                <div className="mb-8">
+                  <h2 className="text-2xl font-black mb-5">
+                    Grammar Topics
+                  </h2>
 
-                className={`w-full text-left p-5 rounded-2xl border transition ${
-                  activeTopic?.id ===
-                  topic.id
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-slate-600"
-                }`}
-              >
+                  {/* SEARCH */}
+                  <input
+                    type="text"
+                    placeholder="Search topics..."
+                    value={search}
+                    onChange={(e) =>
+                      setSearch(
+                        e.target.value
+                      )
+                    }
+                    className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 transition-all mb-4"
+                  />
 
-                <div>
-
-                  <span className="block font-bold text-lg">
-                    {topic.title}
-                  </span>
-
-                  <span className="text-sm opacity-70">
-                    Level:
-                    {" "}
-                    {topic.level}
-                  </span>
-
+                  {/* LEVEL FILTER */}
+                  <select
+                    value={selectedLevel}
+                    onChange={(e) =>
+                      setSelectedLevel(
+                        e.target.value
+                      )
+                    }
+                    className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-cyan-400 transition-all"
+                  >
+                    {levels.map(
+                      (level) => (
+                        <option
+                          key={level}
+                          value={level}
+                          className="bg-[#0f172a]"
+                        >
+                          {level}
+                        </option>
+                      )
+                    )}
+                  </select>
                 </div>
 
-              </button>
-
-            ))}
-
-          </div>
-
-          {/* CONTENT */}
-
-          <div className="lg:col-span-8">
-
-            {activeTopic && (
-
-              <div className="bg-white rounded-3xl p-10 shadow-xl border">
-
-                <h3 className="text-3xl font-black mb-4">
-                  {activeTopic.title}
-                  {" "}
-                  Overview
-                </h3>
-
-                <p className="text-slate-600 mb-8">
-                  {activeTopic.description}
-                </p>
-
-                {lessons.length > 0 ? (
-
-                  lessons.map((lesson) => (
-
-                    <div
-                      key={lesson.id}
-
-                      className="p-6 mb-4 rounded-xl bg-slate-50"
-                    >
-
-                      <h4 className="font-bold text-xl">
-                        {lesson.title}
-                      </h4>
-
-                      <p className="italic text-slate-700">
-                        "
-                        {lesson.example_sentence}
-                        "
-                      </p>
-
-                      {lesson.formula && (
-
-                        <p className="text-sm mt-2">
-
-                          <strong>
-                            Formula:
-                          </strong>
-
-                          {" "}
-                          {lesson.formula}
-
-                        </p>
-
-                      )}
-
-                      {lesson.content_body && (
-
-                        <p className="mt-2 text-sm text-slate-600">
-                          {lesson.content_body}
-                        </p>
-
-                      )}
-
-                      {/* TRACK BUTTON */}
-
+                {/* TOPICS */}
+                <div className="space-y-4 max-h-[700px] overflow-y-auto pr-1">
+                  {filteredTopics.map(
+                    (topic) => (
                       <button
+                        key={topic.id}
                         onClick={() =>
-                          handleLessonRead(
-                            lesson
+                          setActiveTopic(
+                            topic
                           )
                         }
-
-                        disabled={
-                          savingLessonId ===
-                          lesson.id
-                        }
-
-                        className="mt-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-5 py-2 rounded-xl"
+                        className={`group relative w-full overflow-hidden rounded-[1.5rem] border p-4 xl:p-5 text-left transition-all duration-300 ${
+                          activeTopic?.id ===
+                          topic.id
+                            ? "border-cyan-400/40 bg-gradient-to-r from-cyan-500/20 to-blue-600/20"
+                            : "border-white/10 bg-white/5 hover:bg-white/10 hover:border-cyan-400/20"
+                        }`}
                       >
+                        <div className="relative z-10">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <h3 className="font-bold text-lg">
+                                {
+                                  topic.title
+                                }
+                              </h3>
 
-                        {savingLessonId ===
-                        lesson.id
-                          ? "Saving..."
-                          : "Mark as Studied"}
+                              <p className="text-sm text-slate-400 mt-1">
+                                Level:{" "}
+                                {
+                                  topic.level
+                                }
+                              </p>
+                            </div>
 
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center shadow-xl">
+                              📘
+                            </div>
+                          </div>
+                        </div>
                       </button>
+                    )
+                  )}
 
+                  {filteredTopics.length ===
+                    0 && (
+                    <div className="text-center py-10 text-slate-400">
+                      No topics found.
+                    </div>
+                  )}
+                </div>
+                </div>
+            </aside>
+
+            {/* CONTENT */}
+            <section className="lg:col-span-9">
+              {activeTopic && (
+                  <div className="rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-2xl p-6 sm:p-8 lg:p-10 shadow-2xl">
+                  {/* TOPIC HEADER */}
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
+                    <div>
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-5">
+                        <span className="text-cyan-300 text-sm font-semibold">
+                          {
+                            activeTopic.level
+                          }{" "}
+                          Level
+                        </span>
+                      </div>
+
+                      <h2 className="text-4xl font-black mb-4">
+                        {
+                          activeTopic.title
+                        }
+                      </h2>
+
+                      <p className="text-slate-400 text-lg leading-relaxed max-w-3xl">
+                        {
+                          activeTopic.description
+                        }
+                      </p>
                     </div>
 
-                  ))
+                    <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-r from-cyan-500 to-violet-600 flex items-center justify-center text-5xl shadow-2xl">
+                      ✨
+                    </div>
+                  </div>
 
-                ) : (
+                  {/* LESSONS */}
+                  {lessons.length > 0 ? (
+                    <div className="space-y-8">
+                      {lessons.map(
+                        (lesson) => (
+                          <div
+                            key={
+                              lesson.id
+                            }
+                            className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-6 lg:p-8 hover:border-cyan-400/30 transition-all duration-300"
+                          >
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-r from-cyan-500 to-violet-600 transition-all duration-500"></div>
 
-                  <p className="italic text-slate-400">
-                    No lessons available.
-                  </p>
+                            <div className="relative z-10">
+                              <div className="flex items-start justify-between gap-5 mb-5">
+                                <div>
+                                  <h3 className="text-2xl font-black mb-2">
+                                    {
+                                      lesson.title
+                                    }
+                                  </h3>
 
-                )}
+                                  <p className="italic text-cyan-200 text-lg">
+                                    “
+                                    {
+                                      lesson.example_sentence
+                                    }
+                                    ”
+                                  </p>
+                                </div>
 
-              </div>
+                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-2xl shadow-xl">
+                                  📖
+                                </div>
+                              </div>
 
-            )}
+                              {lesson.formula && (
+                                <div className="mb-5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 px-5 py-4">
+                                  <p className="text-sm text-cyan-300 font-semibold mb-1">
+                                    Grammar Formula
+                                  </p>
 
+                                  <p className="font-mono text-lg text-white">
+                                    {
+                                      lesson.formula
+                                    }
+                                  </p>
+                                </div>
+                              )}
+
+                              {lesson.content_body && (
+                                <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-slate-300 leading-relaxed">
+                                  {
+                                    lesson.content_body
+                                  }
+                                </div>
+                              )}
+
+                              {/* ACTIONS */}
+                              <div className="flex flex-wrap items-center gap-4 mt-6">
+                                <button
+                                  onClick={() =>
+                                    handleLessonRead(
+                                      lesson
+                                    )
+                                  }
+                                  disabled={
+                                    savingLessonId ===
+                                    lesson.id
+                                  }
+                                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold hover:scale-[1.02] transition-all duration-300 disabled:opacity-50"
+                                >
+                                  {savingLessonId ===
+                                  lesson.id
+                                    ? "Saving..."
+                                    : "Mark as Studied"}
+                                </button>
+
+                                <div className="flex items-center gap-2 text-sm text-slate-400">
+                                  <span>
+                                    ⚡ +10 XP
+                                  </span>
+
+                                  <span>
+                                    •
+                                  </span>
+
+                                  <span>
+                                    Grammar
+                                    Practice
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  ) : (
+                    <div className="rounded-[2rem] border border-white/10 bg-white/5 p-12 text-center">
+                      <div className="text-6xl mb-5">
+                        📚
+                      </div>
+
+                      <h3 className="text-2xl font-bold mb-3">
+                        No Lessons Available
+                      </h3>
+
+                      <p className="text-slate-400">
+                        Lessons for this topic
+                        will appear here.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
           </div>
-
         </div>
-
       </main>
 
       <Footer />

@@ -62,10 +62,6 @@ export default function ReportAnalysis({
   const [bestScore, setBestScore] =
     useState(0);
 
-  // =====================================================
-  // FETCH DATA
-  // =====================================================
-
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -76,20 +72,12 @@ export default function ReportAnalysis({
 
         if (!token) return;
 
-        // =========================
-        // PROFILE ANALYSIS
-        // =========================
-
         const analysisData =
           await fetchProfileAnalysis(
             token
           );
 
         setAnalysis(analysisData);
-
-        // =========================
-        // WEEKLY REPORT
-        // =========================
 
         const weekly =
           await fetchWeeklyReport(
@@ -103,7 +91,6 @@ export default function ReportAnalysis({
         setBestScore(
           weekly.best_score || 0
         );
-
       } catch (err) {
         console.error(
           "Analysis fetch error:",
@@ -117,33 +104,28 @@ export default function ReportAnalysis({
     loadData();
   }, []);
 
-  // =====================================================
-  // WEEKLY DATA
-  // =====================================================
-
   const progressData = weeklyData || [];
-
-  // =====================================================
-  // SKILLS DATA
-  // =====================================================
 
   const skillsData = [
     {
       skill: "Grammar",
       score:
         analysis?.grammar || 0,
+      icon: "📘",
     },
 
     {
       skill: "Vocabulary",
       score:
         analysis?.vocabulary || 0,
+      icon: "🧠",
     },
 
     {
       skill: "Fluency",
       score:
         analysis?.fluency || 0,
+      icon: "⚡",
     },
 
     {
@@ -151,67 +133,105 @@ export default function ReportAnalysis({
       score:
         analysis?.pronunciation ||
         0,
+      icon: "🎙️",
     },
 
     {
       skill: "Listening",
       score:
         analysis?.listening || 0,
+      icon: "🎧",
     },
 
     {
       skill: "Verbs",
       score:
         analysis?.verbs || 0,
+      icon: "✍️",
     },
 
     {
       skill: "Confidence",
       score:
         analysis?.confidence || 0,
+      icon: "🚀",
     },
   ];
 
-  // =====================================================
-  // LOADING
-  // =====================================================
-
   if (loading) {
     return (
-      <div className="bg-white rounded-3xl border p-10 text-center">
-        Loading analysis...
+      <div className="rounded-[2.5rem] border border-white/10 bg-white/[0.04] backdrop-blur-3xl p-12 text-center text-slate-300">
+        Loading your AI analysis...
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      {/* HEADER */}
-      <div className="bg-white rounded-[2rem] shadow border p-8">
-        <h2 className="text-3xl font-black mb-2">
-          Your Learning Analysis
-        </h2>
+      {/* HERO */}
+      <div
+        className="relative overflow-hidden rounded-[2.5rem]
+        border border-white/10
+        bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-violet-500/10
+        backdrop-blur-3xl p-8 lg:p-10"
+      >
+        <div className="absolute top-0 left-0 w-80 h-80 bg-cyan-500/10 blur-3xl rounded-full"></div>
 
-        <p className="text-slate-500">
-          Track your English
-          learning performance and
-          daily progress.
-        </p>
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-violet-500/10 blur-3xl rounded-full"></div>
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+          <div>
+            <p className="uppercase tracking-[0.25em] text-cyan-300 text-xs font-bold mb-4">
+              AI PERFORMANCE REPORT
+            </p>
+
+            <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">
+              Your Learning Analysis
+            </h2>
+
+            <p className="text-slate-400 max-w-2xl leading-relaxed text-lg">
+              Track your fluency,
+              vocabulary, grammar,
+              pronunciation, and
+              overall speaking growth
+              powered by AI insights.
+            </p>
+          </div>
+
+          <div
+            className="w-44 h-44 rounded-[2rem]
+            bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-600
+            flex flex-col items-center justify-center
+            shadow-[0_20px_80px_rgba(59,130,246,0.45)]"
+          >
+            <p className="text-sm uppercase tracking-widest text-white/80">
+              Overall
+            </p>
+
+            <h1 className="text-5xl font-black text-white mt-2">
+              {analysis?.overall_score ||
+                0}
+              %
+            </h1>
+          </div>
+        </div>
       </div>
 
       {/* STATS */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
         <StatCard
           title="Overall Score"
           value={`${
             analysis?.overall_score ||
             0
           }%`}
+          icon="🏆"
         />
 
         <StatCard
           title="Total XP"
           value={user.total_xp || 0}
+          icon="⚡"
         />
 
         <StatCard
@@ -219,6 +239,7 @@ export default function ReportAnalysis({
           value={`${
             user.streak || 0
           } Days`}
+          icon="🔥"
         />
 
         <StatCard
@@ -227,69 +248,83 @@ export default function ReportAnalysis({
             analysis?.total_attempts ||
             0
           }
+          icon="🎯"
         />
       </div>
 
       {/* WEEKLY PROGRESS */}
-      <div className="bg-white rounded-[2rem] shadow border p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div
+        className="rounded-[2.5rem]
+        border border-white/10
+        bg-white/[0.04]
+        backdrop-blur-3xl p-8"
+      >
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-10">
           <div>
-            <h3 className="text-2xl font-black">
+            <h3 className="text-3xl font-black text-white">
               Weekly Progress
             </h3>
 
-            <p className="text-slate-500 mt-1">
+            <p className="text-slate-400 mt-2">
               Your learning
               consistency this week
             </p>
           </div>
 
-          <div className="text-right">
-            <p className="text-sm text-slate-500">
+          <div
+            className="rounded-2xl bg-cyan-500/10
+            border border-cyan-500/20
+            px-6 py-4"
+          >
+            <p className="text-cyan-300 text-sm">
               Best Score
             </p>
 
-            <h2 className="text-3xl font-black text-blue-600">
+            <h2 className="text-4xl font-black text-white">
               {bestScore}%
             </h2>
           </div>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           {progressData.length > 0 ? (
             progressData.map(
               (item, index) => (
-                <div key={index}>
-                  <div className="flex justify-between mb-2">
+                <div
+                  key={index}
+                  className="rounded-2xl bg-white/[0.03] border border-white/5 p-5"
+                >
+                  <div className="flex items-center justify-between mb-3">
                     <div>
-                      <span className="font-semibold">
+                      <h4 className="font-bold text-white text-lg">
                         {item.day}
-                      </span>
+                      </h4>
 
-                      <span className="text-xs text-slate-400 ml-2">
-                        (
+                      <p className="text-xs text-slate-500">
                         {
                           item.attempts
                         }{" "}
-                        attempts)
-                      </span>
+                        attempts
+                      </p>
                     </div>
 
-                    <span className="text-slate-500">
-                      {item.score}%
-                    </span>
+                    <div className="text-right">
+                      <h3 className="text-2xl font-black text-cyan-300">
+                        {item.score}%
+                      </h3>
+                    </div>
                   </div>
 
-                  <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="w-full h-4 bg-white/5 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-blue-600 rounded-full transition-all"
+                      className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-600 transition-all duration-1000"
                       style={{
                         width: `${item.score}%`,
                       }}
                     />
                   </div>
 
-                  <div className="flex gap-4 text-xs text-slate-400 mt-1">
+                  <div className="flex flex-wrap gap-5 text-sm text-slate-400 mt-4">
                     <span>
                       ⚡ {item.xp} XP
                     </span>
@@ -303,42 +338,74 @@ export default function ReportAnalysis({
               )
             )
           ) : (
-            <p className="text-slate-400">
-              No weekly data available.
-            </p>
+            <div className="text-center py-10 text-slate-500">
+              No weekly data
+              available.
+            </div>
           )}
         </div>
       </div>
 
-      {/* SKILL ANALYSIS */}
-      <div className="bg-white rounded-[2rem] shadow border p-8">
-        <h3 className="text-2xl font-black mb-8">
-          Skill Breakdown
-        </h3>
+      {/* SKILLS */}
+      <div
+        className="rounded-[2.5rem]
+        border border-white/10
+        bg-white/[0.04]
+        backdrop-blur-3xl p-8"
+      >
+        <div className="mb-10">
+          <p className="uppercase tracking-[0.25em] text-cyan-300 text-xs font-bold mb-3">
+            SKILL ANALYSIS
+          </p>
 
-        <div className="space-y-6">
+          <h3 className="text-3xl font-black text-white">
+            Skill Breakdown
+          </h3>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-6">
           {skillsData.map((item) => (
-            <div key={item.skill}>
-              <div className="flex justify-between mb-2">
-                <span className="font-semibold">
-                  {item.skill}
-                </span>
+            <div
+              key={item.skill}
+              className="rounded-[2rem] border border-white/5 bg-white/[0.03] p-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-14 h-14 rounded-2xl
+                    bg-gradient-to-br from-cyan-500 to-violet-600
+                    flex items-center justify-center text-2xl"
+                  >
+                    {item.icon}
+                  </div>
 
-                <span className="font-bold">
+                  <div>
+                    <h4 className="text-xl font-bold text-white">
+                      {item.skill}
+                    </h4>
+
+                    <p className="text-slate-500 text-sm">
+                      AI evaluated
+                      performance
+                    </p>
+                  </div>
+                </div>
+
+                <h3 className="text-3xl font-black text-white">
                   {item.score}%
-                </span>
+                </h3>
               </div>
 
-              <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+              <div className="w-full bg-white/5 h-4 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${
+                  className={`h-full rounded-full transition-all duration-1000 ${
                     item.score >= 85
-                      ? "bg-green-500"
+                      ? "bg-gradient-to-r from-emerald-400 to-green-500"
                       : item.score >= 70
-                      ? "bg-blue-500"
+                      ? "bg-gradient-to-r from-cyan-400 to-blue-500"
                       : item.score >= 50
-                      ? "bg-yellow-500"
-                      : "bg-red-500"
+                      ? "bg-gradient-to-r from-yellow-400 to-orange-500"
+                      : "bg-gradient-to-r from-rose-500 to-red-600"
                   }`}
                   style={{
                     width: `${item.score}%`,
@@ -351,59 +418,119 @@ export default function ReportAnalysis({
       </div>
 
       {/* AI INSIGHTS */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2rem] p-8 text-white shadow-xl">
-        <h3 className="text-2xl font-black mb-6">
-          AI Insights
-        </h3>
+      <div
+        className="relative overflow-hidden rounded-[2.5rem]
+        bg-gradient-to-br from-cyan-500 via-blue-600 to-violet-700
+        p-8 shadow-[0_20px_100px_rgba(59,130,246,0.35)]"
+      >
+        <div className="absolute inset-0 bg-black/10"></div>
 
-        <div className="space-y-4 text-blue-100">
-          {analysis?.ai_tips?.length ? (
-            analysis.ai_tips.map(
-              (tip, index) => (
-                <div
-                  key={index}
-                  className="flex gap-3"
-                >
-                  <span>🚀</span>
-
-                  <p>{tip}</p>
-                </div>
-              )
-            )
-          ) : (
-            <div className="flex gap-3">
-              <span>📚</span>
-
-              <p>
-                Keep practicing daily
-                to improve your
-                English fluency.
-              </p>
+        <div className="relative z-10">
+          <div className="flex items-center gap-4 mb-8">
+            <div
+              className="w-20 h-20 rounded-[2rem]
+              bg-white/10 backdrop-blur-xl
+              flex items-center justify-center text-4xl"
+            >
+              🧠
             </div>
-          )}
+
+            <div>
+              <p className="uppercase tracking-[0.25em] text-cyan-100 text-xs font-bold mb-2">
+                AI INSIGHTS
+              </p>
+
+              <h3 className="text-3xl font-black text-white">
+                Personalized Tips
+              </h3>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {analysis?.ai_tips
+              ?.length ? (
+              analysis.ai_tips.map(
+                (tip, index) => (
+                  <div
+                    key={index}
+                    className="rounded-2xl bg-white/10 border border-white/10 p-5 backdrop-blur-xl"
+                  >
+                    <div className="flex gap-4">
+                      <div className="text-2xl">
+                        🚀
+                      </div>
+
+                      <p className="text-blue-50 leading-relaxed">
+                        {tip}
+                      </p>
+                    </div>
+                  </div>
+                )
+              )
+            ) : (
+              <div className="rounded-2xl bg-white/10 border border-white/10 p-5 backdrop-blur-xl">
+                <div className="flex gap-4">
+                  <div className="text-2xl">
+                    📚
+                  </div>
+
+                  <p className="text-blue-50">
+                    Keep practicing
+                    daily to improve
+                    your English
+                    fluency and
+                    confidence.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+/* STAT CARD */
+
 function StatCard({
   title,
   value,
+  icon,
 }: {
   title: string;
 
   value: any;
+
+  icon: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow border p-6 text-center">
-      <p className="text-slate-500 text-sm">
-        {title}
-      </p>
+    <div
+      className="group relative overflow-hidden rounded-[2rem]
+      border border-white/10
+      bg-white/[0.04]
+      backdrop-blur-3xl p-6
+      hover:-translate-y-2 transition-all duration-500"
+    >
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-gradient-to-br from-cyan-500/10 to-violet-500/10"></div>
 
-      <h2 className="text-3xl font-black mt-2 text-slate-800">
-        {value}
-      </h2>
+      <div className="relative z-10">
+        <div
+          className="w-16 h-16 rounded-2xl
+          bg-gradient-to-br from-cyan-500 to-violet-600
+          flex items-center justify-center text-3xl mb-5"
+        >
+          {icon}
+        </div>
+
+        <p className="text-slate-400 text-sm">
+          {title}
+        </p>
+
+        <h2 className="text-4xl font-black mt-3 text-white">
+          {value}
+        </h2>
+      </div>
     </div>
   );
 }

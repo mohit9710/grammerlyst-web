@@ -369,117 +369,255 @@ export default function RoleplayChat() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Navbar />
-      <main className="flex-1 max-w-6xl mx-auto w-full grid lg:grid-cols-12 gap-6 p-4 md:p-6 h-[calc(100vh-80px)] overflow-hidden">
-        {/* Sidebar */}
-        <div className="lg:col-span-4 space-y-4 hidden lg:block">
-          <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-            <div className="text-5xl mb-6">{dailyRole.avatar}</div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2 font-serif tracking-tight">Daily Mission</h2>
-            <div className="bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-6 inline-block">
-              {dailyRole.title}
-            </div>
-            <p className="text-slate-600 leading-relaxed mb-6">{dailyRole.scenario}</p>
-            <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 text-sm text-indigo-800">
-              <span className="font-bold block mb-1">💡 Learning Goal:</span>
-              {dailyRole.instruction}
+  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex flex-col">
+    <Navbar />
+
+    <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+      <div className="grid lg:grid-cols-12 gap-6 min-h-[calc(100vh-220px)]">
+
+        {/* LEFT SIDEBAR */}
+        <aside className="hidden lg:flex lg:col-span-4 flex-col gap-6">
+          
+          {/* ROLE CARD */}
+          <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-8 relative overflow-hidden">
+            
+            <div className="absolute top-0 right-0 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-40"></div>
+
+            <div className="relative z-10">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-4xl shadow-lg mb-6">
+                {dailyRole.avatar}
+              </div>
+
+              <span className="inline-flex px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-black tracking-widest uppercase">
+                {dailyRole.title}
+              </span>
+
+              <h2 className="text-3xl font-black text-slate-900 mt-5 leading-tight">
+                Daily Speaking Mission
+              </h2>
+
+              <p className="text-slate-600 leading-relaxed mt-4">
+                {dailyRole.scenario}
+              </p>
+
+              <div className="mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                <p className="text-xs font-black uppercase tracking-widest text-indigo-600 mb-2">
+                  Learning Goal
+                </p>
+
+                <p className="text-sm text-slate-700 leading-relaxed">
+                  {dailyRole.instruction}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Chat Area */}
-        <div className="lg:col-span-8 flex flex-col bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30">
+          {/* VOICE TIPS */}
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-8 text-white shadow-xl">
+            <h3 className="text-2xl font-black mb-5">
+              Speaking Tips
+            </h3>
+
+            <div className="space-y-4 text-blue-100">
+              <div className="flex gap-3">
+                <span>🎯</span>
+                <p>Speak slowly and clearly.</p>
+              </div>
+
+              <div className="flex gap-3">
+                <span>🧠</span>
+                <p>Use complete English sentences.</p>
+              </div>
+
+              <div className="flex gap-3">
+                <span>🚀</span>
+                <p>Try professional vocabulary.</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* CHAT AREA */}
+        <section className="lg:col-span-8 flex flex-col bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden">
+
+          {/* HEADER */}
+          <div className="px-6 md:px-8 py-5 border-b border-slate-100 bg-white flex items-center justify-between">
+            
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-2xl shadow-lg">
+                {dailyRole.avatar}
+              </div>
+
+              <div>
+                <h2 className="text-xl font-black text-slate-900">
+                  AI Roleplay Tutor
+                </h2>
+
+                <p className="text-sm text-slate-500">
+                  Practice real-life English conversations
+                </p>
+              </div>
+            </div>
+
+            <div className="hidden md:flex items-center gap-2 bg-green-50 border border-green-100 px-4 py-2 rounded-xl">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <span className="text-sm font-semibold text-green-700">
+                Live AI
+              </span>
+            </div>
+          </div>
+
+          {/* CHAT BODY */}
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto px-4 md:px-8 py-8 space-y-8 bg-gradient-to-b from-slate-50 to-white"
+          >
             {messages.map((msg, idx) => (
-              <div key={idx} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} space-y-3 group`}>
-                <div className="relative max-w-[85%]">
-                  <div className={`p-4 rounded-2xl shadow-sm text-sm md:text-base ${
-                    msg.role === "user"
-                      ? "bg-slate-900 text-white rounded-tr-none"
-                      : "bg-white text-slate-800 border border-slate-100 rounded-tl-none"
-                  }`}>
-                    {msg.content}
+              <div
+                key={idx}
+                className={`flex ${
+                  msg.role === "user"
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
+              >
+                <div className="max-w-[90%] md:max-w-[75%]">
+
+                  {/* CHAT BUBBLE */}
+                  <div
+                    className={`relative px-6 py-5 rounded-[1.8rem] shadow-sm ${
+                      msg.role === "user"
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-md"
+                        : "bg-white border border-slate-200 text-slate-800 rounded-bl-md"
+                    }`}
+                  >
+                    <p className="leading-relaxed text-[15px] md:text-base whitespace-pre-wrap">
+                      {msg.content}
+                    </p>
+
+                    {/* REPLAY */}
+                    {msg.role === "bot" && (
+                      <button
+                        onClick={() =>
+                          replayVoice(msg.content)
+                        }
+                        className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-blue-600 transition"
+                      >
+                        🔊 Replay Voice
+                      </button>
+                    )}
                   </div>
 
-                  {msg.role === "bot" && (
-                    <button
-                      onClick={() => replayVoice(msg.content)}
-                      className="mt-2 flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition-colors bg-white border border-slate-100 px-2 py-1 rounded-full shadow-sm"
-                      title="Listen again"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                      </svg>
-                      REPLAY AUDIO
-                    </button>
-                  )}
+                  {/* CORRECTION BOX */}
+                  {msg.role === "bot" &&
+                    msg.correction?.fixed && (
+                      <div className="mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-5 animate-in slide-in-from-bottom-2 duration-300">
+                        
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-lg">
+                            ✨
+                          </span>
+
+                          <p className="text-xs font-black uppercase tracking-widest text-amber-700">
+                            Grammar Feedback
+                          </p>
+                        </div>
+
+                        <p className="text-sm text-slate-400 line-through mb-2">
+                          {msg.originalInput}
+                        </p>
+
+                        <p className="font-bold text-slate-900 text-lg">
+                          {msg.correction.fixed}
+                        </p>
+
+                        <p className="mt-3 text-sm text-amber-900 bg-white/60 rounded-xl p-3 italic leading-relaxed">
+                          {msg.correction.explanation}
+                        </p>
+                      </div>
+                    )}
                 </div>
-
-                {msg.role === "bot" && msg.correction?.fixed && (
-                  <div className="max-w-[85%] bg-amber-50 border border-amber-200 rounded-2xl p-4 animate-in fade-in slide-in-from-left-2 duration-500">
-                    <div className="flex items-center gap-2 text-amber-700 font-bold text-[10px] uppercase tracking-tighter mb-2">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                      Grammar Feedback
-                    </div>
-                    <p className="text-xs text-slate-400 line-through mb-1">"{msg.originalInput}"</p>
-                    <p className="text-sm font-bold text-slate-900 mb-2">“{msg.correction.fixed}”</p>
-                    <p className="text-xs text-amber-800 bg-white/50 p-2 rounded-lg italic">{msg.correction.explanation}</p>
-                  </div>
-                )}
               </div>
             ))}
-            {isProcessing && <div className="text-xs text-slate-400 animate-pulse font-medium">Assistant is thinking...</div>}
+
+            {/* THINKING */}
+            {isProcessing && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-slate-200 px-6 py-5 rounded-[1.8rem] rounded-bl-md shadow-sm">
+                  <div className="flex gap-2">
+                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
+                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-100"></span>
+                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200"></span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Input */}
-          <>
-
+          {/* INPUT SECTION */}
+          <div className="p-4 md:p-6 border-t border-slate-100 bg-white">
+            
             <form
               onSubmit={handleSendMessage}
-              className="flex gap-2 bg-slate-100 p-2 rounded-2xl"
+              className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-[1.5rem] p-3"
             >
+              {/* MIC */}
               <button
                 type="button"
                 onClick={startListening}
-                className={`p-3 rounded-xl transition-all ${
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-all ${
                   isListening
                     ? "bg-red-500 text-white animate-pulse shadow-lg"
-                    : "bg-white text-slate-400 hover:text-slate-600 shadow-sm"
+                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                 }`}
               >
                 🎙️
               </button>
 
+              {/* INPUT */}
               <input
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={isListening ? "Listening..." : "Message your tutor..."}
-                className="flex-1 bg-transparent border-none focus:ring-0 text-slate-700"
+                onChange={(e) =>
+                  setInput(e.target.value)
+                }
+                placeholder={
+                  isListening
+                    ? "Listening..."
+                    : "Type your message..."
+                }
+                className="flex-1 bg-transparent outline-none text-slate-700 placeholder:text-slate-400 text-base px-2"
               />
 
+              {/* SEND */}
               <button
-                disabled={!input.trim() || isProcessing}
-                className="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold"
+                disabled={
+                  !input.trim() || isProcessing
+                }
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 disabled:opacity-50 text-white px-7 py-4 rounded-2xl font-black transition-all shadow-lg"
               >
-                Send
+                {isProcessing
+                  ? "Sending..."
+                  : "Send"}
               </button>
             </form>
 
+            {/* LIMIT */}
             {limitReached && (
               <button
-                onClick={() => router.push("/pricing")}
-                className="w-full mt-3 bg-yellow-500 text-white py-3 rounded-xl font-bold"
+                onClick={() =>
+                  router.push("/pricing")
+                }
+                className="w-full mt-4 bg-yellow-500 hover:bg-yellow-600 text-white py-4 rounded-2xl font-black transition-all"
               >
-                Upgrade for More Chats
+                Upgrade for More Chats 🚀
               </button>
             )}
-          </>
-        </div>
-      </main>
-      <Footer />
-    </div>
-  );
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <Footer />
+  </div>
+);
 }

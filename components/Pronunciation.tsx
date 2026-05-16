@@ -16,9 +16,7 @@ interface TextData {
 interface Props {
   plan: any;
 
-  onComplete?: (
-    result: any
-  ) => void;
+  onComplete?: (result: any) => void;
 
   onTextChange?: (
     text: TextData | null
@@ -69,7 +67,7 @@ const calculateAccuracy = (
 
 export default function Pronunciation({
   plan,
-  onComplete, // ✅ RECEIVE PROP
+  onComplete,
 }: Props) {
   const [textData, setTextData] =
     useState<TextData | null>(null);
@@ -204,13 +202,10 @@ export default function Pronunciation({
 
         setAccuracy(finalAccuracy);
 
-        // ====================================
-        // SAVE ATTEMPT
-        // ====================================
-
         if (onComplete) {
           await onComplete({
-            exercise_typee:'pronunciation',
+            exercise_typee: "pronunciation",
+
             original_text:
               textData.content,
 
@@ -242,22 +237,18 @@ export default function Pronunciation({
                 0
               ),
 
-            vocabulary_score:
-              80,
+            vocabulary_score: 80,
 
-            listening_score:
-              75,
+            listening_score: 75,
 
-            verb_score:
-              70,
+            verb_score: 70,
 
             confidence_score:
               finalAccuracy >= 80
                 ? 85
                 : 60,
 
-            speaking_speed:
-              120,
+            speaking_speed: 120,
 
             pause_count: 2,
 
@@ -286,112 +277,248 @@ export default function Pronunciation({
   };
 
   return (
-    <main className="max-w-6xl mx-auto px-6 py-12">
-      {/* SEO Hidden */}
+    <main className="min-h-screen bg-[#050816] text-white relative overflow-hidden">
+      {/* BACKGROUND */}
+      <div className="absolute top-0 left-0 w-[28rem] h-[28rem] bg-cyan-500/20 blur-3xl rounded-full" />
+
+      <div className="absolute bottom-0 right-0 w-[30rem] h-[30rem] bg-violet-500/20 blur-3xl rounded-full" />
+
+      {/* SEO */}
       <div className="sr-only">
         <h1>
           English Pronunciation Practice
         </h1>
 
         <p>
-          Practice sentence:{" "}
-          {textData?.content}.
-          Improve your speaking
-          skills.
+          Practice sentence:
+          {textData?.content}
         </p>
       </div>
 
-      <div className="flex justify-between items-end mb-10">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900">
-            Pronunciation Lab
-          </h1>
-
-          <p className="text-slate-500 italic">
-            Level:{" "}
-            <span className="text-blue-600 font-bold uppercase">
-              {textData?.difficulty_level ||
-                "..."}
-            </span>
-          </p>
-        </div>
-
-        <button
-          onClick={fetchNewText}
-          disabled={loading}
-          className="px-6 py-2 bg-white border rounded-xl font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
-        >
-          Next Text
-        </button>
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-10 border flex items-center justify-center min-h-[400px]">
-          {loading ? (
-            <div className="text-slate-400 animate-pulse">
-              Fetching from Database...
-            </div>
-          ) : (
-            <p className="text-3xl md:text-4xl font-bold text-center">
-              {textData?.content ||
-                "No text available"}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        {/* HEADER */}
+        <div className="mb-8 lg:mb-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+          <div>
+            <p className="uppercase tracking-[0.25em] text-cyan-400 text-xs font-bold mb-3">
+              AI SPEAKING TRAINER
             </p>
-          )}
+
+            <h1 className="text-3xl md:text-5xl font-black leading-tight">
+              Pronunciation Lab
+            </h1>
+
+            <p className="text-slate-400 mt-3 max-w-2xl text-sm md:text-base">
+              Improve your English
+              pronunciation with live AI
+              speech recognition and
+              instant accuracy analysis.
+            </p>
+          </div>
+
+          <button
+            onClick={fetchNewText}
+            disabled={loading}
+            className="h-fit px-6 py-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 hover:border-cyan-400/40 transition-all font-semibold disabled:opacity-50"
+          >
+            New Practice Text
+          </button>
         </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="bg-white p-8 rounded-[2.5rem] border text-center">
-            <button
-              disabled={
-                loading || !recognition
-              }
-              onClick={() => {
-                if (isLocked) {
-                  router.push(
-                    "/pricing"
-                  );
+        {/* MAIN GRID */}
+        <div className="grid xl:grid-cols-3 gap-6">
+          {/* LEFT SIDE */}
+          <div className="xl:col-span-2 space-y-6">
+            {/* READING CARD */}
+            <div className="rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-2xl p-6 md:p-10 shadow-2xl">
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-cyan-400 font-bold mb-2">
+                    Practice Sentence
+                  </p>
 
-                  return;
-                }
+                  <h2 className="text-xl md:text-2xl font-black">
+                    Read Clearly & Naturally
+                  </h2>
+                </div>
 
-                toggleRecording();
-              }}
-              className={`w-full py-5 rounded-2xl font-black text-lg ${
-                isLocked
-                  ? "bg-yellow-500 text-white"
-                  : isRecording
-                  ? "bg-red-50 text-red-600 border-2 border-red-200"
-                  : "bg-blue-600 text-white"
-              }`}
-            >
-              {isLocked
-                ? "Upgrade to Pro 🔒"
-                : isRecording
-                ? "Stop & Analyze"
-                : "Start Reading"}
-            </button>
+                <div className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-sm font-bold uppercase">
+                  {textData?.difficulty_level ||
+                    "Loading"}
+                </div>
+              </div>
 
-            <div className="mt-6 text-left">
-              <label className="text-xs font-bold text-slate-400 uppercase mb-2 block">
-                Live Transcription
-              </label>
+              <div className="min-h-[260px] md:min-h-[320px] flex items-center justify-center rounded-[2rem] bg-[#0d1324] border border-white/5 p-6 md:p-10">
+                {loading ? (
+                  <div className="text-slate-400 animate-pulse">
+                    Loading practice text...
+                  </div>
+                ) : (
+                  <p className="text-2xl md:text-4xl leading-relaxed font-bold text-center max-w-4xl">
+                    {textData?.content ||
+                      "No text available"}
+                  </p>
+                )}
+              </div>
+            </div>
 
-              <div className="bg-slate-50 p-4 rounded-xl min-h-[100px] italic text-sm">
+            {/* TRANSCRIPTION */}
+            <div className="rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-2xl p-6 md:p-8 shadow-2xl">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-violet-400 font-bold mb-2">
+                    Live AI Detection
+                  </p>
+
+                  <h3 className="text-2xl font-black">
+                    Your Speech
+                  </h3>
+                </div>
+
+                {isRecording && (
+                  <div className="flex items-center gap-2 text-red-400 text-sm font-bold">
+                    <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                    Recording
+                  </div>
+                )}
+              </div>
+
+              <div className="min-h-[180px] rounded-[1.5rem] bg-[#0d1324] border border-white/5 p-6 text-slate-300 italic leading-relaxed">
                 {userSpokenText ||
                   (isRecording
-                    ? "Listening..."
-                    : "Click start to begin...")}
+                    ? "Listening to your voice..."
+                    : "Your spoken text will appear here...")}
               </div>
             </div>
           </div>
 
-          {accuracy !== null && (
-            <div className="bg-white p-8 rounded-[2.5rem] text-center border-b-8 border-blue-600">
-              <div className="text-7xl font-black">
-                {accuracy}%
+          {/* RIGHT SIDE */}
+          <div className="space-y-6">
+            {/* ACTION CARD */}
+            <div className="rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-2xl p-6 md:p-8 shadow-2xl">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-3xl shadow-2xl mb-6">
+                🎤
+              </div>
+
+              <h3 className="text-2xl font-black mb-3">
+                Voice Practice
+              </h3>
+
+              <p className="text-slate-400 text-sm leading-relaxed mb-8">
+                Start reading the sentence
+                aloud and get real-time AI
+                pronunciation analysis.
+              </p>
+
+              <button
+                disabled={
+                  loading || !recognition
+                }
+                onClick={() => {
+                  if (isLocked) {
+                    router.push(
+                      "/pricing"
+                    );
+
+                    return;
+                  }
+
+                  toggleRecording();
+                }}
+                className={`w-full py-5 rounded-2xl font-black text-lg transition-all duration-300 ${
+                  isLocked
+                    ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white"
+                    : isRecording
+                    ? "bg-red-500 hover:bg-red-600 text-white"
+                    : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:scale-[1.02]"
+                }`}
+              >
+                {isLocked
+                  ? "Upgrade to Pro 🔒"
+                  : isRecording
+                  ? "Stop & Analyze"
+                  : "Start Reading"}
+              </button>
+            </div>
+
+            {/* ACCURACY CARD */}
+            <div className="rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-2xl p-6 md:p-8 shadow-2xl">
+              <p className="uppercase tracking-[0.2em] text-cyan-400 text-xs font-bold mb-4">
+                Accuracy Score
+              </p>
+
+              {accuracy !== null ? (
+                <>
+                  <div className="text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                    {accuracy}%
+                  </div>
+
+                  <div className="w-full h-4 rounded-full bg-white/10 overflow-hidden mb-4">
+                    <div
+                      className={`h-full rounded-full ${
+                        accuracy >= 85
+                          ? "bg-green-500"
+                          : accuracy >= 70
+                          ? "bg-cyan-500"
+                          : accuracy >= 50
+                          ? "bg-yellow-500"
+                          : "bg-red-500"
+                      }`}
+                      style={{
+                        width: `${accuracy}%`,
+                      }}
+                    />
+                  </div>
+
+                  <p className="text-slate-300 text-sm">
+                    {accuracy >= 90
+                      ? "Excellent pronunciation!"
+                      : accuracy >= 70
+                      ? "Good job, keep practicing."
+                      : "Practice more for better fluency."}
+                  </p>
+                </>
+              ) : (
+                <div className="text-slate-500 text-sm leading-relaxed">
+                  Complete one speaking
+                  session to view your AI
+                  pronunciation score.
+                </div>
+              )}
+            </div>
+
+            {/* QUICK TIPS */}
+            <div className="rounded-[2rem] bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-400/10 p-6 md:p-8 backdrop-blur-xl">
+              <h3 className="text-xl font-black mb-5">
+                Speaking Tips
+              </h3>
+
+              <div className="space-y-4 text-sm text-slate-300">
+                <div className="flex gap-3">
+                  <span>🎧</span>
+                  <p>
+                    Speak slowly and clearly
+                    for better detection.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <span>🗣️</span>
+                  <p>
+                    Focus on word stress and
+                    pronunciation.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <span>🚀</span>
+                  <p>
+                    Practice daily to improve
+                    fluency and confidence.
+                  </p>
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </main>
