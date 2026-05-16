@@ -1,363 +1,531 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import "../../styles/index.css";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
-import Link from "next/link"; 
+import Footer from "@/components/Footer";
 import TipOfTheDay from "@/components/TipOfTheDay";
 import RecentActivity from "@/components/ActivityFeed";
-import { fetchUserProfile, syncStreak } from "@/services/userService";
+import { syncStreak } from "@/services/userService";
 import { initAnalytics } from "@/services/firebaseService";
 import { logEvent } from "firebase/analytics";
-import Footer from "@/components/Footer";
 import useUser from "@/hooks/userProfile";
 
-interface UserProfile {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  profile_image: string;
-  streak: number;
-  points: number;
-  total_xp: number;
-  bonus: number;
-}
-
 export default function Dashboard() {
-  const router = useRouter();
   const [analyticsInstance, setAnalyticsInstance] = useState<any>(null);
-  const { user, isAuth, setUser} = useUser();
+  const { user, isAuth, setUser } = useUser();
 
   useEffect(() => {
-  initAnalytics().then(setAnalyticsInstance);
+    initAnalytics().then(setAnalyticsInstance);
 
-  const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token");
 
-  if (token) {
-    syncStreak(token)
-      .then((res) => {
-        setUser((prev: any) =>
-          prev ? { ...prev, streak: res.streak } : prev
-        );
-      })
-      .catch((err) => console.error("Streak Error:", err));
-  }
+    if (token) {
+      syncStreak(token)
+        .then((res) => {
+          setUser((prev: any) =>
+            prev ? { ...prev, streak: res.streak } : prev
+          );
+        })
+        .catch((err) => console.error(err));
+    }
 
-  // SEO meta same rakho
-  document.title = "English Learning Dashboard | Improve Grammar, Pronunciation & Vocabulary";
+    document.title =
+      "AI English Fluency Dashboard | Speak English Confidently";
+  }, []);
 
-  let metaDesc = document.querySelector('meta[name="description"]');
-  if (!metaDesc) {
-    metaDesc = document.createElement('meta');
-    metaDesc.setAttribute('name', 'description');
-    document.head.appendChild(metaDesc);
-  }
-  metaDesc.setAttribute(
-    'content',
-    "Boost your English skills with interactive modules like grammar, pronunciation, roleplay chat, and AI tools."
-  );
-
-}, []);
-
-  // Logic for Level Progress Bar
   const currentXP = user?.total_xp || 0;
   const level = Math.floor(currentXP / 1000) + 1;
-  const progressToNextLevel = (currentXP % 1000) / 10; // Percentage for 1000xp levels
+  const progress = (currentXP % 1000) / 10;
 
   return (
     <>
       <Navbar />
-      <header className="bg-white py-16 px-6 border-b">
-        <div className="max-w-5xl mx-auto text-center">
-          <h1 className="text-5xl font-black text-slate-900 mb-4 tracking-tight">
-            {isAuth ? `Welcome back, ${user?.first_name}!` : "Ready to Master English?"}
-          </h1>
-          <p className="text-slate-500 text-xl max-w-2xl mx-auto leading-relaxed italic">
-            "Every correct syntax is a step toward mastery."
-          </p>
-        </div>
-      </header>
-      
-      <main className="max-w-7xl mx-auto px-6 py-16">
-        {isAuth && <TipOfTheDay />}
 
-        {/* Learning Modules Grid - Always Visible */}
-        <h2 className="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-3">
-          <i className="fas fa-th-large text-blue-500"></i> Learning Modules
-        </h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-        {/* Verb Workshop */}
-        <ModuleLink 
-          analytics={analyticsInstance}
-          href="/verbs" 
-          color="blue" 
-          title="Verb Workshop" 
-          desc="Master irregular verbs and visual vocabulary." 
-          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 6 4 14-8-4-8 4 4-14"/><path d="M12 2v2"/><path d="M12 18v2"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m19.07 4.93-.7.7"/><path d="m5.63 18.37-.7.7"/><path d="m18.37 18.37.7.7"/><path d="m4.93 4.93.7.7"/></svg>} 
-        />
+      <main className="min-h-screen bg-[#050816] text-white overflow-hidden">
+        {/* HERO SECTION */}
+        <section className="relative px-6 pt-10 pb-20">
+          {/* Glow Effects */}
+          <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-500/20 blur-3xl rounded-full"></div>
+          <div className="absolute top-20 right-0 w-[30rem] h-[30rem] bg-violet-500/20 blur-3xl rounded-full"></div>
 
-        {/* Grammar Rules */}
-        <ModuleLink 
-          analytics={analyticsInstance}
-          href="/grammar" 
-          color="purple" 
-          title="Grammar Rules" 
-          desc="Comprehensive guide to tenses and syntax." 
-          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>} 
-        />
+          <div className="max-w-7xl mx-auto relative z-10">
+            <div className="grid lg:grid-cols-2 gap-10 items-center">
+              {/* LEFT */}
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/10 backdrop-blur-xl mb-6">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                  <span className="text-sm text-slate-300">
+                    AI Powered Fluency Training
+                  </span>
+                </div>
 
-        {/* Sentence Polisher (New) */}
-        <ModuleLink 
-          analytics={analyticsInstance}
-          href="/sentence-polisher" 
-          color="rose" 
-          title="Sentence Polisher" 
-          desc="Instant AI grammar and style refinement." 
-          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>} 
-        />
+                <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
+                  {isAuth ? (
+                    <>
+                      Welcome back,
+                      <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                        {" "}
+                        {user?.first_name}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Speak English
+                      <br />
+                      <span className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">
+                        Confidently
+                      </span>
+                    </>
+                  )}
+                </h1>
 
-        {/* Role-Based Chat (New) */}
-        <ModuleLink 
-          analytics={analyticsInstance}
-          href="/role-play" 
-          color="rose" 
-          title="Roleplay Chat" 
-          desc="Practice scenarios: Doctor, Interviewer, etc." 
-          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>} 
-        />
+                <p className="text-slate-400 text-lg leading-relaxed max-w-2xl mb-10">
+                  Practice speaking with AI conversations, fluency challenges,
+                  pronunciation training, and real-world English simulations.
+                </p>
 
-        {/* Language Games */}
-        <ModuleLink 
-          analytics={analyticsInstance}
-          href="/games" 
-          color="blue" 
-          title="Language Games" 
-          desc="Daily challenges to boost your memory." 
-          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="15.5" cy="13" r=".5"/><circle cx="18.5" cy="11" r=".5"/></svg>} 
-        />
+                <div className="flex flex-wrap gap-4">
+                  <Link
+                    href="/ai-audio-call"
+                    className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg shadow-2xl hover:scale-105 transition-all duration-300"
+                  >
+                    🎤 Start Speaking
+                  </Link>
 
-      {/* Pronunciation Lab */}
-      <ModuleLink 
-        analytics={analyticsInstance}
-        href="/pronunciation" 
-        color="purple" 
-        title="Pronunciation Lab" 
-        desc="Improve your speaking accuracy with real-time voice feedback." 
-        icon={
-          <svg 
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-          >
-            <path d="M12 1v22"/>
-            <path d="M5 8v8"/>
-            <path d="M19 8v8"/>
-            <path d="M2 12h2"/>
-            <path d="M20 12h2"/>
-            <path d="M8 5v14"/>
-            <path d="M16 5v14"/>
-          </svg>
-        } 
-      />
-
-      {/* Accent Training */}
-      <ModuleLink
-        analytics={analyticsInstance}
-        href="/accent-training"
-        color="blue"
-        title="Accent Training"
-        desc="Train your American, British, and natural English accent with AI-powered speaking practice."
-        icon={
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            {/* Globe */}
-            <circle cx="12" cy="12" r="10" />
-
-            {/* Accent/Sound waves */}
-            <path d="M8 12a4 4 0 0 1 4-4" />
-            <path d="M8 16a8 8 0 0 1 8-8" />
-
-            {/* Mic */}
-            <path d="M12 9v4" />
-            <path d="M10 11a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-          </svg>
-        }
-      />
-
-      {/* Listening Lab */}
-      <ModuleLink 
-        analytics={analyticsInstance}
-        href="/listening" 
-        color="purple" 
-        title="Listening Lab" 
-        desc="Improve your English Listening using this lab." 
-        icon={
-          <svg 
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-          >
-            <path d="M12 1v22"/>
-            <path d="M5 8v8"/>
-            <path d="M19 8v8"/>
-            <path d="M2 12h2"/>
-            <path d="M20 12h2"/>
-            <path d="M8 5v14"/>
-            <path d="M16 5v14"/>
-          </svg>
-        } 
-      />
-
-  {/* AI Chat Tutor */}
-  {/* <ModuleLink 
-    analytics={analyticsInstance}
-    href="/chatbot-page" 
-    color="orange" 
-    title="AI Chat Tutor" 
-    desc="Open conversation and instant help." 
-    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>} 
-  /> */}
-</div>
-
-        {/* Stats & Logs Section */}
-        <div className="grid lg:grid-cols-3 gap-10">
-          
-          <div className="lg:col-span-2 relative">
-            {/* The Main Stats Card */}
-            <div className={`bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl h-full transition-all duration-500 ${!isAuth ? 'blur-sm opacity-50 grayscale select-none' : ''}`}>
-              <h3 className="text-3xl font-bold mb-8">Performance Overview</h3>
-              
-              <div className="grid md:grid-cols-2 gap-6 mb-12">
-                 {/* Level Section */}
-                 <div className="bg-white/10 p-6 rounded-3xl border border-white/10">
-                    <div className="flex justify-between items-end mb-4">
-                      <div>
-                        <p className="text-slate-400 text-xs uppercase font-bold mb-1">Current Level</p>
-                        <p className="text-4xl font-black text-amber-400">{isAuth ? level : '1'}</p>
-                      </div>
-                      <p className="text-slate-400 text-xs font-bold">{isAuth ? `${currentXP % 1000}/1000 XP` : '0/1000 XP'}</p>
-                    </div>
-                    {/* Progress Bar */}
-                    <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-amber-500 to-yellow-300 transition-all duration-1000"
-                        style={{ width: isAuth ? `${progressToNextLevel}%` : '10%' }}
-                      ></div>
-                    </div>
-                 </div>
-
-                 {/* Streak Section */}
-                 <div className="bg-white/10 p-6 rounded-3xl border border-white/10 flex flex-col justify-center">
-                    <p className="text-slate-400 text-xs uppercase font-bold mb-2">Daily Streak</p>
-                    <p className="text-4xl font-black text-rose-400">🔥 {isAuth ? user?.streak : '0'}</p>
-                    <p className="text-slate-500 text-xs mt-2">Keep the flame alive!</p>
-                 </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-10">
-                <StatCard value={isAuth ? user?.total_xp : '---'} label="Total XP" color="text-blue-400" />
-                <StatCard value={isAuth ? user?.bonus : '---'} label="Bonus" color="text-emerald-400" />
-                <StatCard value={isAuth ? user?.points : '---'} label="Points" color="text-purple-400" />
-              </div>
-            </div>
-
-            {/* Overlay for Not Logged In User */}
-            {!isAuth && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 text-center bg-slate-900/40 rounded-[3rem] backdrop-blur-[2px]">
-                <div className="bg-white text-slate-900 p-8 rounded-[2rem] shadow-2xl max-w-sm">
-                  <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-                    <i className="fas fa-lock"></i>
-                  </div>
-                  <h4 className="text-xl font-bold mb-2">Track Your Progress</h4>
-                  <p className="text-slate-500 text-sm mb-6">Sign in to save your streaks, earn XP, and level up your English skills.</p>
-                  <Link href="/auth/login" className="block w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition-all">
-                    Get Started
+                  <Link
+                    href="/learning-path"
+                    className="px-8 py-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl font-semibold hover:bg-white/10 transition-all"
+                  >
+                    Continue Learning
                   </Link>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Activity Logs - Only visible if Auth */}
-          <div className="lg:col-span-1">
-            {isAuth ? (
-              <RecentActivity />
-            ) : (
-              <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2.5rem] p-10 h-full flex flex-col items-center justify-center text-center">
-                <i className="fas fa-chart-line text-slate-300 text-4xl mb-4"></i>
-                <p className="text-slate-400 font-medium">Activity feed will appear here once you log in.</p>
+              {/* RIGHT */}
+              <div className="relative">
+
+                {isAuth ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-6">
+                      <FloatingCard
+                        title="Current Level"
+                        value={`Lv. ${level}`}
+                        color="from-cyan-500 to-blue-600"
+                      />
+
+                      <FloatingCard
+                        title="Daily Streak"
+                        value={`🔥 ${user?.streak || 0}`}
+                        color="from-rose-500 to-orange-500"
+                      />
+
+                      <FloatingCard
+                        title="Total XP"
+                        value={`${user?.total_xp || 0}`}
+                        color="from-violet-500 to-indigo-600"
+                      />
+
+                      <FloatingCard
+                        title="Points"
+                        value={`${user?.points || 0}`}
+                        color="from-emerald-500 to-green-600"
+                      />
+                    </div>
+
+                    {/* Progress Card */}
+                    <div className="mt-6 rounded-[2rem] bg-white/5 backdrop-blur-2xl border border-white/10 p-6 shadow-2xl">
+                      <div className="flex justify-between mb-4">
+                        <div>
+                          <p className="text-slate-400 text-sm">Level Progress</p>
+                          <h3 className="text-2xl font-bold">
+                            {currentXP % 1000}/1000 XP
+                          </h3>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-emerald-400 font-bold">
+                            {progress.toFixed(0)}%
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="w-full h-4 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-cyan-400 to-blue-600 rounded-full transition-all duration-1000"
+                          style={{ width: `${progress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-2xl p-10 shadow-2xl">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-3xl shadow-2xl">
+                        🚀
+                      </div>
+
+                      <div>
+                        <p className="text-cyan-400 font-bold uppercase tracking-widest text-sm">
+                          Unlock AI Features
+                        </p>
+
+                        <h3 className="text-3xl font-black">
+                          Start Your Fluency Journey
+                        </h3>
+                      </div>
+                    </div>
+
+                    <p className="text-slate-400 text-lg leading-relaxed mb-8">
+                      Track your speaking progress, earn XP, maintain streaks,
+                      and get personalized AI fluency insights.
+                    </p>
+
+                    <div className="space-y-4 mb-8">
+                      <FeaturePoint text="🎤 AI Speaking Practice" />
+                      <FeaturePoint text="⚡ Fluency Challenges" />
+                      <FeaturePoint text="🔥 Daily Streak System" />
+                      <FeaturePoint text="🧠 AI Weakness Detection" />
+                    </div>
+
+                    <Link
+                      href="/auth/login"
+                      className="block text-center py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg hover:scale-[1.02] transition-all"
+                    >
+                      Get Started Free
+                    </Link>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
+        </section>
 
-        </div>
+        {/* DAILY MISSION */}
+        {isAuth && (
+        <section className="px-6 -mt-8 relative z-20">
+          <div className="max-w-7xl mx-auto">
+            <div className="rounded-[2.5rem] bg-gradient-to-r from-cyan-500 to-blue-700 p-8 shadow-2xl">
+              <div className="grid lg:grid-cols-2 gap-10 items-center">
+                <div>
+                  <p className="uppercase tracking-widest text-cyan-100 text-sm font-bold mb-3">
+                    Today's Speaking Mission
+                  </p>
+
+                  <h2 className="text-4xl font-black mb-4">
+                    Train Your Fluency Daily
+                  </h2>
+
+                  <p className="text-cyan-100 text-lg">
+                    Complete speaking exercises and improve your confidence with
+                    AI-powered real conversation practice.
+                  </p>
+                </div>
+
+                <div className="grid gap-4">
+                  <MissionItem text="Complete 1 AI Audio Call" done />
+                  <MissionItem text="Speak for 5 minutes continuously" />
+                  <MissionItem text="Finish Quick Response Challenge" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        )}
+
+        {/* TIP */}
+        {isAuth && (
+          <section className="px-6 mt-10">
+            <div className="max-w-7xl mx-auto">
+              <TipOfTheDay />
+            </div>
+          </section>
+        )}
+
+        {/* MAIN CONTENT */}
+        <section className="px-6 py-16">
+          <div className="max-w-7xl mx-auto space-y-20">
+
+            {/* SPEAKING */}
+            <CategorySection title="🎤 Speaking Practice">
+              <ModuleCard
+                href="/ai-audio-call"
+                title="AI Audio Call"
+                desc="Practice natural voice conversations with AI."
+                gradient="from-cyan-500 to-blue-600"
+              />
+
+              <ModuleCard
+                href="/quick-response"
+                title="Quick Response"
+                desc="Train instant English thinking and speaking."
+                gradient="from-orange-500 to-amber-500"
+              />
+
+              <ModuleCard
+                href="/role-play"
+                title="Roleplay Chat"
+                desc="Practice real-world English scenarios."
+                gradient="from-pink-500 to-rose-500"
+              />
+
+              <ModuleCard
+                href="/shadow-listening"
+                title="Shadow Listening"
+                desc="Repeat native speech and improve fluency."
+                gradient="from-violet-500 to-indigo-600"
+              />
+            </CategorySection>
+
+            {/* FLUENCY */}
+            <CategorySection title="⚡ Fluency & Recall">
+              <ModuleCard
+                href="/think-fast"
+                title="Think Fast"
+                desc="Speak instantly on random topics."
+                gradient="from-yellow-500 to-orange-500"
+              />
+
+              <ModuleCard
+                href="/word-rescue"
+                title="Word Rescue"
+                desc="Get smart vocabulary hints while speaking."
+                gradient="from-emerald-500 to-green-600"
+              />
+
+              <ModuleCard
+                href="/sentence-rebuild"
+                title="Sentence Rebuild"
+                desc="Build fast and correct English sentences."
+                gradient="from-fuchsia-500 to-purple-600"
+              />
+
+              <ModuleCard
+                href="/conversation-gap-fill"
+                title="Conversation Flow"
+                desc="Practice natural follow-up conversations."
+                gradient="from-indigo-500 to-blue-600"
+              />
+            </CategorySection>
+
+            {/* GRAMMAR */}
+            <CategorySection title="📚 Grammar & Writing">
+              <ModuleCard
+                href="/grammar"
+                title="Grammar Rules"
+                desc="Master English grammar and sentence structure."
+                gradient="from-violet-500 to-indigo-600"
+              />
+
+              <ModuleCard
+                href="/sentence-polisher"
+                title="Sentence Polisher"
+                desc="Improve writing with AI corrections."
+                gradient="from-rose-500 to-pink-600"
+              />
+
+              <ModuleCard
+                href="/screen-analyzer"
+                title="Screen Analyzer"
+                desc="Learn from movies and subtitles."
+                gradient="from-emerald-500 to-teal-600"
+              />
+            </CategorySection>
+
+            {/* FUN */}
+            <CategorySection title="🎮 Fun & Community">
+              <ModuleCard
+                href="/games"
+                title="Language Games"
+                desc="Learn vocabulary through interactive games."
+                gradient="from-blue-500 to-cyan-500"
+              />
+
+              <ModuleCard
+                href="/group-video-call"
+                title="Group Video Call"
+                desc="Practice English with real people."
+                gradient="from-indigo-500 to-violet-600"
+              />
+
+              <ModuleCard
+                href="/scene-display"
+                title="Scene Display"
+                desc="Practice with real-life visual situations."
+                gradient="from-pink-500 to-rose-600"
+              />
+            </CategorySection>
+
+            {/* STATS + ACTIVITY */}
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* AI Recommendation */}
+              {isAuth && (
+              <div className="lg:col-span-2 rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-2xl p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <p className="text-cyan-400 uppercase text-sm font-bold tracking-widest">
+                      AI Recommendation
+                    </p>
+
+                    <h3 className="text-3xl font-black mt-2">
+                      Your Weak Areas
+                    </h3>
+                  </div>
+
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-3xl shadow-xl">
+                    🧠
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <WeaknessCard
+                    title="Hesitation While Speaking"
+                    recommendation="Quick Response Challenge"
+                  />
+
+                  <WeaknessCard
+                    title="Vocabulary Recall"
+                    recommendation="Word Rescue Mode"
+                  />
+                </div>
+              </div>
+              )}
+              {/* Activity */}
+              <div>
+                {isAuth ? (
+                  <RecentActivity />
+                ) : (
+                  <div className="rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-2xl p-10 text-center h-full">
+                    <div className="text-5xl mb-4">📈</div>
+                    <h3 className="text-2xl font-bold mb-3">
+                      Track Your Progress
+                    </h3>
+
+                    <p className="text-slate-400 mb-6">
+                      Login to save streaks, XP, and fluency stats.
+                    </p>
+
+                    <Link
+                      href="/auth/login"
+                      className="inline-block px-6 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold"
+                    >
+                      Login Now
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
-      
+
       <Footer />
     </>
   );
 }
 
-function ModuleLink({ href, color, icon, title, desc, analytics }: any) {
-  const colorMap: any = {
-    blue: "bg-blue-100 text-blue-600",
-    purple: "bg-purple-100 text-purple-600",
-    rose: "bg-rose-100 text-rose-600",
-    orange: "bg-orange-100 text-orange-600",
-  };
+/* COMPONENTS */
 
-  const handleClick = async () => {
-    if (analytics) {
-      await logEvent(analytics, "module_click", {
-        module_name: title,
-        module_path: href,
-      });
-    }
-  };
+function FeaturePoint({ text }: any) {
+  return (
+    <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+      <div className="w-2 h-2 rounded-full bg-cyan-400"></div>
 
+      <p className="text-slate-300">{text}</p>
+    </div>
+  );
+}
+
+
+function FloatingCard({ title, value, color }: any) {
+  return (
+    <div className="group relative overflow-hidden rounded-[2rem] bg-white/5 backdrop-blur-2xl border border-white/10 p-6 shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-500">
+      <div
+        className={`absolute inset-0 opacity-20 bg-gradient-to-br ${color}`}
+      ></div>
+
+      <div className="relative z-10">
+        <p className="text-slate-400 text-sm mb-2">{title}</p>
+
+        <h3 className="text-4xl font-black">{value}</h3>
+      </div>
+    </div>
+  );
+}
+
+function CategorySection({ title, children }: any) {
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-3xl font-black">{title}</h2>
+
+        <button className="text-cyan-400 font-semibold hover:text-cyan-300 transition-all">
+          View All →
+        </button>
+      </div>
+
+      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function ModuleCard({ href, title, desc, gradient }: any) {
   return (
     <Link
       href={href}
-      onClick={handleClick}
-      className="group bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all border border-slate-100 flex flex-col items-center text-center"
+      className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-2xl p-6 hover:-translate-y-3 hover:border-cyan-400/40 transition-all duration-500 shadow-xl"
     >
       <div
-        className={`w-16 h-16 ${colorMap[color]} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
+        className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-all duration-500 bg-gradient-to-br ${gradient}`}
+      ></div>
+
+      <div
+        className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${gradient} flex items-center justify-center text-3xl mb-6 shadow-2xl`}
       >
-        {icon}
+        ✨
       </div>
-      <h3 className="text-xl font-bold text-slate-800 mb-2">{title}</h3>
-      <p className="text-slate-500 text-sm mb-6">{desc}</p>
-      <span className="font-bold text-sm">Explore →</span>
+
+      <h3 className="text-2xl font-bold mb-3">{title}</h3>
+
+      <p className="text-slate-400 leading-relaxed mb-6">{desc}</p>
+
+      <div className="text-cyan-400 font-semibold group-hover:translate-x-2 transition-all">
+        Explore →
+      </div>
     </Link>
   );
 }
 
-function StatCard({ value, label, color }: any) {
+function MissionItem({ text, done = false }: any) {
   return (
-    <div className="text-center">
-      <div className={`text-4xl font-black ${color}`}>{value}</div>
-      <div className="text-slate-500 text-sm uppercase font-bold tracking-widest">{label}</div>
+    <div className="flex items-center gap-4 bg-white/10 rounded-2xl px-5 py-4 backdrop-blur-xl border border-white/10">
+      <div
+        className={`w-6 h-6 rounded-full flex items-center justify-center ${
+          done ? "bg-emerald-400" : "bg-white/20"
+        }`}
+      >
+        {done && "✓"}
+      </div>
+
+      <p className="font-medium">{text}</p>
+    </div>
+  );
+}
+
+function WeaknessCard({ title, recommendation }: any) {
+  return (
+    <div className="rounded-[2rem] bg-white/5 border border-white/10 p-6">
+      <p className="text-slate-400 mb-2">Detected Weakness</p>
+
+      <h4 className="text-2xl font-bold mb-4">{title}</h4>
+
+      <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-4">
+        <p className="text-cyan-300 text-sm mb-1">Recommended Practice</p>
+
+        <p className="font-bold">{recommendation}</p>
+      </div>
     </div>
   );
 }
