@@ -27,8 +27,10 @@ import {
   SceneScenario,
   SceneCharacter,
 } from "@/services/sceneDisplayService";
+import { useRouter } from "next/navigation";
 
 export default function SceneRoleplayPage() {
+  const router = useRouter();
   const [scenes, setScenes] = useState<SceneScenario[]>([]);
   const [selectedScene, setSelectedScene] =
     useState<SceneScenario | null>(null);
@@ -55,8 +57,19 @@ export default function SceneRoleplayPage() {
     useState(true);
 
   const recognitionRef = useRef<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token =
+      localStorage.getItem("access_token");
+
+    if (!token) {
+      router.replace("/auth/login");
+      return;
+    } else {
+      setLoading(false);
+    }
+
     loadScenes();
   }, []);
 

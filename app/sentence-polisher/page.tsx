@@ -42,7 +42,8 @@ export default function AIChatTutor() {
         : null;
 
     if (!token) {
-      router.replace("/auth/login");
+      // router.replace("/auth/login");
+      setLoading(false);
     } else {
       setLoading(false);
     }

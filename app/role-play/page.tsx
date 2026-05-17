@@ -1,623 +1,315 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import {
+  Mic,
+  PlayCircle,
+  Volume2,
+  Sparkles,
+  ArrowRight,
+  Brain,
+} from "lucide-react";
 import { chatbotService } from "@/services/chatbotService";
 import { useRouter } from "next/navigation";
-import Footer from "@/components/Footer";
-import { useUserPlan } from "@/hooks/usePlan";
-import { saveAttempt } from "@/services/reportAnalysis";
-
-interface Message {
-  role: "user" | "bot";
-  content: string;
-  correction?: {
-    fixed: string | null;
-    explanation: string | null;
-  };
-  originalInput?: string;
-}
-
-type VoiceType = "professional" | "calm" | "formal" | "neutral";
 
 interface Role {
+  id: number;
+  instruction: string;
+  voice_type: string;
+  avatar: string;
   title: string;
   scenario: string;
-  instruction: string;
-  avatar: string;
-  voiceType: VoiceType;
 }
 
-export default function RoleplayChat() {
+export default function RoleplayPage() {
   const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isListening, setIsListening] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const { plan, loading } = useUserPlan();
 
-  const socketRef = useRef<WebSocket | null>(null);
-
-  const [dailyRole, setDailyRole] = useState<Role>({
-    title: "Job Interviewer",
-    scenario: "You are applying for a Senior Designer role at a tech firm.",
-    instruction: "Try to use professional vocabulary and explain your work process.",
-    avatar: "👔",
-    voiceType: "professional", // ✅ Added voiceType for TTS
-  });
-
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
-  const isSpacePressedRef = useRef(false);
-
-  // --- TTS Function ---
-  const speakResponse = (text: string) => {
-    if (!window.speechSynthesis) return;
-
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
-    const indianVoice =
-      voices.find((v) => v.lang === "en-IN") || voices.find((v) => v.lang === "en-US");
-    utterance.voice = indianVoice || voices[0];
-
-    // Voice style based on dailyRole
-    switch (dailyRole.voiceType) {
-      case "professional":
-        utterance.rate = 0.95;
-        utterance.pitch = 0.9;
-        break;
-      case "calm":
-        utterance.rate = 0.85;
-        utterance.pitch = 0.85;
-        break;
-      case "formal":
-        utterance.rate = 0.9;
-        utterance.pitch = 0.85;
-        break;
-      default:
-        utterance.rate = 1;
-        utterance.pitch = 1;
-    }
-
-    window.speechSynthesis.speak(utterance);
-  };
-
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token =
+      localStorage.getItem("access_token");
+
     if (!token) {
       router.replace("/auth/login");
       return;
     }
 
-    const roles: Role[] = [
-      { title: "Hotel Receptionist", scenario: "You are checking into a luxury hotel in London.", instruction: "Practice polite requests and formal greetings.", avatar: "🛎️", voiceType: "formal" },
-    ];
-
-    const today = new Date().getDay() % roles.length;
-    const selectedRole = roles[today];
-    setDailyRole(selectedRole);
-
-    const initialGreeting = `Hello! I am your ${selectedRole.title}. ${selectedRole.scenario} Shall we begin?`;
-    setMessages([{ role: "bot", content: initialGreeting }]);
-    setTimeout(() => speakResponse(initialGreeting), 1000);
-
-    // SEO & Meta Effects
-    document.title = "Roleplay Chat | Practice English Conversations with AI";
-
-    // Description
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement('meta');
-      metaDesc.setAttribute('name', 'description');
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute(
-      'content',
-      "Practice real-life English conversations with AI roleplay scenarios like interviews, doctor visits, and daily situations. Improve your speaking confidence and fluency."
-    );
-
-    // ✅ Keywords
-    let metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.setAttribute('name', 'keywords');
-      document.head.appendChild(metaKeywords);
-    }
-
-    metaKeywords.setAttribute(
-      'content',
-      "english speaking practice,roleplay chat,AI conversation practice,learn english speaking,english conversation app,interview practice english,spoken english practice"
-    );
+    loadRoles();
   }, []);
 
-  const [usage, setUsage] = useState<{
-    used: number;
-    limit: number | "unlimited";
-    remaining: number | "unlimited";
-  } | null>(null);
-
-  const [limitReached, setLimitReached] = useState(false);
-
-  useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages]);
-
-  // --- Voice Recognition ---
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code !== "Space") return;
-      if (isSpacePressedRef.current) return;
-
-      const active = document.activeElement;
-      const isTyping =
-        active &&
-        (active.tagName === "INPUT" ||
-          active.tagName === "TEXTAREA" ||
-          (active as HTMLElement).isContentEditable);
-
-      if (isTyping) return;
-
-      e.preventDefault();
-      isSpacePressedRef.current = true;
-      startListening();
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.code !== "Space") return;
-      isSpacePressedRef.current = false;
-      stopListening();
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-      recognitionRef.current?.stop();
-    };
-  }, []);
-
-  const startListening = () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert("Browser does not support voice speech.");
-      return;
+  const loadRoles = async () => {
+    try {
+      const data = await chatbotService.getRoles();
+      setRoles(data.roles || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-
-    if (recognitionRef.current) return;
-    window.speechSynthesis?.cancel();
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-IN";
-    recognition.interimResults = false;
-    recognition.continuous = false;
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setInput(transcript);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-      recognitionRef.current = null;
-      if (!isSpacePressedRef.current) setTimeout(() => handleSendMessage(), 120);
-    };
-
-    recognition.onerror = () => {
-      setIsListening(false);
-      recognitionRef.current = null;
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-    setIsListening(true);
   };
-
-  const stopListening = () => recognitionRef.current?.stop();
-
-  const handleSendMessage = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-
-    if (!input.trim() || isProcessing) return;
-
-    const userText = input;
-
-    setInput("");
-    setIsProcessing(true);
-
-    // ADD USER + EMPTY BOT MESSAGE
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "user",
-        content: userText,
-      },
-      {
-        role: "bot",
-        content: "",
-      },
-    ]);
-
-    if (!socketRef.current) return;
-
-    let streamedText = "";
-
-    socketRef.current.send(
-      JSON.stringify({
-        role_title: dailyRole.title,
-        user_input: userText,
-      })
-    );
-
-    socketRef.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-
-      // =========================
-      // STREAMING RESPONSE
-      // =========================
-      if (data.type === "chunk") {
-        // backend se sirf text chunk aaye
-        if (typeof data.content === "string") {
-          streamedText += data.content;
-
-          // JSON visible na ho
-          const cleanText = streamedText
-            .replace(/```json/g, "")
-            .replace(/```/g, "")
-            .replace(/\{[\s\S]*?"reply"\s*:/g, "")
-            .replace(/"correction"[\s\S]*/g, "")
-            .replace(/^\s*"/, "")
-            .replace(/"\s*$/, "");
-
-          setMessages((prev) => {
-            const updated = [...prev];
-
-            updated[updated.length - 1] = {
-              ...updated[updated.length - 1],
-              content: cleanText,
-            };
-
-            return updated;
-          });
-        }
-      }
-
-      // =========================
-      // FINAL RESPONSE
-      // =========================
-      if (data.type === "done") {
-        setIsProcessing(false);
-
-        let parsed: any = null;
-
-        try {
-          parsed =
-            typeof data.data === "string"
-              ? JSON.parse(data.data)
-              : data.data;
-        } catch (err) {
-          console.log("JSON Parse Error");
-        }
-
-        // FINAL CLEAN RESPONSE
-        const finalReply =
-          parsed?.reply ||
-          streamedText ||
-          "Sorry, I didn't understand.";
-
-        // GRAMMAR CORRECTION FIX
-        let correctionData = undefined;
-
-        if (
-          parsed?.correction &&
-          (parsed.correction.fixed ||
-            parsed.correction.explanation)
-        ) {
-          correctionData = {
-            fixed: parsed.correction.fixed,
-            explanation: parsed.correction.explanation,
-          };
-        }
-
-        setMessages((prev) => {
-          const updated = [...prev];
-
-          updated[updated.length - 1] = {
-            role: "bot",
-            content: finalReply,
-            correction: correctionData,
-            originalInput: userText,
-          };
-
-          return updated;
-        });
-
-        speakResponse(finalReply);
-      }
-    };
-  };
-
-  const replayVoice = (text: string) => speakResponse(text);
-
-  useEffect(() => {
-    const socket = new WebSocket(
-      "ws://127.0.0.1:9000/sentence/ws/roleplay"
-    );
-
-    socket.onopen = () => {
-      console.log("WebSocket Connected");
-    };
-
-    socket.onclose = () => {
-      console.log("WebSocket Disconnected");
-    };
-
-    socket.onerror = (err) => {
-      console.error("WebSocket Error", err);
-    };
-
-    socketRef.current = socket;
-
-    return () => {
-      socket.close();
-    };
-  }, []);
 
   return (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex flex-col">
-    <Navbar />
+    <>
+      <Navbar />
 
-    <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
-      <div className="grid lg:grid-cols-12 gap-6 min-h-[calc(100vh-220px)]">
+      <main className="min-h-screen bg-[#050816] text-white overflow-hidden">
 
-        {/* LEFT SIDEBAR */}
-        <aside className="hidden lg:flex lg:col-span-4 flex-col gap-6">
-          
-          {/* ROLE CARD */}
-          <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-8 relative overflow-hidden">
-            
-            <div className="absolute top-0 right-0 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-40"></div>
+        {/* HERO */}
+        <section className="relative border-b border-white/10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.18),transparent_40%)]" />
 
-            <div className="relative z-10">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-4xl shadow-lg mb-6">
-                {dailyRole.avatar}
+          <div className="relative max-w-7xl mx-auto px-6 py-24">
+
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-300 px-4 py-2 rounded-full text-sm mb-6">
+                <Sparkles className="w-4 h-4" />
+                AI Real-Life Speaking
               </div>
 
-              <span className="inline-flex px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-black tracking-widest uppercase">
-                {dailyRole.title}
-              </span>
+              <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight mb-6">
+                Speak English
+                <br />
+                <span className="bg-gradient-to-r from-blue-400 to-cyan-300 text-transparent bg-clip-text">
+                  In Real Situations
+                </span>
+              </h1>
 
-              <h2 className="text-3xl font-black text-slate-900 mt-5 leading-tight">
-                Daily Speaking Mission
-              </h2>
-
-              <p className="text-slate-600 leading-relaxed mt-4">
-                {dailyRole.scenario}
+              <p className="text-slate-400 text-xl leading-relaxed max-w-2xl">
+                Practice realistic conversations with AI characters.
+                Talk naturally, continue conversations, and improve
+                speaking confidence through immersive roleplay scenarios.
               </p>
 
-              <div className="mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-5">
-                <p className="text-xs font-black uppercase tracking-widest text-indigo-600 mb-2">
-                  Learning Goal
-                </p>
+              <div className="flex flex-wrap gap-4 mt-10">
 
-                <p className="text-sm text-slate-700 leading-relaxed">
-                  {dailyRole.instruction}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* VOICE TIPS */}
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-8 text-white shadow-xl">
-            <h3 className="text-2xl font-black mb-5">
-              Speaking Tips
-            </h3>
-
-            <div className="space-y-4 text-blue-100">
-              <div className="flex gap-3">
-                <span>🎯</span>
-                <p>Speak slowly and clearly.</p>
-              </div>
-
-              <div className="flex gap-3">
-                <span>🧠</span>
-                <p>Use complete English sentences.</p>
-              </div>
-
-              <div className="flex gap-3">
-                <span>🚀</span>
-                <p>Try professional vocabulary.</p>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* CHAT AREA */}
-        <section className="lg:col-span-8 flex flex-col bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden">
-
-          {/* HEADER */}
-          <div className="px-6 md:px-8 py-5 border-b border-slate-100 bg-white flex items-center justify-between">
-            
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-2xl shadow-lg">
-                {dailyRole.avatar}
-              </div>
-
-              <div>
-                <h2 className="text-xl font-black text-slate-900">
-                  AI Roleplay Tutor
-                </h2>
-
-                <p className="text-sm text-slate-500">
-                  Practice real-life English conversations
-                </p>
-              </div>
-            </div>
-
-            <div className="hidden md:flex items-center gap-2 bg-green-50 border border-green-100 px-4 py-2 rounded-xl">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span className="text-sm font-semibold text-green-700">
-                Live AI
-              </span>
-            </div>
-          </div>
-
-          {/* CHAT BODY */}
-          <div
-            ref={scrollRef}
-            className="flex-1 overflow-y-auto px-4 md:px-8 py-8 space-y-8 bg-gradient-to-b from-slate-50 to-white"
-          >
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${
-                  msg.role === "user"
-                    ? "justify-end"
-                    : "justify-start"
-                }`}
-              >
-                <div className="max-w-[90%] md:max-w-[75%]">
-
-                  {/* CHAT BUBBLE */}
-                  <div
-                    className={`relative px-6 py-5 rounded-[1.8rem] shadow-sm ${
-                      msg.role === "user"
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-md"
-                        : "bg-white border border-slate-200 text-slate-800 rounded-bl-md"
-                    }`}
-                  >
-                    <p className="leading-relaxed text-[15px] md:text-base whitespace-pre-wrap">
-                      {msg.content}
-                    </p>
-
-                    {/* REPLAY */}
-                    {msg.role === "bot" && (
-                      <button
-                        onClick={() =>
-                          replayVoice(msg.content)
-                        }
-                        className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-blue-600 transition"
-                      >
-                        🔊 Replay Voice
-                      </button>
-                    )}
+                <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-2xl">
+                  <div className="text-2xl font-black text-blue-400">
+                    AI Voice
                   </div>
-
-                  {/* CORRECTION BOX */}
-                  {msg.role === "bot" &&
-                    msg.correction?.fixed && (
-                      <div className="mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-5 animate-in slide-in-from-bottom-2 duration-300">
-                        
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-lg">
-                            ✨
-                          </span>
-
-                          <p className="text-xs font-black uppercase tracking-widest text-amber-700">
-                            Grammar Feedback
-                          </p>
-                        </div>
-
-                        <p className="text-sm text-slate-400 line-through mb-2">
-                          {msg.originalInput}
-                        </p>
-
-                        <p className="font-bold text-slate-900 text-lg">
-                          {msg.correction.fixed}
-                        </p>
-
-                        <p className="mt-3 text-sm text-amber-900 bg-white/60 rounded-xl p-3 italic leading-relaxed">
-                          {msg.correction.explanation}
-                        </p>
-                      </div>
-                    )}
-                </div>
-              </div>
-            ))}
-
-            {/* THINKING */}
-            {isProcessing && (
-              <div className="flex justify-start">
-                <div className="bg-white border border-slate-200 px-6 py-5 rounded-[1.8rem] rounded-bl-md shadow-sm">
-                  <div className="flex gap-2">
-                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
-                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-100"></span>
-                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200"></span>
+                  <div className="text-sm text-slate-400">
+                    Real conversation simulation
                   </div>
                 </div>
+
+                <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-2xl">
+                  <div className="text-2xl font-black text-cyan-400">
+                    Live Speaking
+                  </div>
+                  <div className="text-sm text-slate-400">
+                    Practice naturally
+                  </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-2xl">
+                  <div className="text-2xl font-black text-emerald-400">
+                    Smart Feedback
+                  </div>
+                  <div className="text-sm text-slate-400">
+                    Fluency analysis
+                  </div>
+                </div>
+
               </div>
-            )}
-          </div>
-
-          {/* INPUT SECTION */}
-          <div className="p-4 md:p-6 border-t border-slate-100 bg-white">
-            
-            <form
-              onSubmit={handleSendMessage}
-              className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-[1.5rem] p-3"
-            >
-              {/* MIC */}
-              <button
-                type="button"
-                onClick={startListening}
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-all ${
-                  isListening
-                    ? "bg-red-500 text-white animate-pulse shadow-lg"
-                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-                }`}
-              >
-                🎙️
-              </button>
-
-              {/* INPUT */}
-              <input
-                value={input}
-                onChange={(e) =>
-                  setInput(e.target.value)
-                }
-                placeholder={
-                  isListening
-                    ? "Listening..."
-                    : "Type your message..."
-                }
-                className="flex-1 bg-transparent outline-none text-slate-700 placeholder:text-slate-400 text-base px-2"
-              />
-
-              {/* SEND */}
-              <button
-                disabled={
-                  !input.trim() || isProcessing
-                }
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 disabled:opacity-50 text-white px-7 py-4 rounded-2xl font-black transition-all shadow-lg"
-              >
-                {isProcessing
-                  ? "Sending..."
-                  : "Send"}
-              </button>
-            </form>
-
-            {/* LIMIT */}
-            {limitReached && (
-              <button
-                onClick={() =>
-                  router.push("/pricing")
-                }
-                className="w-full mt-4 bg-yellow-500 hover:bg-yellow-600 text-white py-4 rounded-2xl font-black transition-all"
-              >
-                Upgrade for More Chats 🚀
-              </button>
-            )}
+            </div>
           </div>
         </section>
-      </div>
-    </main>
 
-    <Footer />
-  </div>
-);
+        {/* ROLE GRID */}
+        <section className="max-w-7xl mx-auto px-6 py-20">
+
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <h2 className="text-4xl font-black mb-2">
+                Choose Your Scenario
+              </h2>
+
+              <p className="text-slate-400">
+                Learn through realistic speaking situations
+              </p>
+            </div>
+
+            <div className="hidden md:flex items-center gap-2 text-slate-500">
+              <Brain className="w-5 h-5" />
+              AI Powered Conversations
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="grid md:grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-64 rounded-3xl bg-white/5 animate-pulse border border-white/10"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid lg:grid-cols-2 gap-8">
+
+              {roles.map((role) => (
+                <div
+                  key={role.id}
+                  className="group relative bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-blue-500/40 rounded-[32px] p-8 transition-all duration-300 hover:-translate-y-2"
+                >
+                  {/* glow */}
+                  <div className="absolute inset-0 rounded-[32px] bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/10 group-hover:to-cyan-500/5 transition-all" />
+
+                  <div className="relative">
+
+                    {/* top */}
+                    <div className="flex items-start justify-between mb-8">
+
+                      <div className="flex items-center gap-5">
+
+                        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center text-5xl shadow-2xl">
+                          {role.avatar}
+                        </div>
+
+                        <div>
+                          <h3 className="text-3xl font-black mb-2">
+                            {role.title}
+                          </h3>
+
+                          <div className="flex items-center gap-2 text-sm text-blue-300 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full w-fit">
+                            <Volume2 className="w-4 h-4" />
+                            {role.voice_type} voice
+                          </div>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                    {/* scenario */}
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
+                      <div className="text-xs uppercase tracking-widest text-slate-500 mb-2">
+                        Scenario
+                      </div>
+
+                      <p className="text-lg text-slate-200 leading-relaxed">
+                        {role.scenario}
+                      </p>
+                    </div>
+
+                    {/* instruction */}
+                    <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-5 mb-8">
+                      <div className="text-xs uppercase tracking-widest text-blue-300 mb-2">
+                        Speaking Goal
+                      </div>
+
+                      <p className="text-slate-300 leading-relaxed">
+                        {role.instruction}
+                      </p>
+                    </div>
+
+                    {/* features */}
+                    <div className="grid grid-cols-3 gap-3 mb-8">
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                        <Mic className="w-5 h-5 mx-auto mb-2 text-cyan-400" />
+                        <div className="text-xs text-slate-400">
+                          Voice Practice
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                        <PlayCircle className="w-5 h-5 mx-auto mb-2 text-emerald-400" />
+                        <div className="text-xs text-slate-400">
+                          AI Response
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                        <Brain className="w-5 h-5 mx-auto mb-2 text-purple-400" />
+                        <div className="text-xs text-slate-400">
+                          Smart Feedback
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* CTA */}
+                    <button
+                      onClick={() => {
+                        const params = new URLSearchParams({
+                          title: role.title,
+                          scenario: role.scenario,
+                          instruction: role.instruction,
+                          avatar: role.avatar,
+                          voiceType: role.voice_type,
+                        });
+
+                        router.push(`/role-play/chat?${params.toString()}`);
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white py-5 rounded-2xl font-black text-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-3 shadow-[0_20px_50px_rgba(59,130,246,0.25)]"
+                    >
+                      Start Roleplay
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+
+                  </div>
+                </div>
+              ))}
+
+            </div>
+          )}
+        </section>
+
+        {/* PREVIEW */}
+        {selectedRole && (
+          <section className="border-t border-white/10 bg-white/[0.02]">
+            <div className="max-w-5xl mx-auto px-6 py-20">
+
+              <div className="text-center mb-10">
+                <div className="text-7xl mb-5">
+                  {selectedRole.avatar}
+                </div>
+
+                <h2 className="text-5xl font-black mb-4">
+                  {selectedRole.title}
+                </h2>
+
+                <p className="text-slate-400 text-lg">
+                  AI conversation session ready
+                </p>
+              </div>
+
+              <div className="bg-white/[0.04] border border-white/10 rounded-[32px] p-8">
+
+                <div className="space-y-6">
+
+                  <div className="flex justify-start">
+                    <div className="bg-blue-600 text-white rounded-3xl rounded-bl-md px-6 py-4 max-w-xl">
+                      Hello 👋 Welcome.
+                      How may I help you today?
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <div className="bg-white/10 rounded-3xl rounded-br-md px-6 py-4 max-w-xl text-slate-300">
+                      Tap the mic and start speaking...
+                    </div>
+                  </div>
+
+                </div>
+
+                <button className="mt-10 w-full bg-emerald-500 hover:bg-emerald-400 text-black py-5 rounded-2xl font-black text-lg transition-all">
+                  🎤 Start Speaking Session
+                </button>
+
+              </div>
+            </div>
+          </section>
+        )}
+
+      </main>
+
+      <Footer />
+    </>
+  );
 }

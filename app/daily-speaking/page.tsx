@@ -13,6 +13,7 @@ import {
   Timer,
   TrendingUp,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const CHALLENGES = [
   {
@@ -38,7 +39,10 @@ const CHALLENGES = [
 ];
 
 export default function DailySpeakingArena() {
+  const router = useRouter();
   const recognitionRef = useRef<any>(null);
+  const [loading, setLoading] =
+    useState(true);
 
   const [started, setStarted] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -62,6 +66,18 @@ export default function DailySpeakingArena() {
       Math.floor(Math.random() * CHALLENGES.length)
     ];
   }, []);
+
+  useEffect(() => {
+    const token =
+      localStorage.getItem("access_token");
+
+    if (!token) {
+      router.replace("/auth/login");
+      return;
+    } else {
+      setLoading(false);
+    }
+  });
 
   // TIMER
   useEffect(() => {

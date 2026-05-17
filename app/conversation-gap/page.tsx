@@ -16,6 +16,7 @@ import {
   Lightbulb,
   MessageCircle,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const conversations = [
   {
@@ -74,6 +75,7 @@ const conversations = [
 ];
 
 export default function ConversationFlowPracticePage() {
+  const router = useRouter();
   const [current, setCurrent] = useState(0);
 
   const [selected, setSelected] = useState<string | null>(null);
@@ -93,8 +95,21 @@ export default function ConversationFlowPracticePage() {
     [current]
   );
 
+  const [loading, setLoading] =
+    useState(true);
+
   // TIMER
   useEffect(() => {
+    const token =
+      localStorage.getItem("access_token");
+
+    if (!token) {
+      router.replace("/auth/login");
+      return;
+    } else {
+      setLoading(false);
+    }
+
     if (!started || submitted) return;
 
     if (timer <= 0) {

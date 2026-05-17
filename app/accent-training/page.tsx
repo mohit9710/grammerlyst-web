@@ -21,11 +21,15 @@ export default function AccentSwitchPage() {
   const recognitionRef = useRef<any>(null);
 
   const [strictMode, setStrictMode] = useState(false);
+  const [loading, setLoading] =
+    useState(true);
 
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
     if (!token) {
-      router.replace("/auth/login");
+      // router.replace("/auth/login");
+    } else {
+      setLoading(false);
     }
     
     if (typeof window === "undefined") return;

@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import LogoImg from "../resources/logo.png";
 import useUser from "@/hooks/userProfile";
-
+import { Bell, CheckCheck } from "lucide-react";
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -14,6 +14,33 @@ export default function Navbar() {
   const { user, isAuth } = useUser();
 
   const [scrolled, setScrolled] = useState(false);
+  const [showNotifications, setShowNotifications] =
+  useState(false);
+
+  const [notifications, setNotifications] =
+  useState([
+    {
+      id: 1,
+      title: "🔥 Daily Speaking Challenge",
+      message:
+        "Complete today's speaking mission and earn XP.",
+      read: false,
+    },
+    {
+      id: 2,
+      title: "🎧 New AI Roleplay Added",
+      message:
+        "Practice English with new Doctor scenario.",
+      read: false,
+    },
+    {
+      id: 3,
+      title: "⚡ XP Reward",
+      message:
+        "You earned +120 XP yesterday.",
+      read: true,
+    },
+  ]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,6 +57,20 @@ export default function Navbar() {
     router.push("/dashboard");
     window.location.reload();
   };
+
+  const unreadCount = notifications.filter(
+    (n) => !n.read
+  ).length;
+
+  const markAllAsRead = () => {
+    setNotifications((prev) =>
+      prev.map((n) => ({
+        ...n,
+        read: true,
+      }))
+    );
+  };
+
 
   const navLinks = [
     { label: "Dashboard", href: "/dashboard" },
@@ -164,6 +205,103 @@ export default function Navbar() {
                     </p>
                   </div>
                 </Link>
+
+                {/* NOTIFICATIONS */}
+                <div className="relative">
+
+                  {/* ICON */}
+                  <button
+                    onClick={() =>
+                      setShowNotifications(
+                        !showNotifications
+                      )
+                    }
+                    className="relative w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 flex items-center justify-center"
+                  >
+                    <Bell className="w-5 h-5 text-white" />
+
+                    {unreadCount > 0 && (
+                      <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shadow-lg">
+                        {unreadCount}
+                      </div>
+                    )}
+                  </button>
+
+                  {/* DROPDOWN */}
+                  {showNotifications && (
+                    <div className="absolute right-0 mt-4 w-[360px] bg-slate-950/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden z-50">
+
+                      {/* HEADER */}
+                      <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+                        
+                        <div>
+                          <h3 className="text-white font-black">
+                            Notifications
+                          </h3>
+
+                          <p className="text-xs text-slate-400 mt-1">
+                            Latest updates & rewards
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={markAllAsRead}
+                          className="flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300"
+                        >
+                          <CheckCheck className="w-4 h-4" />
+                          Mark all
+                        </button>
+
+                      </div>
+
+                      {/* LIST */}
+                      <div className="max-h-[420px] overflow-y-auto">
+
+                        {notifications.map((item) => (
+                          <div
+                            key={item.id}
+                            onClick={() => {
+                              setNotifications((prev) =>
+                                prev.map((n) =>
+                                  n.id === item.id
+                                    ? {
+                                        ...n,
+                                        read: true,
+                                      }
+                                    : n
+                                )
+                              );
+                            }}
+                            className={`px-5 py-4 border-b border-white/5 cursor-pointer transition-all hover:bg-white/[0.03] ${
+                              !item.read
+                                ? "bg-blue-500/[0.05]"
+                                : ""
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+
+                              {!item.read && (
+                                <div className="w-2 h-2 rounded-full bg-blue-400 mt-2"></div>
+                              )}
+
+                              <div className="flex-1">
+                                <h4 className="text-sm font-bold text-white">
+                                  {item.title}
+                                </h4>
+
+                                <p className="text-sm text-slate-400 mt-1 leading-relaxed">
+                                  {item.message}
+                                </p>
+                              </div>
+
+                            </div>
+                          </div>
+                        ))}
+
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* LOGOUT */}
                 <button

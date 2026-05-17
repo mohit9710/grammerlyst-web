@@ -18,8 +18,10 @@ import {
   Captions,
 } from "lucide-react";
 import { movieSceneService, MovieScene } from "@/services/movieSceneService";
+import { useRouter } from "next/navigation";
 
 export default function MovieScenePracticePage() {
+  const router = useRouter();
   const [scenes, setScenes] = useState<MovieScene[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,8 +39,19 @@ export default function MovieScenePracticePage() {
   const [countdown, setCountdown] = useState(0);
 
   const recognitionRef = useRef<any>(null);
+    useState(true);
 
   useEffect(() => {
+    const token =
+      localStorage.getItem("access_token");
+
+    if (!token) {
+      router.replace("/auth/login");
+      return;
+    } else {
+      setLoading(false);
+    }
+
     loadScenes();
   }, []);
 

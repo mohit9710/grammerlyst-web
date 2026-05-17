@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const QUESTIONS = [
   {
@@ -31,6 +32,7 @@ const QUESTIONS = [
 ];
 
 export default function SentenceRebuildPage() {
+  const router = useRouter();
   const [questionIndex, setQuestionIndex] = useState(0);
 
   const currentQuestion = QUESTIONS[questionIndex];
@@ -44,9 +46,21 @@ export default function SentenceRebuildPage() {
   const [status, setStatus] = useState<
     "idle" | "correct" | "wrong"
   >("idle");
+  const [loading, setLoading] =
+    useState(true);
 
   // Initialize question
   useEffect(() => {
+    const token =
+      localStorage.getItem("access_token");
+
+    if (!token) {
+      // router.replace("/auth/login");
+      // return;
+    } else {
+      setLoading(false);
+    }
+
     const shuffled = [...currentQuestion.words].sort(
       () => Math.random() - 0.5
     );

@@ -74,9 +74,6 @@ export const chatbotService = {
     return data;
   },
 
-  /**
-   * 🔥 Roleplay chat (UPDATED - NO SESSION ID)
-   */
   async sendRoleplay(
     role_title: string,
     user_input: string
@@ -120,6 +117,55 @@ export const chatbotService = {
       }
 
       throw new Error(data?.detail || "Failed to get response");
+    }
+
+    return data;
+  },
+
+  createRoleplaySocket() {
+    const token = getAccessToken();
+
+    if (!token) {
+      throw new Error(
+        "Authentication required"
+      );
+    }
+
+    // convert http -> ws
+    const wsBase = API_BASE_URL
+      .replace("http://", "ws://")
+      .replace("https://", "wss://");
+
+    return new WebSocket(
+      `${wsBase}/sentence/ws/roleplay?token=${token}`
+    );
+  },
+
+  async getRoles() {
+    const token = getAccessToken();
+
+    if (!token) {
+      throw new Error("Authentication required. Please log in.");
+    }
+
+    let response: Response;
+
+    try {
+      response = await fetch(`${API_BASE_URL}/api/roles_list`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch {
+      throw new Error("Network error. Please try again.");
+    }
+
+    const data = await safeJson(response);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch roles");
     }
 
     return data;

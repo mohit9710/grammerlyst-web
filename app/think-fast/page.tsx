@@ -14,6 +14,7 @@ import {
   Mic,
   Sparkles,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const QUESTIONS = [
   {
@@ -44,6 +45,7 @@ const QUESTIONS = [
 ];
 
 export default function ThinkFastPage() {
+  const router = useRouter();
   const [started, setStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
 
@@ -64,6 +66,15 @@ export default function ThinkFastPage() {
 
   // TIMER
   useEffect(() => {
+
+    const token =
+      localStorage.getItem("access_token");
+
+    if (!token) {
+      router.replace("/auth/login");
+      return;
+    }
+    
     if (!started || gameOver) return;
 
     intervalRef.current = setInterval(() => {

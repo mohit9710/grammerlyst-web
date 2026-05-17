@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Wand2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Suggestion {
   word: string;
@@ -20,6 +21,7 @@ interface Suggestion {
 }
 
 export default function WordRescuePage() {
+  const router = useRouter();
   const [isListening, setIsListening] = useState(false);
   const [currentSpeech, setCurrentSpeech] = useState("");
   const [timer, setTimer] = useState(0);
@@ -46,6 +48,15 @@ export default function WordRescuePage() {
   );
 
   useEffect(() => {
+
+    const token =
+      localStorage.getItem("access_token");
+
+    if (!token) {
+      router.replace("/auth/login");
+      return;
+    }
+
     if (!isListening) return;
 
     let index = 0;
