@@ -193,127 +193,334 @@ export default function AccentSwitchPage() {
   };
 
   return (
-    <>
-      <Navbar />
+  <>
+    <Navbar />
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 flex items-center justify-center p-6">
-        <div className="bg-white/80 backdrop-blur-lg shadow-2xl rounded-3xl p-8 w-full max-w-2xl border">
-          <h1 className="text-3xl font-bold text-center mb-4">
-            🎧 Accent Trainer Pro
-          </h1>
-
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className="w-full p-4 border rounded-xl mb-4"
-            rows={4}
-          />
-
-          {/* Accent */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            {[
-              { code: "en-US", label: "🇺🇸" },
-              { code: "en-GB", label: "🇬🇧" },
-              { code: "en-IN", label: "🇮🇳" },
-            ].map((item) => (
-              <button
-                key={item.code}
-                onClick={() => setAccent(item.code)}
-                className={`p-3 rounded-xl ${
-                  accent === item.code
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Controls */}
-          <div className="flex gap-3 mb-4">
-            <button
-              onClick={speak}
-              className="flex-1 bg-green-500 text-white p-3 rounded-xl flex items-center justify-center gap-2"
-            >
-              <Volume2 size={18} /> Play
-            </button>
-
-            <button
-              onClick={startRecording}
-              className="flex-1 bg-purple-500 text-white p-3 rounded-xl flex items-center justify-center gap-2"
-            >
-              <Mic size={18} /> Record
-            </button>
-
-            {/* <button
-              onClick={stopRecording}
-              className="bg-red-500 text-white p-3 rounded-xl"
-            >
-              <Square size={18} />
-            </button> */}
-          </div>
-
-          {/* Loop + Speed + Strict */}
-          <div className="flex justify-between items-center mb-4">
-            <button
-              onClick={() => setIsLoop(!isLoop)}
-              className={`px-4 py-2 rounded-lg ${
-                isLoop ? "bg-blue-500 text-white" : "bg-gray-200"
-              }`}
-            >
-              <Repeat size={16} /> Loop
-            </button>
-
-            <button
-              onClick={() => setStrictMode(!strictMode)}
-              className={`px-4 py-2 rounded-lg ${
-                strictMode ? "bg-red-500 text-white" : "bg-gray-200"
-              }`}
-            >
-              🔥 Strict
-            </button>
-
-            <div className="flex items-center gap-2">
-              <Gauge size={16} />
-              <input
-                type="range"
-                min="0.5"
-                max="1.5"
-                step="0.1"
-                value={speed}
-                onChange={(e) => setSpeed(Number(e.target.value))}
-              />
-              <span>{speed}x</span>
-            </div>
-          </div>
-
-          {/* Feedback */}
-          {spokenText && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-xl">
-              <p className="text-sm text-gray-600">Your Speech:</p>
-              <p className="mb-2">{spokenText}</p>
-
-              <p className="text-sm text-gray-600">Accuracy:</p>
-              <p className="text-lg font-bold">
-                {score}% {score && score > 80 ? "🔥 Great!" : "⚡ Improve"}
-              </p>
-
-              {confidence !== null && (
-                <p className="text-sm text-gray-500">
-                  Confidence: {(confidence * 100).toFixed(0)}%
-                </p>
-              )}
-
-              <p className="mt-2">{getFeedback()}</p>
-
-              <div className="mt-2">{highlightText()}</div>
-            </div>
-          )}
-        </div>
+    <main className="min-h-screen bg-[#060816] text-white overflow-hidden">
+      
+      {/* Background Effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-500/20 blur-3xl rounded-full"></div>
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-500/20 blur-3xl rounded-full"></div>
       </div>
 
-      <Footer />
-    </>
-  );
+      <div className="relative max-w-7xl mx-auto px-6 py-10">
+        
+        {/* HERO */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-blue-300 font-semibold mb-5">
+            🎧 AI Pronunciation Lab
+          </div>
+
+          <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-none">
+            Accent Trainer
+            <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              Speak Like Native
+            </span>
+          </h1>
+
+          <p className="max-w-2xl mx-auto mt-6 text-slate-400 text-lg leading-relaxed">
+            Practice pronunciation, compare accents, and get instant AI-powered
+            speaking feedback in real time.
+          </p>
+        </div>
+
+        {/* MAIN GRID */}
+        <div className="grid lg:grid-cols-12 gap-8">
+          
+          {/* LEFT PANEL */}
+          <div className="lg:col-span-7">
+            <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 shadow-2xl">
+              
+              {/* TEXTAREA */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm uppercase tracking-widest text-slate-400 font-bold">
+                    Practice Sentence
+                  </label>
+
+                  <span className="text-xs text-slate-500">
+                    {text.length} characters
+                  </span>
+                </div>
+
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  rows={5}
+                  placeholder="Type something to practice..."
+                  className="w-full bg-[#0F172A] border border-white/10 focus:border-blue-500 outline-none rounded-3xl p-6 text-lg resize-none placeholder:text-slate-600 transition-all"
+                />
+              </div>
+
+              {/* ACCENT SELECT */}
+              <div className="mb-8">
+                <p className="text-sm uppercase tracking-widest text-slate-400 font-bold mb-4">
+                  Accent Mode
+                </p>
+
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    {
+                      code: "en-US",
+                      label: "American",
+                      emoji: "🇺🇸",
+                    },
+                    {
+                      code: "en-GB",
+                      label: "British",
+                      emoji: "🇬🇧",
+                    },
+                    {
+                      code: "en-IN",
+                      label: "Indian",
+                      emoji: "🇮🇳",
+                    },
+                  ].map((item) => (
+                    <button
+                      key={item.code}
+                      onClick={() => setAccent(item.code)}
+                      className={`rounded-2xl p-5 border transition-all text-left ${
+                        accent === item.code
+                          ? "border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10"
+                          : "border-white/10 bg-white/5 hover:bg-white/10"
+                      }`}
+                    >
+                      <div className="text-3xl mb-3">
+                        {item.emoji}
+                      </div>
+
+                      <h3 className="font-bold text-lg">
+                        {item.label}
+                      </h3>
+
+                      <p className="text-sm text-slate-400 mt-1">
+                        Natural pronunciation
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* CONTROLS */}
+              <div className="grid md:grid-cols-2 gap-4 mb-8">
+                <button
+                  onClick={speak}
+                  className="h-16 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-500 font-bold text-lg flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-emerald-500/20"
+                >
+                  <Volume2 size={22} />
+                  Play Audio
+                </button>
+
+                <button
+                  onClick={startRecording}
+                  className="h-16 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-500 font-bold text-lg flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-purple-500/20"
+                >
+                  <Mic size={22} />
+                  Start Speaking
+                </button>
+              </div>
+
+              {/* SETTINGS */}
+              <div className="grid md:grid-cols-3 gap-4">
+                
+                <button
+                  onClick={() => setIsLoop(!isLoop)}
+                  className={`rounded-2xl p-5 border transition-all ${
+                    isLoop
+                      ? "bg-blue-500/10 border-blue-500"
+                      : "bg-white/5 border-white/10"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Repeat size={20} />
+                    <div>
+                      <p className="font-bold">Loop Audio</p>
+                      <p className="text-xs text-slate-400">
+                        Repeat playback
+                      </p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setStrictMode(!strictMode)}
+                  className={`rounded-2xl p-5 border transition-all ${
+                    strictMode
+                      ? "bg-rose-500/10 border-rose-500"
+                      : "bg-white/5 border-white/10"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    🔥
+                    <div>
+                      <p className="font-bold">Strict Mode</p>
+                      <p className="text-xs text-slate-400">
+                        Hard accuracy check
+                      </p>
+                    </div>
+                  </div>
+                </button>
+
+                <div className="rounded-2xl p-5 border border-white/10 bg-white/5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Gauge size={18} />
+                    <span className="font-bold">Speed</span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="1.5"
+                    step="0.1"
+                    value={speed}
+                    onChange={(e) =>
+                      setSpeed(Number(e.target.value))
+                    }
+                    className="w-full"
+                  />
+
+                  <div className="mt-2 text-sm text-slate-400">
+                    {speed}x playback
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT PANEL */}
+          <div className="lg:col-span-5">
+            <div className="sticky top-24 space-y-6">
+              
+              {/* SCORE CARD */}
+              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2rem] p-8 shadow-2xl">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-black">
+                    AI Feedback
+                  </h2>
+
+                  <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 text-xl">
+                    🎯
+                  </div>
+                </div>
+
+                {spokenText ? (
+                  <>
+                    {/* SCORE */}
+                    <div className="text-center mb-8">
+                      <div className="text-7xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        {score}%
+                      </div>
+
+                      <p className="text-slate-400 mt-2">
+                        Pronunciation Accuracy
+                      </p>
+                    </div>
+
+                    {/* FEEDBACK */}
+                    <div className="bg-[#0F172A] rounded-3xl p-5 mb-5 border border-white/5">
+                      <p className="text-sm text-slate-400 mb-2">
+                        Your Speech
+                      </p>
+
+                      <p className="text-lg leading-relaxed">
+                        {spokenText}
+                      </p>
+                    </div>
+
+                    {/* CONFIDENCE */}
+                    <div className="mb-6">
+                      <div className="flex justify-between mb-2 text-sm">
+                        <span className="text-slate-400">
+                          Confidence
+                        </span>
+
+                        <span className="font-bold">
+                          {(confidence! * 100).toFixed(0)}%
+                        </span>
+                      </div>
+
+                      <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                          style={{
+                            width: `${(confidence || 0) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* MESSAGE */}
+                    <div className="rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-white/10 p-5">
+                      <p className="font-semibold text-lg">
+                        {getFeedback()}
+                      </p>
+                    </div>
+
+                    {/* WORD HIGHLIGHT */}
+                    <div className="mt-6">
+                      <p className="text-sm uppercase tracking-widest text-slate-400 font-bold mb-3">
+                        Pronunciation Analysis
+                      </p>
+
+                      <div className="bg-[#0F172A] border border-white/5 rounded-3xl p-5 leading-loose text-lg">
+                        {highlightText()}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-16">
+                    <div className="w-24 h-24 mx-auto rounded-full bg-white/5 flex items-center justify-center text-5xl mb-6">
+                      🎙️
+                    </div>
+
+                    <h3 className="text-2xl font-bold mb-3">
+                      Ready to Practice?
+                    </h3>
+
+                    <p className="text-slate-400 leading-relaxed">
+                      Press the microphone button and start speaking.
+                      AI analysis will appear here instantly.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* QUICK TIPS */}
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-[2rem] p-6 shadow-2xl">
+                <h3 className="text-xl font-black mb-4">
+                  💡 Speaking Tips
+                </h3>
+
+                <div className="space-y-3 text-blue-100">
+                  <div className="flex gap-3">
+                    <span>•</span>
+                    <p>Speak slowly and clearly</p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <span>•</span>
+                    <p>Practice daily for fluency</p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <span>•</span>
+                    <p>Listen before repeating</p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <span>•</span>
+                    <p>Use strict mode for precision</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <Footer />
+  </>
+);
 }

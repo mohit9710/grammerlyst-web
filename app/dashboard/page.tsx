@@ -87,7 +87,7 @@ export default function Dashboard() {
 
                 <div className="flex flex-wrap gap-4">
                   <Link
-                    href="/ai-audio-call"
+                    href="/daily-speaking"
                     className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg shadow-2xl hover:scale-105 transition-all duration-300"
                   >
                     🎤 Start Speaking
@@ -256,17 +256,17 @@ export default function Dashboard() {
               />
 
               <ModuleCard
-                href="/quick-response"
-                title="Quick Response"
-                desc="Train instant English thinking and speaking."
-                gradient="from-orange-500 to-amber-500"
-              />
-
-              <ModuleCard
                 href="/role-play"
                 title="Roleplay Chat"
                 desc="Practice real-world English scenarios."
                 gradient="from-pink-500 to-rose-500"
+              />
+
+              <ModuleCard
+                href="/accent-training"
+                title="Accent Training"
+                desc="Train you speaking accent and pronunciation."
+                gradient="from-orange-500 to-amber-500"
               />
 
               <ModuleCard
@@ -301,7 +301,7 @@ export default function Dashboard() {
               />
 
               <ModuleCard
-                href="/conversation-gap-fill"
+                href="/conversation-gap"
                 title="Conversation Flow"
                 desc="Practice natural follow-up conversations."
                 gradient="from-indigo-500 to-blue-600"
