@@ -10,10 +10,28 @@ import { syncStreak } from "@/services/userService";
 import { initAnalytics } from "@/services/firebaseService";
 import { logEvent } from "firebase/analytics";
 import useUser from "@/hooks/userProfile";
+import { missionService, DailyMission } from "@/services/tips"
 
 export default function Dashboard() {
   const [analyticsInstance, setAnalyticsInstance] = useState<any>(null);
   const { user, isAuth, setUser } = useUser();
+  const [missionsLoading, setMissionLoading ] = useState(false);
+  const [missions, setMissions] = useState<
+    DailyMission[]
+  >([]);
+
+  const fetchMissions = async () => {
+    try {
+      const data =
+        await missionService.getDailyMissions();
+
+      setMissions(data);
+      setMissionLoading(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
 
   useEffect(() => {
     initAnalytics().then(setAnalyticsInstance);
@@ -28,6 +46,10 @@ export default function Dashboard() {
           );
         })
         .catch((err) => console.error(err));
+
+        setMissionLoading(true);
+        fetchMissions();
+
     }
 
     document.title =
@@ -203,34 +225,65 @@ export default function Dashboard() {
 
         {/* DAILY MISSION */}
         {isAuth && (
-        <section className="px-6 -mt-8 relative z-20">
-          <div className="max-w-7xl mx-auto">
-            <div className="rounded-[2.5rem] bg-gradient-to-r from-cyan-500 to-blue-700 p-8 shadow-2xl">
-              <div className="grid lg:grid-cols-2 gap-10 items-center">
-                <div>
-                  <p className="uppercase tracking-widest text-cyan-100 text-sm font-bold mb-3">
-                    Today's Speaking Mission
-                  </p>
+          <section className="px-6 -mt-8 relative z-20">
+            <div className="max-w-7xl mx-auto">
+              <div className="rounded-[2.5rem] bg-gradient-to-r from-cyan-500 to-blue-700 p-8 shadow-2xl">
+                <div className="grid lg:grid-cols-2 gap-10 items-center">
 
-                  <h2 className="text-4xl font-black mb-4">
-                    Train Your Fluency Daily
-                  </h2>
+                  {/* LEFT */}
+                  <div>
+                    <p className="uppercase tracking-widest text-cyan-100 text-sm font-bold mb-3">
+                      Today's Speaking Mission
+                    </p>
 
-                  <p className="text-cyan-100 text-lg">
-                    Complete speaking exercises and improve your confidence with
-                    AI-powered real conversation practice.
-                  </p>
-                </div>
+                    <h2 className="text-4xl font-black mb-4">
+                      Train Your Fluency Daily
+                    </h2>
 
-                <div className="grid gap-4">
-                  <MissionItem text="Complete 1 AI Audio Call" done />
-                  <MissionItem text="Speak for 5 minutes continuously" />
-                  <MissionItem text="Finish Quick Response Challenge" />
+                    <p className="text-cyan-100 text-lg">
+                      Complete speaking exercises and improve your confidence with
+                      AI-powered real conversation practice.
+                    </p>
+                  </div>
+
+                  {/* RIGHT */}
+                  <div className="grid gap-4">
+
+                    {missionsLoading ? (
+                      <>
+                        {[1, 2, 3].map((item) => (
+                          <div
+                            key={item}
+                            className="h-20 rounded-2xl bg-white/10 animate-pulse"
+                          />
+                        ))}
+                      </>
+                    ) : missions.length > 0 ? (
+                      missions.map((mission: any) => (
+                        <MissionItem
+                          key={mission.id}
+                          text={mission.title}
+                          done={mission.completed}
+                          progress={
+                            mission.progress_count || 0
+                          }
+                          target={
+                            mission.target_count || 1
+                          }
+                          xp={mission.xp_reward}
+                        />
+                      ))
+                    ) : (
+                      <div className="bg-white/10 border border-white/20 rounded-2xl p-5 text-white">
+                        No daily missions available today.
+                      </div>
+                    )}
+
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
         )}
 
         {/* TIP */}
