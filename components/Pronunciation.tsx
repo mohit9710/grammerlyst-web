@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchPronunciation } from "@/services/pronunciationService";
+import {
+  fetchPronunciation,
+  uploadPronunciationAudio,
+} from "@/services/pronunciationService";
 import { useRouter } from "next/navigation";
 import useUser from "@/hooks/userProfile";
 
@@ -23,47 +26,16 @@ interface Props {
   ) => void;
 }
 
-const calculateAccuracy = (
-  original: string,
-  spoken: string
-): number => {
-  const clean = (str: string) =>
-    str
-      .toLowerCase()
-      .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
-      .trim();
-
-  const s1Words = clean(original).split(/\s+/);
-  const s2Words = clean(spoken).split(/\s+/);
-
-  let commonCount = 0;
-
-  const map = new Map<string, number>();
-
-  s1Words.forEach((w) =>
-    map.set(w, (map.get(w) || 0) + 1)
-  );
-
-  s2Words.forEach((w) => {
-    if (
-      map.has(w) &&
-      (map.get(w) as number) > 0
-    ) {
-      commonCount++;
-
-      map.set(
-        w,
-        (map.get(w) as number) - 1
-      );
-    }
-  });
-
-  return s1Words.length
-    ? Math.round(
-        (commonCount / s1Words.length) * 100
-      )
-    : 0;
-};
+interface Analysis {
+  pronunciation_score: number;
+  fluency_score: number;
+  grammar_score: number;
+  confidence_score: number;
+  speaking_speed: number;
+  feedback: string;
+  mistakes: string[];
+  improvements: string[];
+}
 
 export default function Pronunciation({
   plan,
@@ -84,6 +56,18 @@ export default function Pronunciation({
   const [recognition, setRecognition] =
     useState<any>(null);
 
+  const [mediaRecorder, setMediaRecorder] =
+    useState<MediaRecorder | null>(null);
+
+  const [finalTranscript, setFinalTranscript] =
+    useState("");
+
+  const [analysis, setAnalysis] =
+    useState<Analysis | null>(null);
+
+  const [isAnalyzing, setIsAnalyzing] =
+    useState(false);
+
   const { isAuth, loading } = useUser();
 
   const router = useRouter();
@@ -94,6 +78,10 @@ export default function Pronunciation({
     setAccuracy(null);
 
     setUserSpokenText("");
+
+    setFinalTranscript("");
+
+    setAnalysis(null);
 
     const token =
       typeof window !== "undefined"
@@ -164,126 +152,189 @@ export default function Pronunciation({
         let transcript = "";
 
         for (
-          let i = event.resultIndex;
+          let i = 0;
           i < event.results.length;
           i++
         ) {
           transcript +=
-            event.results[i][0].transcript;
+            event.results[i][0].transcript +
+            " ";
         }
 
-        setUserSpokenText(transcript);
+        setUserSpokenText(
+          transcript.trim()
+        );
       };
 
-      rec.onerror = () =>
-        setIsRecording(false);
+      rec.onerror = (err: any) => {
+        console.log(
+          "Speech recognition error:",
+          err
+        );
 
-      rec.onend = () =>
         setIsRecording(false);
+      };
+
+      rec.onend = () => {
+        setIsRecording(false);
+      };
 
       setRecognition(rec);
     }
   }, [loading, isAuth]);
 
   const toggleRecording = async () => {
-    if (!recognition) return;
-
     if (isRecording) {
-      recognition.stop();
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
 
-      setIsRecording(false);
+  const startRecording = async () => {
+    try {
+      const stream =
+        await navigator.mediaDevices.getUserMedia(
+          {
+            audio: true,
+          }
+        );
 
-      if (textData?.content) {
-        const finalAccuracy =
-          calculateAccuracy(
-            textData.content,
-            userSpokenText
+      const recorder =
+        new MediaRecorder(stream);
+
+      const chunks: Blob[] = [];
+
+      recorder.ondataavailable = (
+        event
+      ) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      recorder.onstop = async () => {
+        try {
+          setIsAnalyzing(true);
+
+          const audioBlob = new Blob(
+            chunks,
+            {
+              type: "audio/webm",
+            }
           );
 
-        setAccuracy(finalAccuracy);
+          const data =
+            await uploadPronunciationAudio(
+              {
+                audioBlob,
+                originalText:
+                  textData?.content || "",
+              }
+            );
 
-        if (onComplete) {
-          await onComplete({
-            exercise_typee: "pronunciation",
+          console.log(
+            "AI RESPONSE:",
+            data
+          );
 
-            original_text:
-              textData.content,
+          if (!data) {
+            throw new Error(
+              "No response received"
+            );
+          }
 
-            transcript:
-              userSpokenText,
+          if (data?.transcript) {
+            setFinalTranscript(
+              data.transcript
+            );
 
-            corrected_text:
-              textData.content,
+            setUserSpokenText(
+              data.transcript
+            );
+          }
 
-            feedback:
-              finalAccuracy >= 90
-                ? "Excellent pronunciation"
-                : finalAccuracy >= 70
-                ? "Good pronunciation"
-                : "Needs improvement",
+          if (data?.analysis) {
+            setAnalysis(data.analysis);
 
-            accuracy_score:
-              finalAccuracy,
+            setAccuracy(
+              data.analysis
+                .pronunciation_score || 0
+            );
+          }
 
-            grammar_score:
-              finalAccuracy,
-
-            pronunciation_score:
-              finalAccuracy,
-
-            fluency_score:
-              Math.max(
-                finalAccuracy - 5,
-                0
-              ),
-
-            vocabulary_score: 80,
-
-            listening_score: 75,
-
-            verb_score: 70,
-
-            confidence_score:
-              finalAccuracy >= 80
-                ? 85
-                : 60,
-
-            speaking_speed: 120,
-
-            pause_count: 2,
-
-            filler_word_count: 1,
-
-            xp_earned:
-              Math.floor(
-                finalAccuracy / 5
-              ),
-
-            duration_seconds: 60,
-          });
+          if (onComplete) {
+            onComplete({
+              ...data.analysis,
+              transcript:
+                data.transcript,
+            });
+          }
+        } catch (error) {
+          console.error(
+            "Analyze Error:",
+            error
+          );
+        } finally {
+          setIsAnalyzing(false);
         }
-      }
-    } else {
+      };
+
+      recorder.start(1000);
+
+      recognition?.start();
+
+      setMediaRecorder(recorder);
+
+      setIsRecording(true);
+
       setUserSpokenText("");
 
       setAccuracy(null);
 
-      try {
-        recognition.start();
+      setAnalysis(null);
 
-        setIsRecording(true);
-      } catch {}
+      setFinalTranscript("");
+    } catch (error) {
+      console.error(
+        "Microphone access denied:",
+        error
+      );
     }
   };
 
+  const stopRecording = () => {
+    mediaRecorder?.stop();
+
+    recognition?.stop();
+
+    setIsRecording(false);
+  };
+
+  const ScoreCard = ({
+    title,
+    score,
+  }: {
+    title: string;
+    score: number;
+  }) => (
+    <div className="rounded-2xl bg-[#0d1324] border border-white/5 p-4">
+      <p className="text-slate-400 text-sm mb-2">
+        {title}
+      </p>
+
+      <div className="text-3xl font-black text-cyan-400">
+        {score}%
+      </div>
+    </div>
+  );
+
   return (
     <main className="min-h-screen bg-[#050816] text-white relative overflow-hidden">
-      {/* BACKGROUND */}
       <div className="absolute top-0 left-0 w-[28rem] h-[28rem] bg-cyan-500/20 blur-3xl rounded-full" />
 
       <div className="absolute bottom-0 right-0 w-[30rem] h-[30rem] bg-violet-500/20 blur-3xl rounded-full" />
 
-      {/* SEO */}
       <div className="sr-only">
         <h1>
           English Pronunciation Practice
@@ -296,7 +347,6 @@ export default function Pronunciation({
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        {/* HEADER */}
         <div className="mb-8 lg:mb-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
           <div>
             <p className="uppercase tracking-[0.25em] text-cyan-400 text-xs font-bold mb-3">
@@ -324,11 +374,8 @@ export default function Pronunciation({
           </button>
         </div>
 
-        {/* MAIN GRID */}
         <div className="grid xl:grid-cols-3 gap-6">
-          {/* LEFT SIDE */}
           <div className="xl:col-span-2 space-y-6">
-            {/* READING CARD */}
             <div className="rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-2xl p-6 md:p-10 shadow-2xl">
               <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
                 <div>
@@ -361,7 +408,6 @@ export default function Pronunciation({
               </div>
             </div>
 
-            {/* TRANSCRIPTION */}
             <div className="rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-2xl p-6 md:p-8 shadow-2xl">
               <div className="flex items-center justify-between mb-5">
                 <div>
@@ -391,9 +437,7 @@ export default function Pronunciation({
             </div>
           </div>
 
-          {/* RIGHT SIDE */}
           <div className="space-y-6">
-            {/* ACTION CARD */}
             <div className="rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-2xl p-6 md:p-8 shadow-2xl">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-3xl shadow-2xl mb-6">
                 🎤
@@ -411,7 +455,9 @@ export default function Pronunciation({
 
               <button
                 disabled={
-                  loading || !recognition
+                  loading ||
+                  !recognition ||
+                  isAnalyzing
                 }
                 onClick={() => {
                   if (isLocked) {
@@ -432,7 +478,9 @@ export default function Pronunciation({
                     : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:scale-[1.02]"
                 }`}
               >
-                {isLocked
+                {isAnalyzing
+                  ? "Analyzing..."
+                  : isLocked
                   ? "Upgrade to Pro 🔒"
                   : isRecording
                   ? "Stop & Analyze"
@@ -440,7 +488,6 @@ export default function Pronunciation({
               </button>
             </div>
 
-            {/* ACCURACY CARD */}
             <div className="rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-2xl p-6 md:p-8 shadow-2xl">
               <p className="uppercase tracking-[0.2em] text-cyan-400 text-xs font-bold mb-4">
                 Accuracy Score
@@ -485,41 +532,152 @@ export default function Pronunciation({
                 </div>
               )}
             </div>
+          </div>
+        </div>
 
-            {/* QUICK TIPS */}
-            <div className="rounded-[2rem] bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-400/10 p-6 md:p-8 backdrop-blur-xl">
-              <h3 className="text-xl font-black mb-5">
-                Speaking Tips
-              </h3>
+        {analysis && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+            <div className="relative w-full max-w-3xl rounded-[2rem] bg-[#0b1120] border border-white/10 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+              
+              {/* HEADER */}
+              <div className="flex items-center justify-between px-6 md:px-8 py-5 border-b border-white/10">
+                <div>
+                  <p className="uppercase tracking-[0.2em] text-cyan-400 text-xs font-bold mb-1">
+                    AI SPEECH ANALYSIS
+                  </p>
 
-              <div className="space-y-4 text-sm text-slate-300">
-                <div className="flex gap-3">
-                  <span>🎧</span>
-                  <p>
-                    Speak slowly and clearly
-                    for better detection.
+                  <h3 className="text-2xl font-black text-white">
+                    Pronunciation Report
+                  </h3>
+                </div>
+
+                <button
+                  onClick={() => setAnalysis(null)}
+                  className="w-11 h-11 rounded-xl bg-white/5 hover:bg-red-500/20 border border-white/10 flex items-center justify-center text-slate-300 hover:text-red-400 transition-all"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* CONTENT */}
+              <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto">
+                
+                {/* SCORE GRID */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <ScoreCard
+                    title="Pronunciation"
+                    score={
+                      analysis.pronunciation_score
+                    }
+                  />
+
+                  <ScoreCard
+                    title="Fluency"
+                    score={
+                      analysis.fluency_score
+                    }
+                  />
+
+                  <ScoreCard
+                    title="Grammar"
+                    score={
+                      analysis.grammar_score
+                    }
+                  />
+
+                  <ScoreCard
+                    title="Confidence"
+                    score={
+                      analysis.confidence_score
+                    }
+                  />
+                </div>
+
+                {/* FEEDBACK */}
+                <div className="rounded-2xl bg-white/5 border border-white/10 p-5 mb-6">
+                  <h4 className="font-black text-lg mb-3 text-cyan-400">
+                    AI Feedback
+                  </h4>
+
+                  <p className="text-slate-300 leading-relaxed">
+                    {analysis.feedback}
                   </p>
                 </div>
 
-                <div className="flex gap-3">
-                  <span>🗣️</span>
-                  <p>
-                    Focus on word stress and
-                    pronunciation.
-                  </p>
-                </div>
+                {/* IMPROVEMENTS */}
+                {!!analysis.improvements?.length && (
+                  <div className="rounded-2xl bg-white/5 border border-white/10 p-5 mb-6">
+                    <h4 className="font-black text-lg mb-4 text-violet-400">
+                      Improvements
+                    </h4>
 
-                <div className="flex gap-3">
-                  <span>🚀</span>
-                  <p>
-                    Practice daily to improve
-                    fluency and confidence.
-                  </p>
-                </div>
+                    <ul className="space-y-3">
+                      {analysis.improvements.map(
+                        (
+                          item: string,
+                          idx: number
+                        ) => (
+                          <li
+                            key={idx}
+                            className="flex items-start gap-3 text-slate-300"
+                          >
+                            <span className="text-cyan-400 mt-1">
+                              •
+                            </span>
+
+                            <span>{item}</span>
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+                {/* MISTAKES */}
+                {!!analysis.mistakes?.length && (
+                  <div className="rounded-2xl bg-red-500/5 border border-red-500/20 p-5">
+                    <h4 className="font-black text-lg mb-4 text-red-400">
+                      Mistakes Detected
+                    </h4>
+
+                    <ul className="space-y-3">
+                      {analysis.mistakes.map(
+                        (
+                          item: string,
+                          idx: number
+                        ) => (
+                          <li
+                            key={idx}
+                            className="flex items-start gap-3 text-slate-300"
+                          >
+                            <span className="text-red-400 mt-1">
+                              •
+                            </span>
+
+                            <span>{item}</span>
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+                {/* FINAL TRANSCRIPT */}
+                {finalTranscript && (
+                  <div className="mt-6 rounded-2xl bg-[#111827] border border-white/10 p-5">
+                    <p className="text-xs uppercase tracking-[0.2em] text-cyan-400 font-bold mb-3">
+                      Final AI Transcript
+                    </p>
+
+                    <p className="text-slate-300 leading-relaxed">
+                      {finalTranscript}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </main>
   );
