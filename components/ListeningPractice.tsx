@@ -8,6 +8,7 @@ import {
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { saveAttempt } from "@/services/reportAnalysis";
 
 const cleanText = (text: string) => {
   return text
@@ -99,15 +100,11 @@ export default function ListeningPractice() {
   const [isListening, setIsListening] =
     useState(false);
 
-  const [
-    selectedAccent,
-    setSelectedAccent,
-  ] = useState<
-    "en-IN" | "en-US" | "en-GB"
-  >("en-IN");
-
   const [micSupported, setMicSupported] =
     useState(true);
+
+  const [savingAttempt, setSavingAttempt] =
+    useState(false);
 
   // =========================================
   // REFS
@@ -121,8 +118,8 @@ export default function ListeningPractice() {
   const isSpacePressedRef =
     useRef(false);
 
-  const audioRef =
-    useRef<HTMLAudioElement | null>(
+  const speechRef =
+    useRef<SpeechSynthesisUtterance | null>(
       null
     );
 
@@ -132,6 +129,9 @@ export default function ListeningPractice() {
 
   const currentQuestion =
     listeningQuestions[currentIndex];
+
+  const selectedAccent =
+    currentQuestion?.accent || "en-US";
 
   const isLocked = !plan?.active;
 
@@ -420,49 +420,73 @@ export default function ListeningPractice() {
   };
 
   // =========================================
-  // PLAY AUDIO
+  // PLAY AUDIO USING TTS
   // =========================================
 
-  const handlePlayAudio = async () => {
-    if (!audioRef.current) return;
-
-    try {
-      audioRef.current.load();
-
-      await audioRef.current.play();
-
-      setPlayCount((prev) => prev + 1);
-    } catch (err) {
-      console.error(
-        "Audio playback failed:",
-        err
-      );
-    }
-  };
-
-  const getGoogleDriveDirectUrl = (
-    url: string
-  ) => {
+  const handlePlayAudio = () => {
     if (
-      url.includes("drive.google.com")
-    ) {
-      const match = url.match(
-        /\/d\/(.*?)\//
+      typeof window === "undefined" ||
+      !currentQuestion
+    )
+      return;
+
+    window.speechSynthesis.cancel();
+
+    const utterance =
+      new SpeechSynthesisUtterance(
+        currentQuestion.transcript
       );
 
-      if (match && match[1]) {
-        return `https://drive.google.com/uc?export=download&id=${match[1]}`;
-      }
+    utterance.lang =
+      currentQuestion.accent ||
+      "en-US";
+
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    const voices =
+      window.speechSynthesis.getVoices();
+
+    const matchedVoice =
+      voices.find((voice) =>
+        voice.lang
+          .toLowerCase()
+          .includes(
+            currentQuestion.accent.toLowerCase()
+          )
+      );
+
+    if (matchedVoice) {
+      utterance.voice =
+        matchedVoice;
     }
 
-    return url;
+    speechRef.current =
+      utterance;
+
+    window.speechSynthesis.speak(
+      utterance
+    );
+
+    setPlayCount((prev) => prev + 1);
   };
 
   // =========================================
-  // CHECK ANSWER
+  // CLEANUP
   // =========================================
 
-  const handleCheckAnswer = () => {
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  // =========================================
+  // CHECK ANSWER + SAVE ATTEMPT
+  // =========================================
+
+  const handleCheckAnswer = async () => {
     if (!currentQuestion) return;
 
     const accuracy =
@@ -492,6 +516,80 @@ export default function ListeningPractice() {
       );
 
     setMissedWords(missed);
+
+    try {
+      const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
+
+
+        if (!token) {
+          console.log("No token found");
+          return;
+        }
+
+        const payload = {
+          exercise_type: "listening",
+
+          question:
+            currentQuestion.title || "",
+
+          user_answer: userAnswer || "",
+
+          corrected_answer:
+            currentQuestion.transcript || "",
+
+          ai_feedback:
+            accuracy >= 90
+              ? "Excellent listening skills."
+              : accuracy >= 70
+              ? "Good attempt. Focus more on connected speech."
+              : "Practice more carefully and replay less frequently.",
+
+          accuracy_score: accuracy,
+
+          grammar_score: accuracy,
+
+          vocabulary_score: accuracy,
+
+          confidence_score:
+            accuracy >= 80 ? 90 : 70,
+
+          xp_earned:
+            accuracy >= 90
+              ? 20
+              : accuracy >= 70
+              ? 15
+              : 10,
+
+          duration_seconds:
+            currentQuestion.duration || 10,
+        };
+
+        console.log(
+          "SAVE ATTEMPT PAYLOAD =>",
+          payload
+        );
+
+        const response =
+          await saveAttempt(
+            token,
+            payload
+          );
+
+        console.log(
+          "SAVE ATTEMPT SUCCESS =>",
+          response
+        );
+    } catch (err) {
+      console.error(
+        "Save attempt error:",
+        err
+      );
+    } finally {
+      setSavingAttempt(false);
+    }
   };
 
   // =========================================
@@ -499,6 +597,8 @@ export default function ListeningPractice() {
   // =========================================
 
   const handleNext = () => {
+    window.speechSynthesis.cancel();
+
     if (
       currentIndex <
       listeningQuestions.length - 1
@@ -549,240 +649,224 @@ export default function ListeningPractice() {
     );
   }
 
-  // =========================================
-  // UI
-  // =========================================
-
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-10">
-        {/* HEADER */}
+    <div className="min-h-screen bg-[#020617] text-white overflow-hidden relative">
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/20 blur-[140px] rounded-full" />
 
-        <div className="mb-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div>
-              <h1 className="text-4xl font-black text-slate-900 mb-3">
-                Listening Arena
-              </h1>
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-violet-500/20 blur-[140px] rounded-full" />
 
-              <p className="text-slate-500 max-w-2xl">
-                Improve your
-                listening skills by
-                hearing real English
-                conversations and
-                typing or speaking
-                exactly what you
-                hear.
-              </p>
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-10">
+
+        {/* HERO */}
+
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 mb-10">
+          <div>
+            <div className="flex items-center gap-3 mb-5 flex-wrap">
+              <span className="px-4 py-1.5 rounded-full bg-cyan-500/20 border border-cyan-400/20 text-cyan-300 text-xs font-bold uppercase tracking-widest">
+                AI Listening Lab
+              </span>
+
+              <span className="px-4 py-1.5 rounded-full bg-orange-500/20 border border-orange-400/20 text-orange-300 text-xs font-bold uppercase tracking-widest">
+                🔥 Daily Practice
+              </span>
             </div>
 
-            {/* ACCENT */}
+            <h1 className="text-5xl lg:text-6xl font-black leading-tight mb-5">
+              Listening
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                {" "}
+                Arena
+              </span>
+            </h1>
 
-            <select
-              value={
-                selectedAccent
-              }
-              onChange={(e) =>
-                setSelectedAccent(
-                  e.target
-                    .value as any
-                )
-              }
-              className="border border-slate-200 bg-white rounded-2xl px-4 py-3 font-semibold shadow-sm"
-            >
-              <option value="en-IN">
-                🇮🇳 Indian Accent
-              </option>
+            <p className="text-slate-400 max-w-2xl text-lg leading-relaxed">
+              Train your ears with real-world English conversations.
+            </p>
+          </div>
 
-              <option value="en-US">
-                🇺🇸 American Accent
-              </option>
+          {/* ACCENT */}
 
-              <option value="en-GB">
-                🇬🇧 British Accent
-              </option>
-            </select>
+          <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-5 min-w-[280px]">
+            <p className="text-sm uppercase tracking-widest text-slate-400 font-bold mb-3">
+              Audio Accent
+            </p>
+
+            <div className="h-[58px] px-5 rounded-2xl bg-white/10 border border-white/10 flex items-center text-lg font-bold">
+              {currentQuestion.accent ===
+                "en-IN" &&
+                "🇮🇳 Indian Accent"}
+
+              {currentQuestion.accent ===
+                "en-US" &&
+                "🇺🇸 American Accent"}
+
+              {currentQuestion.accent ===
+                "en-GB" &&
+                "🇬🇧 British Accent"}
+            </div>
           </div>
         </div>
 
-        {/* TOP CARD */}
+        {/* AUDIO HERO */}
 
-        <div className="bg-white border rounded-[2rem] p-8 shadow-sm mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 backdrop-blur-xl p-8 lg:p-10 mb-8">
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10">
+
             <div>
-              <div className="flex gap-3 mb-4 flex-wrap">
-                <span className="px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wide">
-                  {
-                    currentQuestion.difficulty
-                  }
+              <div className="flex gap-3 mb-5 flex-wrap">
+                <span className="px-4 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold uppercase tracking-wider border border-cyan-500/20">
+                  {currentQuestion.difficulty}
                 </span>
 
-                <span className="px-4 py-1 rounded-full bg-violet-100 text-violet-700 text-xs font-bold uppercase tracking-wide">
-                  {
-                    currentQuestion.category
-                  }
+                <span className="px-4 py-1 rounded-full bg-violet-500/20 text-violet-300 text-xs font-bold uppercase tracking-wider border border-violet-500/20">
+                  {currentQuestion.category}
                 </span>
-
-                {isLocked && (
-                  <span className="px-4 py-1 rounded-full bg-red-100 text-red-600 text-xs font-bold uppercase tracking-wide">
-                    Pro Required
-                  </span>
-                )}
               </div>
 
-              <h2 className="text-3xl font-black text-slate-900">
-                {
-                  currentQuestion.title
-                }
+              <h2 className="text-4xl lg:text-5xl font-black mb-5 leading-tight">
+                {currentQuestion.title}
               </h2>
+
+              <div className="flex items-center gap-6 mt-8 flex-wrap">
+                <div>
+                  <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-1">
+                    Audio Plays
+                  </p>
+
+                  <p className="text-3xl font-black">
+                    {playCount}
+                  </p>
+                </div>
+
+                <div className="h-12 w-px bg-white/10" />
+
+                <div>
+                  <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-1">
+                    Accuracy
+                  </p>
+
+                  <p className="text-3xl font-black text-cyan-400">
+                    {score !== null
+                      ? `${score}%`
+                      : "--"}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {!isLocked && (
-              <button
-                onClick={
-                  handlePlayAudio
-                }
-                className="bg-blue-600 hover:bg-blue-700 transition-all text-white px-8 py-4 rounded-2xl font-bold shadow-lg"
-              >
-                ▶ Play Audio
-              </button>
-            )}
-          </div>
+              <div className="flex flex-col items-center">
+                <button
+                  onClick={handlePlayAudio}
+                  className="group relative w-36 h-36 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center shadow-[0_0_60px_rgba(34,211,238,0.4)] hover:scale-105 transition-all duration-300"
+                >
+                  <div className="absolute inset-0 rounded-full border border-white/20 animate-ping" />
 
-          <audio
-            ref={audioRef}
-            controls
-            preload="metadata"
-            className="hidden"
-          >
-            <source
-              src={getGoogleDriveDirectUrl(
-                currentQuestion.audio_url
-              )}
-              type="audio/mpeg"
-            />
-          </audio>
-        </div>
+                  <span className="text-5xl ml-2 group-hover:scale-110 transition-transform">
+                    ▶
+                  </span>
+                </button>
 
-        {/* GRID */}
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* LEFT */}
-
-          <div className="lg:col-span-2 bg-white border rounded-[2rem] p-8 shadow-sm">
-            <div className="mb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h3 className="text-2xl font-black text-slate-900">
-                  Type or Speak What
-                  You Heard
-                </h3>
-
-                <p className="text-sm text-slate-400 mt-1">
-                  {micSupported
-                    ? "Hold SPACE (outside the box) to speak • Release SPACE to stop • Click inside the box to type normally"
-                    : "Speech recognition not supported in this browser"}
+                <p className="mt-5 text-slate-400 font-semibold">
+                  Tap to Play Audio
                 </p>
               </div>
-
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Audio Played:{" "}
-                {playCount} times
-              </div>
-            </div>
-
-            {isListening && (
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-red-500">
-                <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                Listening… release
-                SPACE to stop
-              </div>
             )}
-
-            <textarea
-              value={userAnswer}
-              onChange={(e) =>
-                setUserAnswer(
-                  e.target.value
-                )
-              }
-              placeholder="Click here and type, or hold SPACE outside this box to speak..."
-              className="w-full h-52 border border-slate-200 rounded-2xl p-6 outline-none focus:ring-4 focus:ring-blue-100 resize-none text-lg"
-            />
-
-            <div className="flex flex-wrap gap-4 mt-6">
-              {isLocked ? (
-                <button
-                  onClick={() =>
-                    router.push(
-                      "/pricing"
-                    )
-                  }
-                  className="w-full h-14 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 transition-all text-white rounded-2xl font-black shadow-lg flex items-center justify-center text-lg"
-                >
-                  🔒 Upgrade to
-                  Pro
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={
-                      handleCheckAnswer
-                    }
-                    className="bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-2xl font-bold"
-                  >
-                    Check Answer
-                  </button>
-
-                  <button
-                    onClick={
-                      handleNext
-                    }
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-bold"
-                  >
-                    Next Challenge
-                  </button>
-                </>
-              )}
-            </div>
           </div>
+        </div>
 
-          {/* RIGHT */}
+        {/* MAIN */}
 
-          <div className="space-y-6">
-            {/* SCORE */}
+        <div className="grid lg:grid-cols-3 gap-8">
 
-            <div className="bg-white border rounded-[2rem] p-8 shadow-sm text-center">
-              <p className="text-sm uppercase tracking-wider text-slate-400 font-bold mb-4">
-                Listening Accuracy
-              </p>
+          {/* LEFT */}
 
-              <div className="text-7xl font-black text-blue-600">
-                {score !== null
-                  ? `${score}%`
-                  : "--"}
+          <div className="lg:col-span-2 space-y-8">
+
+            <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2.5rem] p-8">
+
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-6">
+
+                <div>
+                  <h3 className="text-3xl font-black mb-2">
+                    Type or Speak
+                  </h3>
+
+                  <p className="text-slate-400">
+                    {micSupported
+                      ? "Hold SPACE outside the box to speak."
+                      : "Speech recognition not supported"}
+                  </p>
+                </div>
+
+                {isListening && (
+                  <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-red-500/10 border border-red-500/20">
+                    <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+
+                    <span className="font-bold text-red-300">
+                      Listening...
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <textarea
+                value={userAnswer}
+                onChange={(e) =>
+                  setUserAnswer(
+                    e.target.value
+                  )
+                }
+                placeholder="Type what you heard..."
+                className="w-full h-64 rounded-[2rem] bg-white/5 border border-white/10 outline-none resize-none p-6 text-lg text-white placeholder:text-slate-500"
+              />
+
+              <div className="flex flex-wrap gap-4 mt-6">
+
+                <button
+                  onClick={
+                    handleCheckAnswer
+                  }
+                  disabled={
+                    savingAttempt
+                  }
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:scale-105 transition-all px-8 py-4 rounded-2xl font-black"
+                >
+                  {savingAttempt
+                    ? "Saving..."
+                    : "Check Answer"}
+                </button>
+
+                <button
+                  onClick={handleNext}
+                  className="bg-white/5 hover:bg-white/10 border border-white/10 px-8 py-4 rounded-2xl font-bold transition-all"
+                >
+                  Next Challenge
+                </button>
               </div>
             </div>
 
-            {/* ANSWER */}
+            {/* TRANSCRIPT */}
 
             {showAnswer && (
-              <div className="bg-white border rounded-[2rem] p-8 shadow-sm">
-                <h3 className="text-xl font-black mb-4">
+              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2.5rem] p-8">
+
+                <h3 className="text-2xl font-black mb-5">
                   Correct Transcript
                 </h3>
 
-                <p className="text-slate-700 leading-relaxed mb-6">
-                  {
-                    currentQuestion.transcript
-                  }
-                </p>
+                <div className="bg-black/20 border border-white/5 rounded-3xl p-6 text-slate-200 leading-relaxed text-lg mb-8">
+                  {currentQuestion.transcript}
+                </div>
 
                 <div>
-                  <p className="text-sm font-bold text-red-500 uppercase tracking-wider mb-3">
+                  <p className="text-sm uppercase tracking-widest font-bold text-red-300 mb-4">
                     Missed Words
                   </p>
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
+
                     {missedWords.length >
                     0 ? (
                       missedWords.map(
@@ -794,75 +878,37 @@ export default function ListeningPractice() {
                             key={
                               index
                             }
-                            className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold"
+                            className="px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-red-300 font-semibold"
                           >
                             {word}
                           </span>
                         )
                       )
                     ) : (
-                      <span className="text-green-600 font-bold">
-                        Perfect
-                        Listening 🎉
+                      <span className="px-5 py-3 rounded-2xl bg-green-500/10 border border-green-500/20 text-green-300 font-bold">
+                        🎉 Perfect Listening
                       </span>
                     )}
                   </div>
                 </div>
               </div>
             )}
+          </div>
 
-            {/* AI FEEDBACK */}
+          {/* RIGHT */}
 
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2rem] p-8 text-white shadow-xl">
-              <h3 className="text-2xl font-black mb-5">
-                AI Feedback
-              </h3>
+          <div className="space-y-8">
 
-              <div className="space-y-4 text-blue-100">
-                <div className="flex gap-3">
-                  <span>🎧</span>
+            <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2.5rem] p-8 text-center">
 
-                  <p>
-                    Focus on
-                    connected speech
-                    and native
-                    pronunciation.
-                  </p>
-                </div>
+              <p className="text-sm uppercase tracking-widest text-slate-500 font-bold mb-6">
+                Listening Accuracy
+              </p>
 
-                <div className="flex gap-3">
-                  <span>⚡</span>
-
-                  <p>
-                    Replay the audio
-                    only 2-3 times
-                    for better
-                    listening growth.
-                  </p>
-                </div>
-
-                <div className="flex gap-3">
-                  <span>🚀</span>
-
-                  <p>
-                    Daily listening
-                    improves
-                    real-time English
-                    comprehension.
-                  </p>
-                </div>
-
-                <div className="flex gap-3">
-                  <span>🎤</span>
-
-                  <p>
-                    Speaking your
-                    answer aloud
-                    helps improve
-                    both listening
-                    and pronunciation.
-                  </p>
-                </div>
+              <div className="text-6xl font-black text-cyan-400">
+                {score !== null
+                  ? `${score}%`
+                  : "--"}
               </div>
             </div>
           </div>
