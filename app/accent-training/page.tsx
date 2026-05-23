@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Volume2, Mic, Repeat, Gauge, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { saveAttempt } from "@/services/reportAnalysis";
 
 export default function AccentSwitchPage() {
   const router = useRouter();
@@ -135,7 +136,7 @@ export default function AccentSwitchPage() {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = async (event: any) => {
       const result = event.results[0][0];
 
       const spoken = result.transcript;
@@ -149,6 +150,63 @@ export default function AccentSwitchPage() {
       // 🔥 FINAL SCORE
       const finalScore = Math.round((textScore * 0.7) + (conf * 30));
       setScore(finalScore);
+
+
+      try {
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("access_token");
+
+        if (!token) {
+          console.log("No token found");
+          return;
+        }
+
+        await saveAttempt(token, {
+          exercise_type: "speaking",
+
+          question: text,
+
+          user_answer: spoken,
+
+          corrected_answer: text,
+
+          ai_feedback:
+            finalScore >= 90
+              ? "Excellent pronunciation."
+              : finalScore >= 75
+              ? "Good pronunciation. Keep practicing."
+              : "Focus on clarity and word stress.",
+
+          accuracy_score: finalScore,
+
+          grammar_score: finalScore,
+
+          vocabulary_score: finalScore,
+
+          confidence_score: Math.round(
+            conf * 100
+          ),
+
+          xp_earned:
+            finalScore >= 90
+              ? 20
+              : finalScore >= 75
+              ? 15
+              : 10,
+
+          duration_seconds: 60,
+        });
+
+        console.log(
+          "Speaking attempt saved successfully"
+        );
+      } catch (err) {
+        console.error(
+          "Save attempt failed",
+          err
+        );
+      }
     };
 
     recognition.start();
