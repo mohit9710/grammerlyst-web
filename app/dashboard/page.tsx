@@ -331,15 +331,22 @@ export default function Dashboard() {
             </CategorySection>
 
             {/* FLUENCY */}
-            {/* <CategorySection title="⚡ Fluency & Recall">
+            <CategorySection title="⚡ Fluency & Recall">
               <ModuleCard
+                href="/listening"
+                title="Listening Lab"
+                desc="Sharp your listening skills."
+                gradient="from-yellow-500 to-orange-500"
+              />
+
+              {/*<ModuleCard
                 href="/think-fast"
                 title="Think Fast"
                 desc="Speak instantly on random topics."
                 gradient="from-yellow-500 to-orange-500"
               />
 
-              <ModuleCard
+               <ModuleCard
                 href="/word-rescue"
                 title="Word Rescue"
                 desc="Get smart vocabulary hints while speaking."
@@ -358,8 +365,8 @@ export default function Dashboard() {
                 title="Conversation Flow"
                 desc="Practice natural follow-up conversations."
                 gradient="from-indigo-500 to-blue-600"
-              />
-            </CategorySection> */}
+              /> */}
+            </CategorySection>
 
             {/* GRAMMAR */}
             <CategorySection title="📚 Grammar & Writing">
@@ -375,6 +382,13 @@ export default function Dashboard() {
                 title="Sentence Polisher"
                 desc="Improve writing with AI corrections."
                 gradient="from-rose-500 to-pink-600"
+              />
+
+              <ModuleCard
+                href="/verbs"
+                title="Verbs Lab"
+                desc="Your secret vocabulary builder."
+                gradient="from-emerald-500 to-teal-600"
               />
 
               {/* <ModuleCard

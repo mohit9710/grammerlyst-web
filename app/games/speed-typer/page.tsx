@@ -2,203 +2,508 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { updateXP } from "@/services/userService"; 
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { updateXP } from "@/services/userService";
 
 export default function SentenceSprinter() {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/backend";
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL ||
+    "/api/backend";
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [userInput, setUserInput] = useState("");
-  const [startTime, setStartTime] = useState<number | null>(null);
+  const [currentIndex, setCurrentIndex] =
+    useState(0);
+
+  const [userInput, setUserInput] =
+    useState("");
+
+  const [startTime, setStartTime] =
+    useState<number | null>(null);
+
   const [wpm, setWpm] = useState(0);
-  const [isFinished, setIsFinished] = useState(false);
-  const [isSaving, setIsSaving] = useState(false); 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [sentences, setSentences] = useState<string[]>([]);
 
-  const targetSentence = sentences[currentIndex] || "";
+  const [accuracy, setAccuracy] =
+    useState(100);
+
+  const [isFinished, setIsFinished] =
+    useState(false);
+
+  const [isSaving, setIsSaving] =
+    useState(false);
+
+  const [sentences, setSentences] =
+    useState<string[]>([]);
+
+  const inputRef =
+    useRef<HTMLInputElement>(null);
+
+  const targetSentence =
+    sentences[currentIndex] || "";
+
+  // =====================================================
+  // SEO
+  // =====================================================
 
   useEffect(() => {
-    document.title = "Speed Typer | English Vocabulary & Typing Test | Grammrlyst";
+    document.title =
+      "Speed Typer | Grammrlyst";
   }, []);
-  
+
+  // =====================================================
+  // FETCH SENTENCES
+  // =====================================================
+
   useEffect(() => {
     async function loadSentences() {
       try {
-        const res = await fetch(`${API_BASE_URL}/games/sentences?limit=5`); // Limit 5 tak badha diya
+        const res = await fetch(
+          `${API_BASE_URL}/games/sentences?limit=5`
+        );
+
         const data = await res.json();
-        const sentenceList = data.map((s: any) => s.content);
+
+        const sentenceList = data.map(
+          (s: any) => s.content
+        );
+
         setSentences(sentenceList);
       } catch (err) {
-        console.error("Failed to load sentences", err);
+        console.error(
+          "Failed to load sentences",
+          err
+        );
       }
     }
+
     loadSentences();
   }, [API_BASE_URL]);
 
+  // =====================================================
+  // AUTO FOCUS
+  // =====================================================
+
   useEffect(() => {
-    if (sentences.length > 0 && inputRef.current) {
+    if (
+      sentences.length > 0 &&
+      inputRef.current
+    ) {
       inputRef.current.focus();
     }
   }, [sentences]);
 
-  // --- XP & BONUS LOGIC FIXED ---
-  const handleGameComplete = async (finalWpm: number) => {
+  // =====================================================
+  // CALCULATE WPM
+  // =====================================================
+
+  const calculateWpm = () => {
+    if (!startTime) return 0;
+
+    const timeElapsed =
+      (Date.now() - startTime) / 60000;
+
+    const wordsTyped =
+      sentences
+        .slice(0, currentIndex)
+        .join(" ")
+        .split(" ").length +
+      userInput.split(" ").length;
+
+    const currentWpm =
+      timeElapsed > 0
+        ? Math.round(
+            wordsTyped / timeElapsed
+          )
+        : 0;
+
+    setWpm(currentWpm);
+
+    return currentWpm;
+  };
+
+  // =====================================================
+  // CALCULATE ACCURACY
+  // =====================================================
+
+  const calculateAccuracy = (
+    typed: string,
+    target: string
+  ) => {
+    let correct = 0;
+
+    for (
+      let i = 0;
+      i < typed.length;
+      i++
+    ) {
+      if (typed[i] === target[i]) {
+        correct++;
+      }
+    }
+
+    const acc = Math.round(
+      (correct / target.length) * 100
+    );
+
+    setAccuracy(acc > 100 ? 100 : acc);
+  };
+
+  // =====================================================
+  // COMPLETE GAME
+  // =====================================================
+
+  const handleGameComplete = async (
+    finalWpm: number
+  ) => {
     setIsFinished(true);
-    const token = localStorage.getItem("access_token");
+
+    const token =
+      localStorage.getItem(
+        "access_token"
+      );
+
     if (!token) return;
 
     setIsSaving(true);
+
     try {
-      // Game Name specify karna zaroori hai backend logs ke liye
-      const GAME_NAME = "Speed Typer"; 
+      const GAME_NAME =
+        "Speed Typer";
 
-      // 1. Calculate XP (Performance based)
-      const performanceXP = Math.min(Math.max(finalWpm * 10, 100), 1000);
-      
-      // updateXP service call with game_name query param logic
-      await updateXP(token, performanceXP, false, GAME_NAME);
+      const performanceXP =
+        Math.min(
+          Math.max(finalWpm * 10, 100),
+          1000
+        );
 
-      // 2. Daily Speed Bonus Logic
-      const today = new Date().toISOString().split('T')[0];
-      const lastSpeedBonus = localStorage.getItem("last_speed_bonus");
+      await updateXP(
+        token,
+        performanceXP,
+        false,
+        GAME_NAME
+      );
+
+      const today = new Date()
+        .toISOString()
+        .split("T")[0];
+
+      const lastSpeedBonus =
+        localStorage.getItem(
+          "last_speed_bonus"
+        );
 
       if (lastSpeedBonus !== today) {
-        try {
-          // Bonus claim (isBonus = true)
-          await updateXP(token, 300, true, "Speed Typer Bonus");
-          localStorage.setItem("last_speed_bonus", today);
-        } catch (bErr) {
-          console.log("Bonus already claimed");
-        }
+        await updateXP(
+          token,
+          300,
+          true,
+          "Speed Typer Bonus"
+        );
+
+        localStorage.setItem(
+          "last_speed_bonus",
+          today
+        );
       }
     } catch (err) {
-      console.error("Failed to sync progress", err);
+      console.error(
+        "Failed to sync progress",
+        err
+      );
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // =====================================================
+  // HANDLE INPUT
+  // =====================================================
+
+  const handleInput = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const val = e.target.value;
-    if (!startTime) setStartTime(Date.now());
+
+    if (!startTime)
+      setStartTime(Date.now());
+
+    setUserInput(val);
+
+    calculateAccuracy(
+      val,
+      targetSentence
+    );
+
+    calculateWpm();
 
     if (val === targetSentence) {
-      if (currentIndex < sentences.length - 1) {
-        setCurrentIndex(prev => prev + 1);
+      if (
+        currentIndex <
+        sentences.length - 1
+      ) {
+        setCurrentIndex(
+          (prev) => prev + 1
+        );
+
         setUserInput("");
-        calculateWpm(); // Update WPM after each sentence
       } else {
-        const finalWpm = calculateWpm();
+        const finalWpm =
+          calculateWpm();
+
         handleGameComplete(finalWpm);
       }
-    } else {
-      setUserInput(val);
-      calculateWpm(); // Live WPM update
     }
   };
 
-  const calculateWpm = () => {
-    if (!startTime) return 0;
-    const timeElapsed = (Date.now() - startTime) / 60000; 
-    // Total words calculation
-    const wordsTyped = sentences.slice(0, currentIndex).join(" ").split(" ").length + userInput.split(" ").length;
-    const currentWpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0;
-    setWpm(currentWpm);
-    return currentWpm;
-  };
+  // =====================================================
+  // LOADING
+  // =====================================================
 
   if (sentences.length === 0) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <p className="text-slate-400 font-bold animate-pulse text-xl">Loading Arena...</p>
+        <div className="bg-white px-8 py-6 rounded-3xl shadow-sm border">
+          <p className="text-slate-500 font-semibold animate-pulse">
+            Loading Arena...
+          </p>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-      <div className="max-w-3xl w-full bg-white rounded-[3rem] shadow-xl p-12 border border-slate-100 relative overflow-hidden">
-        
-        {!isFinished && (
-          <div className="absolute top-0 left-0 h-1.5 bg-blue-500 transition-all duration-500" 
-               style={{ width: `${((currentIndex + 1) / sentences.length) * 100}%` }}></div>
-        )}
+  // =====================================================
+  // UI
+  // =====================================================
 
-        <div className="flex justify-between items-center mb-10">
-          <Link href="/games" className="text-slate-400 hover:text-slate-600 font-bold flex items-center gap-2 transition-colors">
-            <i className="fas fa-arrow-left"></i> Exit
-          </Link>
-          <div className="flex gap-8">
-            <div className="text-center">
-              <span className="block text-[10px] uppercase font-black text-slate-400 tracking-widest">Speed</span>
-              <span className="text-3xl font-black text-blue-600">{wpm} <small className="text-xs">WPM</small></span>
+  return (
+    <>
+      <Navbar />
+
+      <main className="min-h-screen bg-slate-50 px-4 py-6 md:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+
+          {/* TOP BAR */}
+
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black text-slate-900">
+                Sentence Sprinter
+              </h1>
+
+              <p className="text-slate-500 mt-1">
+                Improve your typing speed
+                and vocabulary
+              </p>
             </div>
-            <div className="text-center border-l pl-8">
-              <span className="block text-[10px] uppercase font-black text-slate-400 tracking-widest">Progress</span>
-              <span className="text-3xl font-black text-slate-800">{currentIndex + 1}/{sentences.length}</span>
+
+            <Link
+              href="/games"
+              className="bg-white border border-slate-200 px-5 py-3 rounded-2xl font-semibold text-slate-600 hover:bg-slate-100 transition w-fit"
+            >
+              ← Exit Game
+            </Link>
+          </div>
+
+          {/* STATS */}
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+
+            <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+              <p className="text-xs uppercase font-bold text-slate-400 mb-2 tracking-widest">
+                Speed
+              </p>
+
+              <h2 className="text-3xl font-black text-blue-600">
+                {wpm}
+              </h2>
+
+              <span className="text-xs text-slate-400">
+                WPM
+              </span>
             </div>
+
+            <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+              <p className="text-xs uppercase font-bold text-slate-400 mb-2 tracking-widest">
+                Accuracy
+              </p>
+
+              <h2 className="text-3xl font-black text-emerald-600">
+                {accuracy}%
+              </h2>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+              <p className="text-xs uppercase font-bold text-slate-400 mb-2 tracking-widest">
+                Progress
+              </p>
+
+              <h2 className="text-3xl font-black text-slate-900">
+                {currentIndex + 1}/
+                {sentences.length}
+              </h2>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+              <p className="text-xs uppercase font-bold text-slate-400 mb-2 tracking-widest">
+                XP Potential
+              </p>
+
+              <h2 className="text-3xl font-black text-amber-500">
+                +{Math.min(
+                  Math.max(wpm * 10, 100),
+                  1000
+                )}
+              </h2>
+            </div>
+          </div>
+
+          {/* PROGRESS BAR */}
+
+          {!isFinished && (
+            <div className="bg-white border border-slate-200 rounded-full h-3 overflow-hidden mb-8">
+              <div
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full transition-all duration-500"
+                style={{
+                  width: `${
+                    ((currentIndex + 1) /
+                      sentences.length) *
+                    100
+                  }%`,
+                }}
+              />
+            </div>
+          )}
+
+          {/* GAME AREA */}
+
+          <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+
+            {!isFinished ? (
+              <div className="p-6 md:p-10">
+
+                {/* TARGET TEXT */}
+
+                <div className="bg-slate-50 border border-slate-200 rounded-[2rem] p-6 md:p-10 mb-8 min-h-[220px] flex items-center">
+
+                  <p className="text-2xl md:text-3xl leading-relaxed font-semibold tracking-wide">
+
+                    {targetSentence
+                      .split("")
+                      .map((char, i) => {
+                        let color =
+                          "text-slate-300";
+
+                        if (
+                          i <
+                          userInput.length
+                        ) {
+                          color =
+                            userInput[i] ===
+                            char
+                              ? "text-slate-900"
+                              : "text-red-500 bg-red-100";
+                        }
+
+                        return (
+                          <span
+                            key={i}
+                            className={`${color} transition-all`}
+                          >
+                            {char}
+                          </span>
+                        );
+                      })}
+                  </p>
+                </div>
+
+                {/* INPUT */}
+
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={userInput}
+                  onChange={handleInput}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  disabled={isSaving}
+                  placeholder="Start typing here..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-5 text-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition"
+                />
+
+                {/* FOOT NOTE */}
+
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-5 text-sm">
+
+                  <p className="text-slate-400 font-medium">
+                    ⌨️ Typing accuracy
+                    increases XP rewards
+                  </p>
+
+                  <p className="text-blue-600 font-bold">
+                    Sentence{" "}
+                    {currentIndex + 1} of{" "}
+                    {sentences.length}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="p-8 md:p-14 text-center">
+
+                <div className="w-24 h-24 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center mx-auto text-5xl mb-8">
+                  ⚡
+                </div>
+
+                <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-3">
+                  Speed Master!
+                </h2>
+
+                <p className="text-slate-500 text-lg mb-2">
+                  You reached{" "}
+                  <strong>
+                    {wpm} WPM
+                  </strong>
+                </p>
+
+                <p className="text-emerald-600 font-black text-2xl mb-10">
+                  +
+                  {Math.min(
+                    Math.max(wpm * 10, 100),
+                    1000
+                  )}{" "}
+                  XP Earned
+                </p>
+
+                <div className="flex flex-col md:flex-row justify-center gap-4">
+
+                  <button
+                    onClick={() =>
+                      window.location.reload()
+                    }
+                    className="bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-2xl font-bold transition"
+                  >
+                    Play Again
+                  </button>
+
+                  <Link
+                    href="/dashboard"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-bold transition"
+                  >
+                    Dashboard
+                  </Link>
+                </div>
+
+                {isSaving && (
+                  <p className="mt-6 text-sm text-blue-500 animate-pulse">
+                    Syncing your XP...
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
+      </main>
 
-        {isFinished ? (
-          <div className="text-center py-10 animate-in fade-in zoom-in duration-700">
-            <div className="w-24 h-24 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner">
-              <i className="fas fa-bolt"></i>
-            </div>
-            <h2 className="text-4xl font-black text-slate-900 mb-2 italic">SPEED DEMON!</h2>
-            <p className="text-slate-500 text-lg mb-1">You reached <strong>{wpm} WPM</strong></p>
-            <p className="text-emerald-500 font-black text-xl mb-10">+{Math.min(Math.max(wpm * 10, 100), 1000)} XP Earned</p>
-            
-            <div className="flex flex-col gap-4 max-w-xs mx-auto">
-              <button 
-                onClick={() => window.location.reload()}
-                className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold hover:scale-105 active:scale-95 transition-all shadow-xl"
-              >
-                Race Again
-              </button>
-              <Link href="/dashboard" className="text-blue-600 font-bold hover:underline py-2">
-                Check Dashboard
-              </Link>
-            </div>
-            {isSaving && <p className="mt-6 text-[10px] text-blue-400 animate-pulse font-black uppercase tracking-[0.2em]">Syncing Performance Data...</p>}
-          </div>
-        ) : (
-          <>
-            <div className="mb-10 p-10 bg-slate-50 rounded-[2.5rem] border-2 border-slate-100 relative">
-              <p className="text-3xl text-slate-300 font-bold leading-relaxed select-none font-mono tracking-tight">
-                {targetSentence.split("").map((char, i) => {
-                  let color = "text-slate-300";
-                  if (i < userInput.length) {
-                    color = userInput[i] === char ? "text-slate-900" : "text-rose-500 bg-rose-50";
-                  }
-                  return <span key={i} className={`${color} transition-all duration-75`}>{char}</span>;
-                })}
-              </p>
-            </div>
-
-            <input
-              ref={inputRef}
-              type="text"
-              value={userInput}
-              onChange={handleInput}
-              autoComplete="off"
-              autoCapitalize="none"
-              disabled={isSaving}
-              placeholder="Type the sentence above..."
-              className="w-full p-8 text-2xl rounded-[2rem] border-2 border-slate-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 outline-none transition-all shadow-sm font-mono"
-            />
-            <div className="flex justify-between mt-6 px-2">
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest italic">
-                <i className="fas fa-keyboard mr-2"></i> Case Sensitive
-              </p>
-              <p className="text-blue-500 text-xs font-black uppercase tracking-widest">
-                Accuracy Boosts XP 🎯
-              </p>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+      <Footer />
+    </>
   );
 }
