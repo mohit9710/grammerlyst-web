@@ -77,6 +77,7 @@ export default function Navbar() {
     { label: "Speaking", href: "/daily-speaking" },
     { label: "AI Tutor", href: "/chatbot-page" },
     { label: "Pronunciation", href: "/pronunciation" },
+    { label: "Blog", href: "/blog" },
   ];
 
   return (
@@ -107,15 +108,6 @@ export default function Navbar() {
                     priority
                   />
                 </div>
-
-                {/* <div className="hidden md:block">
-                  <h1 className="text-xl font-black text-white tracking-tight">
-                    Grammrlyst
-                  </h1>
-                  <p className="text-[11px] text-slate-400 -mt-1">
-                    AI English Learning
-                  </p>
-                </div> */}
               </div>
             </Link>
 

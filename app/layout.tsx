@@ -1,38 +1,19 @@
-"use client";
+import "./globals.css";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
-import FloatingFixButton from "@/components/FloatingFixButton";
-import { usePathname } from "next/navigation";
-import usePageTracking from "@/hooks/usePageTracking";
 import Script from "next/script";
+import ClientRootEffects from "@/components/ClientRootEffects";
+import PageTracking from "@/components/PageTracking";
 
 export default function RootLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [hasUser, setHasUser] = useState(false);
-  const pathname = usePathname();
-  usePageTracking();
-  
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      setIsLoggedIn(true);
-      // Login hote hi streak sync karein
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/update-activity`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    }
-  }, []);
-
   return (
     <html lang="en">
       <head>
         {/* Favicons */}
-        <link rel="icon" href="/favicon-v2.ico" />
+        <link rel="icon" href="/favicon.ico" />
         <link
           rel="icon"
           type="image/png"
@@ -48,27 +29,42 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
 
-        {/* External CSS */}
-        <script src="https://cdn.tailwindcss.com"></script>
+        {/* Font Awesome, loaded non-render-blocking via the media=print swap trick */}
         <link
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
           rel="stylesheet"
-        ></link>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-        {/* <link 
-          rel="stylesheet" 
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
-        /> */}
-        <Script
-          async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5149688839251960"
-          crossOrigin="anonymous"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          media="print"
+          id="fa-stylesheet"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "document.getElementById('fa-stylesheet').media='all';",
+          }}
+        />
+        <noscript>
+          <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          />
+        </noscript>
+
         <meta name="google-site-verification" content="_w6MUtyAqKpo8QuNX7PBJ3ITrY4F_hntC0FGTU5-Rxs" />
-        <script src="https://accounts.google.com/gsi/client" async defer></script>
       </head>
 
-      <body>{children}
-        {isLoggedIn && pathname !== "/role-play" && <FloatingFixButton />}
+      <body>
+        {children}
+        <ClientRootEffects />
+        <PageTracking />
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="lazyOnload"
+        />
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5149688839251960"
+          strategy="lazyOnload"
+          crossOrigin="anonymous"
+        />
       </body>
     </html>
   );

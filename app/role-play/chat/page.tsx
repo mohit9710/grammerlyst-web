@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/components/Footer";
@@ -32,6 +32,14 @@ interface Role {
 }
 
 export default function RoleplayChat() {
+  return (
+    <Suspense fallback={null}>
+      <RoleplayChatInner />
+    </Suspense>
+  );
+}
+
+function RoleplayChatInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

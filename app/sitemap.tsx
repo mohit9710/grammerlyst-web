@@ -13,6 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "",
     "/dashboard",
     "/blog",
+    "/tongue-twisters",
     "/contact",
     "/verbs",
     "/grammar",
@@ -22,6 +23,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/games/speed-typer",
     "/games/word-scramble",
     "/games/syntax-defender",
+    "/games/word-memory",
+    "/games/odd-one-out",
     "/pronunciation",
     "/accent-switch",
   ].map((path) => ({

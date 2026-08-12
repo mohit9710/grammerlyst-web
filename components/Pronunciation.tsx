@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import "../styles/pronunciation.css";
 import {
   fetchPronunciation,
   uploadPronunciationAudio,
@@ -73,6 +74,51 @@ export default function Pronunciation({
   const router = useRouter();
 
   const isLocked = !plan?.active;
+
+  const textScrollRef = useRef<HTMLDivElement>(null);
+
+  const isLongText = (textData?.content?.length || 0) > 220;
+
+  // Reset the teleprompter position whenever a new sentence loads
+  useEffect(() => {
+    if (textScrollRef.current) {
+      textScrollRef.current.scrollTop = 0;
+    }
+  }, [textData]);
+
+  // Slowly auto-scroll the practice text while recording, so the user
+  // can keep speaking without needing to hunt for their place in long text
+  useEffect(() => {
+    const el = textScrollRef.current;
+
+    if (!el || !isRecording) return;
+
+    el.scrollTop = 0;
+
+    const scrollSpeed = 0.3; // px per frame ≈ a slow, readable pace
+
+    let raf: number;
+
+    const step = () => {
+      if (!el) return;
+
+      if (el.scrollTop + el.clientHeight < el.scrollHeight - 1) {
+        el.scrollTop += scrollSpeed;
+        raf = requestAnimationFrame(step);
+      }
+    };
+
+    // give the speaker a moment to settle on the first line before
+    // the text starts moving, instead of scrolling the instant they hit Start
+    const startDelay = setTimeout(() => {
+      raf = requestAnimationFrame(step);
+    }, 2000);
+
+    return () => {
+      clearTimeout(startDelay);
+      cancelAnimationFrame(raf);
+    };
+  }, [isRecording]);
 
   const fetchNewText = async () => {
     setAccuracy(null);
@@ -388,13 +434,27 @@ export default function Pronunciation({
                   </h2>
                 </div>
 
-                <div className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-sm font-bold uppercase">
-                  {textData?.difficulty_level ||
-                    "Loading"}
+                <div className="flex items-center gap-3">
+                  {isRecording && isLongText && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-violet-500/10 border border-violet-400/20 text-violet-300 text-xs font-bold uppercase">
+                      <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+                      Auto-Scroll
+                    </div>
+                  )}
+
+                  <div className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-sm font-bold uppercase">
+                    {textData?.difficulty_level ||
+                      "Loading"}
+                  </div>
                 </div>
               </div>
 
-              <div className="min-h-[260px] md:min-h-[320px] flex items-center justify-center rounded-[2rem] bg-[#0d1324] border border-white/5 p-6 md:p-10">
+              <div
+                ref={textScrollRef}
+                className={`custom-scrollbar min-h-[260px] md:min-h-[320px] max-h-[320px] md:max-h-[380px] overflow-y-auto flex ${
+                  isLongText ? "items-start" : "items-center"
+                } justify-center rounded-[2rem] bg-[#0d1324] border border-white/5 p-6 md:p-10`}
+              >
                 {loading ? (
                   <div className="text-slate-400 animate-pulse">
                     Loading practice text...
@@ -428,7 +488,7 @@ export default function Pronunciation({
                 )}
               </div>
 
-              <div className="min-h-[180px] rounded-[1.5rem] bg-[#0d1324] border border-white/5 p-6 text-slate-300 italic leading-relaxed">
+              <div className="custom-scrollbar min-h-[180px] max-h-[320px] overflow-y-auto rounded-[1.5rem] bg-[#0d1324] border border-white/5 p-6 text-slate-300 italic leading-relaxed">
                 {userSpokenText ||
                   (isRecording
                     ? "Listening to your voice..."
@@ -560,7 +620,7 @@ export default function Pronunciation({
               </div>
 
               {/* CONTENT */}
-              <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto">
+              <div className="custom-scrollbar p-6 md:p-8 max-h-[80vh] overflow-y-auto">
                 
                 {/* SCORE GRID */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
