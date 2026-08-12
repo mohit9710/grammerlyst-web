@@ -10,6 +10,7 @@ import {
 } from "@/services/grammar";
 
 import { saveAttempt } from "@/services/reportAnalysis";
+import AdUnit from "@/components/AdUnit";
 
 export default function GrammarWorkshop({
   initialTopics,
@@ -214,6 +215,8 @@ export default function GrammarWorkshop({
                   ✨
                 </div>
               </div>
+
+              <AdUnit slot="XXXXXXXXXX" className="mb-10" />
 
               {/* LESSONS */}
               {lessons.length > 0 ? (

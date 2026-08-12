@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /profile
+Disallow: /checkout
+Disallow: /referral/dashboard
+Disallow: /auth/
+
+Sitemap: https://grammrlyst.com/sitemap.xml

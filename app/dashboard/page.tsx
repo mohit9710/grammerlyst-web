@@ -3,6 +3,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardPersonalized from "@/components/DashboardPersonalized";
+import AdUnit from "@/components/AdUnit";
 
 export const metadata: Metadata = {
   title: "AI English Fluency Dashboard | Speak English Confidently",
@@ -100,6 +101,8 @@ export default function Dashboard() {
                 gradient="from-blue-500 to-cyan-500"
               />
             </CategorySection>
+
+            <AdUnit slot="XXXXXXXXXX" className="max-w-4xl mx-auto" />
           </div>
         </section>
       </main>
