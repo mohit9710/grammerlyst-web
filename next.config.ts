@@ -9,7 +9,7 @@ const nextConfig = {
       {
         source: '/api/backend/:path*',
         // destination: 'http://127.0.0.1:9000/:path*',
-        destination: 'https://grammrlyst.in/:path*',
+        destination: 'https://api.grammrlyst.in/:path*',
       },
     ]
   },
