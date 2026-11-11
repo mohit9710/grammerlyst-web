@@ -37,7 +37,7 @@ export interface Plan {
 export async function completePurchase(
   token: string,
   payload: PurchasePayload
-): Promise<unknown> {
+): Promise<PurchaseResponse> {
 
   if (!token) {
     throw new Error("Authentication token missing.");
@@ -62,7 +62,20 @@ export async function completePurchase(
 
     const data = await response.json();
 
-    if (data.success && data.payment_url) {
+    if (!response.ok) {
+      throw new Error(
+        data.detail || data.message || "Payment creation failed."
+      );
+    }
+
+    if (!data.success || !data.payment_url) {
+      throw new Error("Payment link was not generated.");
+    }
+
+    return data as PurchaseResponse;
+
+
+    /*if (data.success && data.payment_url) {
       window.location.href = data.payment_url;
     } else {
       console.error("Payment link creation failed.");
@@ -75,7 +88,7 @@ export async function completePurchase(
       );
     }
 
-    return data;
+    return data;*/
 
   } catch (error) {
     console.error("Purchase error:", error);

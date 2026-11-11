@@ -115,24 +115,38 @@ export default function CheckoutClient({ planId }: any) {
 
   }, [router]);
 
-  const handlePayment = () => {
-    if (plan === "free") {
-      router.push("/dashboard");
-      return;
-    }
-    const token = localStorage.getItem("access_token");
-    if (!token) {
+  const handlePayment = async () => {
+  if (plan === "free") {
+    router.push("/dashboard");
+    return;
+  }
 
-      router.replace("/auth/login");
+  const token = localStorage.getItem("access_token");
 
-    }
-    const result = completePurchase(token, {
-      amount : price,
-      plan_name : plan,
-      billing : billing
+  if (!token) {
+    router.replace("/auth/login");
+    return;
+  }
+
+  try {
+    const result = await completePurchase(token, {
+      amount: price,
+      plan_name: plan,
+      billing: billing,
     });
-    
-  };
+
+    // Redirect to Razorpay
+    if (result.success && result.payment_url) {
+      window.location.href = result.payment_url;
+    } else {
+      console.error("Payment link creation failed.");
+    }
+    // window.location.href = result.payment_url;
+
+  } catch (error) {
+    console.error("Payment error:", error);
+  }
+};
 
   return (
 
