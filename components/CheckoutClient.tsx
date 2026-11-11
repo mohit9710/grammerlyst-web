@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 
 import { useRouter } from "next/navigation";
+import useUser from "@/hooks/userProfile";
 
 import {
 
@@ -23,6 +24,10 @@ import {
   BadgeCheck,
 
 } from "lucide-react";
+
+import {
+  completePurchase,
+} from "@/services/purchaseService";
 
 const PLAN_CONFIG = {
 
@@ -84,6 +89,8 @@ export default function CheckoutClient({ planId }: any) {
 
   const [billing, setBilling] = useState("monthly");
 
+  const { user, isAuth, setUser } = useUser();
+
   const selectedPlan =
 
     PLAN_CONFIG[plan as keyof typeof PLAN_CONFIG];
@@ -113,16 +120,18 @@ export default function CheckoutClient({ planId }: any) {
       router.push("/dashboard");
       return;
     }
+    const token = localStorage.getItem("access_token");
+    if (!token) {
 
-    if (plan === "basic" && billing === "monthly"){
-      window.location.href = "https://rzp.io/rzp/upErBT6";
-    }else if (plan === "basic" && billing === "yearly"){
-      window.location.href = "https://rzp.io/rzp/B9eXbT5";
-    }else if (plan === "pro" && billing === "monthly"){
-      window.location.href = "https://rzp.io/rzp/KmfuiJRo";
-    }else if (plan === "pro" && billing === "yearly"){
-      window.location.href = "https://rzp.io/rzp/h9wLaiX";
+      router.replace("/auth/login");
+
     }
+    const result = completePurchase(token, {
+      amount : price,
+      plan_name : plan,
+      billing : billing
+    });
+    
   };
 
   return (
